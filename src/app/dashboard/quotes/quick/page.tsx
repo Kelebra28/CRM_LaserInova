@@ -87,7 +87,8 @@ export default function QuickQuotePage() {
   };
 
   const handleSave = async () => {
-    if (!(session?.user as any)?.id) {
+    const userId = (session?.user as any)?.id;
+    if (!userId) {
       alert("Debes estar logueado para guardar.");
       return;
     }
@@ -110,7 +111,7 @@ export default function QuickQuotePage() {
     };
 
     try {
-      const result = await saveQuickQuoteAction(mockQuote, (session.user as any).id);
+      const result = await saveQuickQuoteAction(mockQuote, userId);
       if (result.success) {
         alert("Cotización guardada con éxito!");
         router.push(`/dashboard/quotes/${result.quoteId}`);
