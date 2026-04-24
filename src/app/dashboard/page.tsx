@@ -151,7 +151,7 @@ export default async function DashboardPage() {
       </div>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => (
           <div key={stat.name} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center">

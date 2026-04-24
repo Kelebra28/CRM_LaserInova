@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Plus, Trash2, Download, RefreshCw } from "lucide-react";
+import { FileText, Plus, Trash2, Download, RefreshCw, Save } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { saveQuickQuoteAction } from "@/app/dashboard/quotes/actions";
+import { useRouter } from "next/navigation";
 
 export default function QuickQuotePage() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [clientName, setClientName] = useState("");
   const [company, setCompany] = useState("");
   const [project, setProject] = useState("");
@@ -11,10 +16,11 @@ export default function QuickQuotePage() {
   const [folio, setFolio] = useState(`LI-${new Date().getFullYear()}-ESP-${Math.floor(Math.random() * 1000)}`);
   
   const [concepts, setConcepts] = useState([
-    { id: crypto.randomUUID(), description: "Activación especial / Evento", quantity: 1, unitPrice: 0 }
+    { id: crypto.randomUUID(), description: "Activación especial / Evento", quantity: 1 as number | string, unitPrice: 0 as number | string }
   ]);
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const addConcept = () => {
     setConcepts([...concepts, { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0 }]);
@@ -28,7 +34,7 @@ export default function QuickQuotePage() {
     setConcepts(concepts.map(c => c.id === id ? { ...c, [field]: value } : c));
   };
 
-  const subtotal = concepts.reduce((sum, c) => sum + (c.quantity * c.unitPrice), 0);
+  const subtotal = concepts.reduce((sum, c) => sum + ((Number(c.quantity) || 0) * (Number(c.unitPrice) || 0)), 0);
   const tax = subtotal * 0.16;
   const total = subtotal + tax;
 
@@ -77,6 +83,43 @@ export default function QuickQuotePage() {
       alert("Hubo un error al generar el PDF.");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!session?.user?.id) {
+      alert("Debes estar logueado para guardar.");
+      return;
+    }
+    
+    setIsSaving(true);
+    
+    const mockQuote = {
+      client: { name: clientName, company },
+      project,
+      description,
+      subtotal,
+      tax,
+      total,
+      concepts: concepts.map(c => ({
+        description: c.description,
+        quantity: c.quantity,
+        unitPrice: c.unitPrice,
+        totalAmount: (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0)
+      }))
+    };
+
+    try {
+      const result = await saveQuickQuoteAction(mockQuote, (session.user as any).id);
+      if (result.success) {
+        alert("Cotización guardada con éxito!");
+        router.push(`/dashboard/quotes/${result.quoteId}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error al guardar la cotización.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -140,51 +183,58 @@ export default function QuickQuotePage() {
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {concepts.map((concept, idx) => (
-              <div key={concept.id} className="flex flex-col md:flex-row gap-3 items-start md:items-center p-4 bg-gray-50 rounded-2xl border border-gray-100 relative group">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 md:hidden">Descripción</label>
-                  <input 
-                    type="text" 
-                    value={concept.description} 
-                    onChange={e => updateConcept(concept.id, 'description', e.target.value)}
-                    placeholder="Descripción del concepto" 
-                    className="w-full text-sm font-medium border-gray-200 rounded-xl px-3 py-2"
-                  />
+              <div key={concept.id} className="relative p-4 md:p-5 bg-gray-50 rounded-2xl border border-gray-100 group transition-all hover:border-red-100 hover:bg-white">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                  <div className="md:col-span-6">
+                    <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Descripción del Concepto</label>
+                    <input 
+                      type="text" 
+                      value={concept.description} 
+                      onChange={e => updateConcept(concept.id, 'description', e.target.value)}
+                      placeholder="Ej. Servicio de Corte Laser" 
+                      className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/10"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-1 md:col-span-2 gap-3">
+                    <div>
+                      <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Cant.</label>
+                      <input 
+                        type="number" 
+                        min="1"
+                        value={concept.quantity === 0 && String(concept.quantity) !== "0" ? "" : concept.quantity} 
+                        onChange={e => updateConcept(concept.id, 'quantity', e.target.value === "" ? "" : Number(e.target.value))}
+                        className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white text-center"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Precio U.</label>
+                      <input 
+                        type="number" 
+                        value={concept.unitPrice === 0 && String(concept.unitPrice) !== "0" ? "" : concept.unitPrice} 
+                        onChange={e => updateConcept(concept.id, 'unitPrice', e.target.value === "" ? "" : Number(e.target.value))}
+                        className="w-full text-sm font-black border-gray-200 rounded-xl px-4 py-2.5 bg-white text-red-600"
+                      />
+                    </div>
+                  </div>
+                  <div className="md:col-span-3 text-right">
+                    <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 text-right">Subtotal</label>
+                    <div className="text-base font-black text-gray-900 px-2 py-2">
+                      ${((Number(concept.quantity) || 0) * (Number(concept.unitPrice) || 0)).toLocaleString('es-MX', {minimumFractionDigits: 2})}
+                    </div>
+                  </div>
+                  <div className="md:col-span-1 flex justify-end">
+                    {concepts.length > 1 && (
+                      <button 
+                        onClick={() => removeConcept(concept.id)}
+                        className="p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="w-full md:w-1/6">
-                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 md:hidden">Cantidad</label>
-                  <input 
-                    type="number" 
-                    min="1"
-                    value={concept.quantity} 
-                    onChange={e => updateConcept(concept.id, 'quantity', Number(e.target.value))}
-                    className="w-full text-sm font-medium border-gray-200 rounded-xl px-3 py-2"
-                  />
-                </div>
-                <div className="w-full md:w-1/4">
-                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 md:hidden">Precio Unit. ($)</label>
-                  <input 
-                    type="number" 
-                    value={concept.unitPrice} 
-                    onChange={e => updateConcept(concept.id, 'unitPrice', Number(e.target.value))}
-                    className="w-full text-sm font-medium border-gray-200 rounded-xl px-3 py-2 text-red-600"
-                  />
-                </div>
-                <div className="w-full md:w-auto text-right md:text-left flex-shrink-0 pt-4 md:pt-0">
-                  <span className="text-sm font-black text-gray-900 block md:hidden mb-1 text-[9px] text-gray-400 uppercase tracking-widest">Total</span>
-                  <span className="text-sm font-black text-gray-900">${(concept.quantity * concept.unitPrice).toLocaleString('es-MX', {minimumFractionDigits: 2})}</span>
-                </div>
-                
-                {concepts.length > 1 && (
-                  <button 
-                    onClick={() => removeConcept(concept.id)}
-                    className="absolute -right-2 -top-2 md:static md:right-auto md:top-auto p-2 bg-white md:bg-transparent text-gray-300 hover:text-red-600 rounded-full shadow-sm md:shadow-none border border-gray-100 md:border-transparent opacity-100 md:opacity-0 group-hover:opacity-100 transition-all"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
               </div>
             ))}
           </div>
@@ -209,14 +259,23 @@ export default function QuickQuotePage() {
         </div>
 
         {/* Acciones */}
-        <div className="flex justify-end pt-4 border-t border-gray-100">
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button
+            onClick={handleSave}
+            disabled={isSaving || isGenerating || concepts.length === 0 || subtotal === 0 || !clientName || !project}
+            className="flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-black hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+          >
+            {isSaving ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+            {isSaving ? "Guardando..." : "Guardar en Sistema"}
+          </button>
+          
           <button
             onClick={handleDownload}
-            disabled={isGenerating || concepts.length === 0 || subtotal === 0}
+            disabled={isGenerating || isSaving || concepts.length === 0 || subtotal === 0}
             className="flex items-center gap-2 bg-red-600 text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-red-600/20 hover:bg-red-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
           >
             {isGenerating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-            {isGenerating ? "Generando PDF..." : "Descargar Cotización"}
+            {isGenerating ? "Generando PDF..." : "Descargar PDF"}
           </button>
         </div>
 

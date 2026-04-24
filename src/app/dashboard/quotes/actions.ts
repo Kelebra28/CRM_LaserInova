@@ -181,3 +181,70 @@ export async function updateQuotePaymentAction(quoteId: string, type: 'unpaid' |
   revalidatePath(`/dashboard/quotes/${quoteId}`);
 }
 
+export async function saveQuickQuoteAction(mockQuote: any, userId: string) {
+  // 1. Manejar cliente
+  let finalClientId = null;
+  if (mockQuote.client.name) {
+    const existingClient = await prisma.client.findFirst({
+      where: { name: mockQuote.client.name }
+    });
+
+    if (existingClient) {
+      finalClientId = existingClient.id;
+    } else {
+      const newClient = await prisma.client.create({
+        data: {
+          name: mockQuote.client.name,
+          company: mockQuote.client.company || null,
+        }
+      });
+      finalClientId = newClient.id;
+    }
+  }
+
+  const count = await prisma.quote.count();
+  const year = new Date().getFullYear();
+  const folioNumber = String(count + 1).padStart(4, '0');
+  const folio = `LI-${year}-${folioNumber}`;
+
+  const quote = await prisma.quote.create({
+    data: {
+      folio,
+      clientId: finalClientId,
+      userId,
+      project: mockQuote.project || "Cotización Libre",
+      description: mockQuote.description,
+      status: "APPROVED",
+      subtotal: mockQuote.subtotal,
+      tax: mockQuote.tax,
+      total: mockQuote.total,
+      realCostTotal: 0,
+      estimatedUtility: mockQuote.subtotal,
+      concepts: {
+        create: mockQuote.concepts.map((c: any, index: number) => ({
+          conceptType: "OTRO",
+          description: c.description || `Concepto Libre ${index + 1}`,
+          quantity: Number(c.quantity) || 1,
+          finalUnitPrice: Number(c.finalUnitPrice) || 0,
+          totalAmount: Number(c.totalAmount) || 0,
+          realCost: 0,
+          suggestedPrice: Number(c.totalAmount) || 0,
+          order: index,
+        })),
+      },
+      snapshot: {
+        create: {
+          globalValues: {},
+          factors: {},
+        }
+      }
+    },
+  });
+
+  revalidatePath("/dashboard/quotes");
+  revalidatePath("/dashboard/finance");
+  
+  return { success: true, quoteId: quote.id };
+}
+
+

@@ -1,14 +1,24 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon, Menu } from "lucide-react";
 
-export function Topbar() {
+interface TopbarProps {
+  onMenuClick?: () => void;
+}
+
+export function Topbar({ onMenuClick }: TopbarProps) {
   const { data: session } = useSession();
 
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-      <div className="flex-1 flex">
+      <div className="flex items-center gap-4 flex-1">
+        <button
+          onClick={onMenuClick}
+          className="p-2 -ml-2 text-gray-500 hover:text-gray-600 md:hidden"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
         {/* Breadcrumbs or search could go here */}
       </div>
       <div className="ml-4 flex items-center md:ml-6 gap-4">

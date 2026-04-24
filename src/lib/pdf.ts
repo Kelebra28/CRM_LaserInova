@@ -9,7 +9,7 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
   
   // Header: Logo and Title
   try {
-    const logoPath = path.join(process.cwd(), "public", "laser_inova_navbar_mas_grande.png");
+    const logoPath = path.join(process.cwd(), "public", "logo_pdf.png");
     const logoBuffer = fs.readFileSync(logoPath);
     const logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
     // Coordinates and size: x, y, width, height. Maintaining rough aspect ratio
@@ -183,7 +183,7 @@ export async function generateMonthlyReportPDF(quotes: any[], month: number, yea
   
   // Header
   try {
-    const logoPath = path.join(process.cwd(), "public", "laser_inova_navbar_mas_grande.png");
+    const logoPath = path.join(process.cwd(), "public", "logo_pdf.png");
     const logoBuffer = fs.readFileSync(logoPath);
     const logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
     doc.addImage(logoBase64, "PNG", 14, 10, 40, 12);

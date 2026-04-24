@@ -208,8 +208,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                 <input
                   type="number"
                   id="margin"
-                  value={margin}
-                  onChange={(e) => setMargin(Number(e.target.value))}
+                  value={margin === 0 && String(margin) !== "0" ? "" : margin}
+                  onChange={(e) => setMargin(e.target.value === "" ? ("" as any) : Number(e.target.value))}
                   className="focus:ring-red-500 focus:border-red-500 block w-full pr-7 sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-red-600"
                 />
                 <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
@@ -287,8 +287,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                     <input
                       type="number"
                       min="1"
-                      value={concept.quantity}
-                      onChange={e => updateConcept(concept.id, "quantity", e.target.value)}
+                      value={concept.quantity === 0 && String(concept.quantity) !== "0" ? "" : concept.quantity}
+                      onChange={e => updateConcept(concept.id, "quantity", e.target.value === "" ? "" : Number(e.target.value))}
                       className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border"
                     />
                   </div>
@@ -322,8 +322,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                         <label className="block text-xs font-medium text-gray-700">Largo (cm)</label>
                         <input
                           type="number"
-                          value={concept.partWidth}
-                          onChange={e => updateConcept(concept.id, "partWidth", e.target.value)}
+                          value={concept.partWidth === 0 && String(concept.partWidth) !== "0" ? "" : concept.partWidth}
+                          onChange={e => updateConcept(concept.id, "partWidth", e.target.value === "" ? "" : Number(e.target.value))}
                           disabled={concept.clientProvidesMaterial}
                           className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border disabled:bg-gray-100"
                         />
@@ -332,8 +332,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                         <label className="block text-xs font-medium text-gray-700">Ancho (cm)</label>
                         <input
                           type="number"
-                          value={concept.partHeight}
-                          onChange={e => updateConcept(concept.id, "partHeight", e.target.value)}
+                          value={concept.partHeight === 0 && String(concept.partHeight) !== "0" ? "" : concept.partHeight}
+                          onChange={e => updateConcept(concept.id, "partHeight", e.target.value === "" ? "" : Number(e.target.value))}
                           disabled={concept.clientProvidesMaterial}
                           className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border disabled:bg-gray-100"
                         />
@@ -342,8 +342,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                         <label className="block text-xs font-medium text-gray-700">Tiempo total (minutos)</label>
                         <input
                           type="number"
-                          value={concept.timeMin}
-                          onChange={e => updateConcept(concept.id, "timeMin", e.target.value)}
+                          value={concept.timeMin === 0 && String(concept.timeMin) !== "0" ? "" : concept.timeMin}
+                          onChange={e => updateConcept(concept.id, "timeMin", e.target.value === "" ? "" : Number(e.target.value))}
                           className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border"
                         />
                       </div>
@@ -356,8 +356,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                       <label className="block text-xs font-medium text-gray-700">Precio Unitario ($)</label>
                       <input
                         type="number"
-                        value={concept.manualUnitPrice}
-                        onChange={e => updateConcept(concept.id, "manualUnitPrice", e.target.value)}
+                        value={concept.manualUnitPrice === 0 && String(concept.manualUnitPrice) !== "0" ? "" : concept.manualUnitPrice}
+                        onChange={e => updateConcept(concept.id, "manualUnitPrice", e.target.value === "" ? "" : Number(e.target.value))}
                         className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border"
                         placeholder="0.00"
                       />
@@ -429,8 +429,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       </div>
 
       {/* 3. Totales y Guardar */}
-      <div className="bg-gray-900 text-white rounded-xl p-8 shadow-xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="bg-gray-900 text-white rounded-xl p-6 md:p-8 shadow-xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <div>
             <div className="flex items-center gap-3 border-b border-gray-800 pb-4 mb-6">
               <div className="p-2 bg-red-500/10 rounded-lg">

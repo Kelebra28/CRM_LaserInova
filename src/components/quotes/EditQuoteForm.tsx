@@ -254,8 +254,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                 <input
                   type="number"
                   id="margin"
-                  value={margin}
-                  onChange={(e) => setMargin(Number(e.target.value))}
+                  value={margin === 0 && String(margin) !== "0" ? "" : margin}
+                  onChange={(e) => setMargin(e.target.value === "" ? ("" as any) : Number(e.target.value))}
                   className="focus:ring-red-500 focus:border-red-500 block w-full pr-7 sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-red-600"
                 />
                 <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
@@ -329,8 +329,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                   <input
                     type="number"
                     min="1"
-                    value={concept.quantity}
-                    onChange={e => updateConcept(concept.id, "quantity", e.target.value)}
+                    value={concept.quantity === 0 && String(concept.quantity) !== "0" ? "" : concept.quantity}
+                    onChange={e => updateConcept(concept.id, "quantity", e.target.value === "" ? "" : Number(e.target.value))}
                     className="w-full text-sm font-bold border-gray-200 rounded-lg p-2.5 border bg-white focus:ring-2 focus:ring-red-500 outline-none"
                   />
                 </div>
@@ -348,15 +348,15 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                   <>
                     <div className="sm:col-span-3">
                       <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ancho (cm)</label>
-                      <input type="number" step="0.1" value={concept.partWidth} onChange={e => updateConcept(concept.id, "partWidth", e.target.value)} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
+                      <input type="number" step="0.1" value={concept.partWidth === 0 && String(concept.partWidth) !== "0" ? "" : concept.partWidth} onChange={e => updateConcept(concept.id, "partWidth", e.target.value === "" ? "" : Number(e.target.value))} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
                     </div>
                     <div className="sm:col-span-3">
                       <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Alto (cm)</label>
-                      <input type="number" step="0.1" value={concept.partHeight} onChange={e => updateConcept(concept.id, "partHeight", e.target.value)} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
+                      <input type="number" step="0.1" value={concept.partHeight === 0 && String(concept.partHeight) !== "0" ? "" : concept.partHeight} onChange={e => updateConcept(concept.id, "partHeight", e.target.value === "" ? "" : Number(e.target.value))} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
                     </div>
                     <div className="sm:col-span-3">
                       <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tiempo (min)</label>
-                      <input type="number" step="1" value={concept.timeMin} onChange={e => updateConcept(concept.id, "timeMin", e.target.value)} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
+                      <input type="number" step="1" value={concept.timeMin === 0 && String(concept.timeMin) !== "0" ? "" : concept.timeMin} onChange={e => updateConcept(concept.id, "timeMin", e.target.value === "" ? "" : Number(e.target.value))} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
                     </div>
                     <div className="sm:col-span-3 flex items-center pt-4">
                       <input type="checkbox" checked={concept.clientProvidesMaterial} onChange={e => updateConcept(concept.id, "clientProvidesMaterial", e.target.checked)} className="h-4 w-4 text-red-600 rounded" />
@@ -375,8 +375,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                         <input
                           type="number"
                           step="0.01"
-                          value={concept.finalUnitPrice}
-                          onChange={e => updateConcept(concept.id, "finalUnitPrice", e.target.value)}
+                          value={concept.finalUnitPrice === 0 && String(concept.finalUnitPrice) !== "0" ? "" : concept.finalUnitPrice}
+                          onChange={e => updateConcept(concept.id, "finalUnitPrice", e.target.value === "" ? "" : Number(e.target.value))}
                           className="w-24 text-sm font-black text-gray-900 border-none p-0 focus:ring-0 bg-transparent"
                         />
                       </div>
@@ -410,8 +410,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
       </div>
 
       {/* Footer / Resumen */}
-      <div className="bg-gray-900 text-white rounded-xl p-8 shadow-xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="bg-gray-900 text-white rounded-xl p-6 md:p-8 shadow-xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <div>
             <div className="flex items-center gap-3 border-b border-gray-800 pb-4 mb-6">
               <div className="p-2 bg-red-500/10 rounded-lg">
