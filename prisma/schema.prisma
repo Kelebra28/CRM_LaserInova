@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("SELLER")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  quotes       Quote[]
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  company   String?
+  email     String?
+  phone     String?
+  rfc       String?
+  address   String?
+  notes     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quotes    Quote[]
+}
+
+model MaterialCategory {
+  id        String     @id @default(uuid())
+  name      String
+  slug      String     @unique
+  active    Boolean    @default(true)
+  materials Material[]
+}
+
+model Material {
+  id               String           @id @default(uuid())
+  categoryId       String
+  category         MaterialCategory @relation(fields: [categoryId], references: [id])
+  name             String
+  brand            String?
+  family           String?
+  color            String?
+  thickness        Float?           // grosor mm
+  length           Float?           // largo cm
+  width            Float?           // ancho cm
+  sheetPrice       Float?           // precio hoja
+  guardPercentage  Float?           // porcentaje guarda (ej: 1.2)
+  productionPrice  Float?           // precio producción hoja
+  pricePerCm2      Float?           // precio por cm2
+  notes            String?
+  active           Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  quoteConcepts    QuoteConcept[]
+}
+
+model CostConfiguration {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  value       Float
+  unit        String?
+  adminOnly   Boolean  @default(true)
+  type        String?  // Ej: global, machine, etc.
+  active      Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+}
+
+model Quote {
+  id                   String               @id @default(uuid())
+  folio                String               @unique // folio automático
+  clientId             String?
+  client               Client?              @relation(fields: [clientId], references: [id])
+  userId               String
+  user                 User                 @relation(fields: [userId], references: [id])
+  project              String
+  description          String?
+  status               String               @default("DRAFT")
+  paymentStatus        String               @default("PENDING") // PENDING, PARTIAL, PAID
+  subtotal             Float                @default(0)
+  tax                  Float                @default(0) // IVA
+  total                Float                @default(0)
+  realCostTotal        Float                @default(0)
+  estimatedUtility     Float                @default(0)
+  realAmountCollected  Float?               @default(0)
+  realUtilityTotal     Float?               @default(0)
+  isDone               Boolean              @default(false) // se hizo / no se hizo
+  sentDate             DateTime?
+  closeDate            DateTime?
+  deliveryTime         String?
+  validityDays         Int?
+  paymentConditions    String?
+  internalNotes        String?
+  visibleConsiderations String?
+  active               Boolean              @default(true)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  concepts             QuoteConcept[]
+  snapshot             CalculationSnapshot?
+  emailLogs            EmailLog[]
+}
+
+model QuoteConcept {
+  id                    String    @id @default(uuid())
+  quoteId               String
+  quote                 Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  conceptType           String    // CORTE, GRABADO, IMPRESION, PRODUCTO, OTRO
+  description           String
+  quantity              Int       @default(1)
+  materialId            String?
+  material              Material? @relation(fields: [materialId], references: [id])
+  clientProvidesMaterial Boolean   @default(false)
+  width                 Float?
+  height                Float?
+  thickness             Float?
+  cutTime               Float?    // min
+  engraveTime           Float?    // min (retained for backward compatibility or future use)
+  machineType           String?
+  details               String?
+  materialCost          Float?    @default(0)
+  productionCost        Float?    @default(0)
+  realCost              Float?    @default(0)
+  margin                Float?
+  suggestedPrice        Float?    @default(0)
+  finalUnitPrice        Float     @default(0)
+  totalAmount           Float     @default(0)
+  order                 Int       @default(0)
+}
+
+model CalculationSnapshot {
+  id              String   @id @default(uuid())
+  quoteId         String   @unique
+  quote           Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  globalValues    Json     // snapshot de CostConfiguration usados
+  factors         Json     // factores y márgenes aplicados
+  intermediate    Json?    // resultados intermedios de cálculos
+  createdAt       DateTime @default(now())
+}
+
+model EmailLog {
+  id             String      @id @default(uuid())
+  quoteId        String
+  quote          Quote       @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  sentById       String
+  sentTo         String
+  subject        String
+  body           String
+  status         String      @default("PENDING")
+  smtpResponse   String?
+  sentDate       DateTime    @default(now())
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  description String
+  amount      Float
+  category    String   // Ej: Salarios, Renta, Insumos, Mantenimiento, Otro
+  date        DateTime @default(now())
+  notes       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MachineProcess {
+  id               String   @id @default(uuid())
+  machineName      String   // "CO2", "FIBRA", "UV", "XTOOL"
+  material         String   // Ej: "Acrílico 3mm", "Acero Inoxidable"
+  
+  // Parámetros de Grabado (para todas las máquinas)
+  engravePower     Float?
+  engraveSpeed     Float?
+  engraveFrequency Float?   // Solo Fibra, UV, xTool
+  waveType         String?  // Solo UV, xTool
+  
+  // Parámetros de Corte (Solo CO2)
+  cutPower         Float?
+  cutSpeed         Float?
+  
+  notes            String?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+
