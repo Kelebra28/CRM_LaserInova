@@ -87,7 +87,7 @@ export default function QuickQuotePage() {
   };
 
   const handleSave = async () => {
-    if (!session?.user?.id) {
+    if (!(session?.user as any)?.id) {
       alert("Debes estar logueado para guardar.");
       return;
     }
