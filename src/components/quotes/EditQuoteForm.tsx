@@ -81,12 +81,13 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
               clientProvidesMaterial: updated.clientProvidesMaterial,
               isWholesale: isWholesale
             },
-            { ...globalCosts, margen_default: margin } // Usar el margen actual
+            { ...globalCosts, margen_default: Number(margin) || 35 } // Usar el margen actual
           );
 
           const suggestedUnit = result.suggestedPrice / (Number(updated.quantity) || 1);
-          const finalUnit = updated.finalUnitPrice && updated.finalUnitPrice > 0 ? updated.finalUnitPrice : suggestedUnit;
-          const totalAmount = finalUnit * (Number(updated.quantity) || 1);
+          const finalUnit = updated.finalUnitPrice && Number(updated.finalUnitPrice) > 0 ? updated.finalUnitPrice : suggestedUnit;
+          const finalUnitNum = Number(finalUnit) || 0;
+          const totalAmount = finalUnitNum * (Number(updated.quantity) || 1);
           return { ...updated, calculated: result, finalUnitPrice: finalUnit, totalAmount: totalAmount };
         }
         
@@ -125,11 +126,12 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           clientProvidesMaterial: c.clientProvidesMaterial,
           isWholesale: isWholesale
         },
-        { ...globalCosts, margen_default: margin }
+        { ...globalCosts, margen_default: Number(margin) || 35 }
       );
       const suggestedUnit = result.suggestedPrice / (Number(c.quantity) || 1);
-      const finalUnit = c.finalUnitPrice && c.finalUnitPrice > 0 ? c.finalUnitPrice : suggestedUnit;
-      const totalAmount = finalUnit * (Number(c.quantity) || 1);
+      const finalUnit = c.finalUnitPrice && Number(c.finalUnitPrice) > 0 ? c.finalUnitPrice : suggestedUnit;
+      const finalUnitNum = Number(finalUnit) || 0;
+      const totalAmount = finalUnitNum * (Number(c.quantity) || 1);
       return { ...c, calculated: result, finalUnitPrice: finalUnit, totalAmount: totalAmount };
     }));
   }, [margin, isWholesale, globalCosts, materials]);

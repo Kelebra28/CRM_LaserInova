@@ -56,7 +56,7 @@ export default function QuickQuotePage() {
         quantity: c.quantity,
         details: "Servicio especial (Cotización Libre)",
         finalUnitPrice: c.unitPrice,
-        totalAmount: c.quantity * c.unitPrice,
+        totalAmount: (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0),
         conceptType: "OTRO"
       }))
     };

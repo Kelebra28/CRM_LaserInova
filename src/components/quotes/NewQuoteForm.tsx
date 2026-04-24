@@ -91,16 +91,17 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
     }
 
     // Usar el margen configurado en el form
-    const result = calculateConcept(input, { ...globalCosts, margen_default: margin });
+    const result = calculateConcept(input, { ...globalCosts, margen_default: Number(margin) || 35 });
     
     // Si no han fijado un precio unitario final manualmente, usar el precio unitario sugerido (suggestedPrice / quantity)
     const suggestedUnit = result.suggestedPrice / input.quantity;
-    const finalUnit = concept.finalUnitPrice && concept.finalUnitPrice > 0 ? concept.finalUnitPrice : suggestedUnit;
-    const totalAmount = finalUnit * input.quantity;
+    const finalUnit = concept.finalUnitPrice && Number(concept.finalUnitPrice) > 0 ? concept.finalUnitPrice : suggestedUnit;
+    const finalUnitNum = Number(finalUnit) || 0;
+    const totalAmount = finalUnitNum * input.quantity;
 
     updateConcept(concept.id, "calculated", {
       ...result,
-      finalUnitPrice: Number(finalUnit.toFixed(2)),
+      finalUnitPrice: Number(finalUnitNum.toFixed(2)),
       totalAmount: Number(totalAmount.toFixed(2))
     });
   };
