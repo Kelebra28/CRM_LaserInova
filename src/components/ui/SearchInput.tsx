@@ -31,6 +31,9 @@ export default function SearchInput({
     // Only sync with URL if NOT in controlled mode
     if (isControlled) return;
 
+    const currentSearch = searchParams.get("search") || "";
+    if (currentSearch === value) return;
+
     const params = new URLSearchParams(searchParams);
     if (value) {
       params.set("search", value);
@@ -40,9 +43,9 @@ export default function SearchInput({
 
     const timeoutId = setTimeout(() => {
       startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
       });
-    }, 300);
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [value, pathname, router, searchParams, isControlled]);

@@ -7,9 +7,9 @@ import SearchInput from "../../../components/ui/SearchInput";
 export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams: { search?: string };
+  searchParams: Promise<{ search?: string }>;
 }) {
-  const search = searchParams.search;
+  const { search } = await searchParams;
 
   const clients = await prisma.client.findMany({
     where: {

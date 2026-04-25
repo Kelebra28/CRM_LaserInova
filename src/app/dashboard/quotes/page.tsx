@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, FileText } from "lucide-react";
-import { QuoteStatus } from "@/types/prisma";
+import { Plus, FileText, LayoutGrid } from "lucide-react";
+import SearchInput from "@/components/ui/SearchInput";
+import QuoteRow from "@/components/quotes/QuoteRow";
 
 const statusColors: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-800",
@@ -25,14 +26,12 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "Cancelada",
 };
 
-import SearchInput from "../../../components/ui/SearchInput";
-
 export default async function QuotesPage({
   searchParams,
 }: {
-  searchParams: { search?: string };
+  searchParams: Promise<{ search?: string }>;
 }) {
-  const search = searchParams.search;
+  const { search } = await searchParams;
 
   const quotes = await prisma.quote.findMany({
     where: {
@@ -55,79 +54,70 @@ export default async function QuotesPage({
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Cotizaciones</h1>
+        <div>
+          <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+            <LayoutGrid className="h-6 w-6 text-red-600" />
+            COTIZACIONES
+          </h1>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
+            Gestión de presupuestos y seguimiento de proyectos
+          </p>
+        </div>
+        
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/quotes/quick"
-            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 border border-gray-200 shadow-sm text-[10px] font-black uppercase tracking-widest rounded-xl text-gray-600 bg-white hover:bg-gray-50 transition-all active:scale-95"
           >
-            <FileText className="-ml-1 mr-2 h-5 w-5 text-gray-400" aria-hidden="true" />
-            Cotización Libre (PDF)
+            <FileText className="-ml-1 mr-2 h-4 w-4 text-gray-400" aria-hidden="true" />
+            Cotización Libre
           </Link>
           <Link
             href="/dashboard/quotes/new"
-            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-red-600/20 text-white bg-red-600 hover:bg-red-700 transition-all active:scale-95"
           >
-            <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            <Plus className="-ml-1 mr-2 h-4 w-4" aria-hidden="true" />
             Nueva Cotización
           </Link>
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md border border-gray-100">
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
-          <SearchInput placeholder="Buscar por folio o cliente..." />
+      <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
+        <div className="px-6 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+          <div className="w-full max-w-md">
+            <SearchInput placeholder="Buscar por folio, cliente o proyecto..." />
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Folio</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Cliente</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Proyecto</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Estatus</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Fecha</th>
-                <th scope="col" className="relative px-6 py-3"><span className="sr-only">Acciones</span></th>
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Folio</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Cliente</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Proyecto</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Estatus</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Fecha</th>
+                <th scope="col" className="relative px-6 py-4"><span className="sr-only">Acciones</span></th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-50">
               {quotes.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                    No hay cotizaciones registradas.
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <FileText className="h-8 w-8 text-gray-200 mx-auto mb-3" />
+                    <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">No hay cotizaciones registradas</p>
                   </td>
                 </tr>
               ) : (
                 quotes.map((quote) => (
-                  <tr key={quote.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
-                      {quote.folio}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {quote.client?.name || "Sin cliente"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {quote.project}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      ${quote.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[quote.status]}`}>
-                        {statusLabels[quote.status]}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {new Date(quote.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link href={`/dashboard/quotes/${quote.id}`} className="text-red-600 hover:text-red-900 flex items-center justify-end">
-                        <FileText className="h-5 w-5" />
-                      </Link>
-                    </td>
-                  </tr>
+                  <QuoteRow 
+                    key={quote.id} 
+                    quote={quote} 
+                    statusColors={statusColors} 
+                    statusLabels={statusLabels} 
+                  />
                 ))
               )}
             </tbody>
