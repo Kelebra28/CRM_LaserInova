@@ -1,11 +1,24 @@
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import { Plus, Search } from "lucide-react";
-import ClientActions from "@/components/clients/ClientActions";
+import SearchInput from "@/components/ui/SearchInput";
 
-export default async function ClientsPage() {
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: { search?: string };
+}) {
+  const search = searchParams.search;
+
   const clients = await prisma.client.findMany({
-    where: { active: true },
+    where: {
+      active: true,
+      ...(search ? {
+        OR: [
+          { name: { contains: search } },
+          { company: { contains: search } },
+          { rfc: { contains: search } },
+          { email: { contains: search } },
+        ]
+      } : {}),
+    },
     orderBy: { name: "asc" },
   });
 
@@ -24,18 +37,7 @@ export default async function ClientsPage() {
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md border border-gray-100">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-          <div className="relative rounded-md shadow-sm max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </div>
-            <input
-              type="text"
-              name="search"
-              id="search"
-              className="focus:ring-red-500 focus:border-red-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 border"
-              placeholder="Buscar por nombre, empresa o RFC..."
-            />
-          </div>
+          <SearchInput placeholder="Buscar por nombre, empresa o RFC..." />
         </div>
         <ul role="list" className="divide-y divide-gray-200">
           {clients.length === 0 ? (

@@ -26,16 +26,29 @@ function getCategoryColor(categoryName: string) {
   return categoryColors[index];
 }
 
-export default async function MaterialsPage(props: { searchParams?: Promise<{ category?: string }> }) {
+export default async function MaterialsPage(props: { 
+  searchParams?: Promise<{ category?: string; search?: string }> 
+}) {
   const searchParams = props.searchParams ? await props.searchParams : {};
   const currentCategory = searchParams.category || "all";
+  const search = searchParams.search;
 
   const categories = await prisma.materialCategory.findMany({
     orderBy: { name: "asc" },
   });
 
   const materials = await prisma.material.findMany({
-    where: currentCategory !== "all" ? { category: { slug: currentCategory } } : undefined,
+    where: {
+      AND: [
+        currentCategory !== "all" ? { category: { slug: currentCategory } } : {},
+        search ? {
+          OR: [
+            { name: { contains: search } },
+            { slug: { contains: search } },
+          ]
+        } : {},
+      ]
+    },
     include: {
       category: true,
     },
@@ -68,18 +81,8 @@ export default async function MaterialsPage(props: { searchParams?: Promise<{ ca
         <div className="px-4 py-4 sm:px-6 border-b border-gray-200">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Buscador */}
-            <div className="relative w-full md:w-1/3">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                name="search"
-                id="search"
-                className="focus:ring-red-500 focus:border-red-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 border text-gray-900 placeholder-gray-500"
-                placeholder="Buscar material..."
-              />
-            </div>
+            <SearchInput placeholder="Buscar material..." />
+            
             {/* Filtros */}
             <div className="w-full md:w-2/3 flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
               <Link

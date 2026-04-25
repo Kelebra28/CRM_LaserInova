@@ -25,8 +25,26 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "Cancelada",
 };
 
-export default async function QuotesPage() {
+import SearchInput from "@/components/ui/SearchInput";
+
+export default async function QuotesPage({
+  searchParams,
+}: {
+  searchParams: { search?: string };
+}) {
+  const search = searchParams.search;
+
   const quotes = await prisma.quote.findMany({
+    where: {
+      ...(search ? {
+        OR: [
+          { folio: { contains: search } },
+          { client: { name: { contains: search } } },
+          { client: { company: { contains: search } } },
+          { project: { contains: search } },
+        ]
+      } : {}),
+    },
     include: {
       client: true,
       user: true,
@@ -58,19 +76,7 @@ export default async function QuotesPage() {
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md border border-gray-100">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
-
-          <div className="relative rounded-md shadow-sm max-w-md w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </div>
-            <input
-              type="text"
-              name="search"
-              id="search"
-              className="focus:ring-red-500 focus:border-red-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 border text-gray-900 placeholder-gray-500"
-              placeholder="Buscar por folio o cliente..."
-            />
-          </div>
+          <SearchInput placeholder="Buscar por folio o cliente..." />
         </div>
 
         <div className="overflow-x-auto">
