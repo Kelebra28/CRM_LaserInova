@@ -5,6 +5,9 @@ import { FileText, Plus, Trash2, Download, RefreshCw, Save } from "lucide-react"
 import { useSession } from "next-auth/react";
 import { saveQuickQuoteAction } from "@/app/dashboard/quotes/actions";
 import { useRouter } from "next/navigation";
+import StatusModal from "@/components/ui/StatusModal";
+import { Loader2 } from "lucide-react";
+import SubmitButton from "@/components/ui/SubmitButton";
 
 export default function QuickQuotePage() {
   const { data: session } = useSession();
@@ -21,6 +24,17 @@ export default function QuickQuotePage() {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success"
+  });
 
   const addConcept = () => {
     setConcepts([...concepts, { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0 }]);
@@ -80,7 +94,12 @@ export default function QuickQuotePage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
-      alert("Hubo un error al generar el PDF.");
+      setStatusModal({
+        isOpen: true,
+        title: "Error",
+        message: "Hubo un error al generar el PDF.",
+        type: "error"
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -89,7 +108,12 @@ export default function QuickQuotePage() {
   const handleSave = async () => {
     const userId = (session?.user as any)?.id;
     if (!userId) {
-      alert("Debes estar logueado para guardar.");
+      setStatusModal({
+        isOpen: true,
+        title: "Sesión Requerida",
+        message: "Debes estar logueado para guardar esta cotización.",
+        type: "error"
+      });
       return;
     }
     
@@ -113,12 +137,24 @@ export default function QuickQuotePage() {
     try {
       const result = await saveQuickQuoteAction(mockQuote, userId);
       if (result.success) {
-        alert("Cotización guardada con éxito!");
-        router.push(`/dashboard/quotes/${result.quoteId}`);
+        setStatusModal({
+          isOpen: true,
+          title: "¡Éxito!",
+          message: "Cotización guardada con éxito. Redirigiendo...",
+          type: "success"
+        });
+        setTimeout(() => {
+          router.push(`/dashboard/quotes/${result.quoteId}`);
+        }, 1500);
       }
     } catch (error) {
       console.error(error);
-      alert("Error al guardar la cotización.");
+      setStatusModal({
+        isOpen: true,
+        title: "Error",
+        message: "Error al guardar la cotización en el sistema.",
+        type: "error"
+      });
     } finally {
       setIsSaving(false);
     }
@@ -281,6 +317,14 @@ export default function QuickQuotePage() {
         </div>
 
       </div>
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal(prev => ({ ...prev, isOpen: false }))}
+        title={statusModal.title}
+        message={statusModal.message}
+        type={statusModal.type}
+      />
     </div>
   );
 }

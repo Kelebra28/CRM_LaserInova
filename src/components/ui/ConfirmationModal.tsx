@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, Loader2 } from "lucide-react";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info";
+  isLoading?: boolean;
 }
 
 export default function ConfirmationModal({
@@ -23,6 +24,7 @@ export default function ConfirmationModal({
   confirmText = "Confirmar",
   cancelText = "Cancelar",
   variant = "danger",
+  isLoading = false,
 }: ConfirmationModalProps) {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -83,18 +85,28 @@ export default function ConfirmationModal({
         <div className="bg-gray-50/50 p-6 flex flex-col sm:flex-row-reverse gap-3">
           <button
             type="button"
+            disabled={isLoading}
             onClick={() => {
               onConfirm();
-              onClose();
+              // No cerramos automáticamente si está cargando, dejamos que el padre decida
+              if (!isLoading) onClose();
             }}
-            className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg ${currentVariant.confirmBtn}`}
+            className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 ${currentVariant.confirmBtn}`}
           >
-            {confirmText}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Procesando...
+              </>
+            ) : (
+              confirmText
+            )}
           </button>
           <button
             type="button"
+            disabled={isLoading}
             onClick={onClose}
-            className="flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-gray-100 transition-all border border-gray-100"
+            className="flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:bg-gray-100 transition-all border border-gray-100 disabled:opacity-50"
           >
             {cancelText}
           </button>

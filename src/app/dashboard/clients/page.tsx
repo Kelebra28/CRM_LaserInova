@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, Search, MoreVertical } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import ClientActions from "@/components/clients/ClientActions";
 
 export default async function ClientsPage() {
   const clients = await prisma.client.findMany({
+    where: { active: true },
     orderBy: { name: "asc" },
   });
 
@@ -61,9 +63,7 @@ export default async function ClientsPage() {
                       </div>
                     </div>
                     <div className="ml-4 flex-shrink-0">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <MoreVertical className="h-5 w-5" />
-                      </button>
+                      <ClientActions clientId={client.id} clientName={client.name} />
                     </div>
                   </div>
                 </div>

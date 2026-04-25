@@ -163,10 +163,11 @@ export async function updateQuotePaymentAction(quoteId: string, type: 'unpaid' |
     // Si viene de estar pagada, le ponemos un 50% por defecto para que no desaparezca
     const currentQuote = await prisma.quote.findUnique({ where: { id: quoteId } });
     const isCurrentlyPaid = currentQuote && (currentQuote.realAmountCollected || 0) >= (currentQuote.total - 0.01);
+    const isCurrentlyUnpaid = currentQuote && (currentQuote.realAmountCollected || 0) === 0;
     
     data = { 
       paymentStatus: 'PARTIAL',
-      realAmountCollected: isCurrentlyPaid ? (quote.total / 2) : undefined 
+      realAmountCollected: isCurrentlyPaid ? (quote.total / 2) : (isCurrentlyUnpaid ? (quote.total / 2) : undefined)
     };
   }
 
@@ -178,6 +179,7 @@ export async function updateQuotePaymentAction(quoteId: string, type: 'unpaid' |
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/finance");
+  revalidatePath("/dashboard/quotes");
   revalidatePath(`/dashboard/quotes/${quoteId}`);
 }
 

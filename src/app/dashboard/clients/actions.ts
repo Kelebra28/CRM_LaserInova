@@ -32,3 +32,56 @@ export async function createClient(formData: FormData) {
   revalidatePath("/dashboard/clients");
   redirect("/dashboard/clients");
 }
+
+export async function updateClient(id: string, formData: FormData) {
+  const name = formData.get("name") as string;
+  const company = formData.get("company") as string;
+  const email = formData.get("email") as string;
+  const phone = formData.get("phone") as string;
+  const rfc = formData.get("rfc") as string;
+  const address = formData.get("address") as string;
+  const notes = formData.get("notes") as string;
+
+  if (!name) {
+    throw new Error("El nombre es requerido");
+  }
+
+  await prisma.client.update({
+    where: { id },
+    data: {
+      name,
+      company: company || null,
+      email: email || null,
+      phone: phone || null,
+      rfc: rfc || null,
+      address: address || null,
+      notes: notes || null,
+    },
+  });
+
+  revalidatePath("/dashboard/clients");
+  revalidatePath(`/dashboard/clients/${id}/edit`);
+  redirect("/dashboard/clients");
+}
+
+export async function deleteClient(id: string) {
+  // Verificar si tiene cotizaciones
+  const quotesCount = await prisma.quote.count({
+    where: { clientId: id },
+  });
+
+  if (quotesCount > 0) {
+    // Borrado lógico si tiene historial
+    await prisma.client.update({
+      where: { id },
+      data: { active: false },
+    });
+  } else {
+    // Borrado físico si no tiene nada asociado
+    await prisma.client.delete({
+      where: { id },
+    });
+  }
+
+  revalidatePath("/dashboard/clients");
+}

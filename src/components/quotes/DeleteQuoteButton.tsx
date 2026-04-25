@@ -12,12 +12,15 @@ interface DeleteQuoteButtonProps {
 
 export default function DeleteQuoteButton({ quoteId }: DeleteQuoteButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    setIsDeleting(true);
     if (formRef.current) {
       formRef.current.requestSubmit();
     }
+    // No reseteamos isDeleting porque se redirigirá la página
   };
 
   return (
@@ -38,6 +41,7 @@ export default function DeleteQuoteButton({ quoteId }: DeleteQuoteButtonProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleConfirm}
+        isLoading={isDeleting}
         title="Eliminar Cotización"
         message="¿Estás seguro de que deseas borrar esta cotización? Esta acción es permanente y no se podrá recuperar la información."
         confirmText="Sí, Eliminar"

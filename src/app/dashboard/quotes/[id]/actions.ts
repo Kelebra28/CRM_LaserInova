@@ -18,6 +18,7 @@ export async function updateQuoteStatus(formData: FormData) {
 
   revalidatePath(`/dashboard/quotes/${quoteId}`);
   revalidatePath(`/dashboard/quotes`);
+  revalidatePath(`/dashboard`);
 }
 export async function updateQuoteConsiderations(formData: FormData) {
   const quoteId = formData.get("quoteId") as string;
@@ -61,7 +62,9 @@ export async function updateQuotePayment(formData: FormData) {
 
 
   revalidatePath(`/dashboard/quotes/${quoteId}`);
-  revalidatePath(`/dashboard/`);
+  revalidatePath(`/dashboard/finance`);
+  revalidatePath(`/dashboard/quotes`);
+  revalidatePath(`/dashboard`);
 }
 
 export async function deleteQuote(formData: FormData) {
@@ -73,5 +76,7 @@ export async function deleteQuote(formData: FormData) {
   });
 
   revalidatePath(`/dashboard/quotes`);
+  revalidatePath(`/dashboard/finance`);
+  revalidatePath(`/dashboard`);
   redirect(`/dashboard/quotes`);
 }

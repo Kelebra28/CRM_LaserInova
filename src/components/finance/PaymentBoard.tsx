@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Loader2 } from "lucide-react";
 import { updateQuotePaymentAction } from "@/app/dashboard/quotes/actions";
 
 export default function PaymentBoard({ 
@@ -97,7 +97,16 @@ export default function PaymentBoard({
 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="relative">
+      {isPending && (
+        <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-[1px] flex items-center justify-center rounded-3xl">
+          <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3">
+            <Loader2 className="h-5 w-5 text-red-600 animate-spin" />
+            <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Sincronizando...</span>
+          </div>
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Column: Por Cobrar */}
       <div 
         onDragOver={(e) => onDragOver(e, 'unpaid')}
@@ -213,7 +222,8 @@ export default function PaymentBoard({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
 
 }

@@ -9,7 +9,8 @@ import {
   Receipt,
   Trash2,
   Wallet,
-  CheckCircle
+  CheckCircle,
+  Package
 } from "lucide-react";
 import ExpenseForm from "@/components/finance/ExpenseForm";
 import { deleteExpense } from "./actions";
@@ -60,6 +61,7 @@ export default async function FinancePage() {
   }, 0);
 
   const totalCollectedGross = quotesPaid.reduce((sum, q) => sum + (q.realAmountCollected || 0), 0);
+  const totalTaxCollected = totalCollectedGross - totalIncomeNet;
 
   // 2. Gastos Manuales (Salarios, Renta, etc.)
   const expenses = await prisma.expense.findMany({
@@ -91,7 +93,7 @@ export default async function FinancePage() {
       </div>
 
       {/* Stats Board */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -114,6 +116,17 @@ export default async function FinancePage() {
           <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Cobrado sin IVA (Mes)</p>
         </div>
 
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-t-4 border-t-indigo-500">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+              <Receipt className="h-4 w-4" />
+            </div>
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">IVA Recolectado</span>
+          </div>
+          <p className="text-2xl font-black text-gray-900">${totalTaxCollected.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Impuestos en Caja</p>
+        </div>
+
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-red-50 rounded-lg text-red-600">
@@ -127,8 +140,8 @@ export default async function FinancePage() {
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-              <Receipt className="h-4 w-4" />
+            <div className="p-2 bg-orange-50 rounded-lg text-orange-600">
+              <Package className="h-4 w-4" />
             </div>
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Costos Directos</span>
           </div>

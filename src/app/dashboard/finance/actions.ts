@@ -25,6 +25,7 @@ export async function createExpense(formData: FormData) {
   });
 
   revalidatePath("/dashboard/finance");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteExpense(formData: FormData) {
@@ -36,4 +37,5 @@ export async function deleteExpense(formData: FormData) {
   });
 
   revalidatePath("/dashboard/finance");
+  revalidatePath("/dashboard");
 }
