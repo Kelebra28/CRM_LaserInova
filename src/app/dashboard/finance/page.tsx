@@ -169,26 +169,26 @@ export default async function FinancePage() {
           <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Materiales y Producción</p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-t-4 border-t-emerald-500">
+        <div className={`p-6 rounded-2xl border shadow-sm ${grossProfit >= 0 ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'}`}>
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+            <div className={`p-2 rounded-lg ${grossProfit >= 0 ? 'bg-white/10 text-emerald-400' : 'bg-white/20 text-white'}`}>
               <TrendingUp className="h-4 w-4" />
             </div>
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Utilidad Bruta</span>
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Utilidad Real (Proyectos)</span>
           </div>
-          <p className="text-2xl font-black text-gray-900">${(totalIncomeNet - totalProjectCosts).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
-          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Ganancia de Proyectos</p>
+          <p className="text-2xl font-black">${grossProfit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+          <p className="text-[9px] font-bold text-white/40 uppercase mt-1">Ganancia neta de tus trabajos</p>
         </div>
 
-        <div className={`p-6 rounded-2xl border shadow-sm ${netProfit >= 0 ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'}`}>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-t-4 border-t-red-500">
           <div className="flex items-center gap-3 mb-4">
-            <div className={`p-2 rounded-lg ${netProfit >= 0 ? 'bg-white/10 text-emerald-400' : 'bg-white/20 text-white'}`}>
+            <div className="p-2 bg-red-50 rounded-lg text-red-600">
               <Wallet className="h-4 w-4" />
             </div>
-            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Utilidad Neta Final</span>
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Balance Final (Caja)</span>
           </div>
-          <p className="text-2xl font-black">${netProfit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
-          <p className="text-[9px] font-bold text-white/40 uppercase mt-1">Balance después de Gastos Fijos</p>
+          <p className="text-2xl font-black text-gray-900">${netProfit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Restando Luz, Gasolina, etc.</p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-t-4 border-t-emerald-500">
