@@ -5,13 +5,13 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 
 interface EditClientPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditClientPage({ params }: EditClientPageProps) {
-  const { id } = params;
+  const { id } = await params;
   
   const client = await prisma.client.findUnique({
     where: { id },

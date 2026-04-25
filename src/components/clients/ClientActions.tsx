@@ -31,14 +31,23 @@ export default function ClientActions({ clientId, clientName }: ClientActionsPro
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteClient(clientId);
-      setStatusModal({
-        isOpen: true,
-        title: "¡Eliminado!",
-        message: "El cliente ha sido eliminado correctamente.",
-        type: "success"
-      });
-      setShowConfirm(false);
+      const result = await deleteClient(clientId);
+      if (result?.error) {
+        setStatusModal({
+          isOpen: true,
+          title: "Error",
+          message: result.error,
+          type: "error"
+        });
+      } else {
+        setStatusModal({
+          isOpen: true,
+          title: "¡Eliminado!",
+          message: "El cliente ha sido eliminado correctamente.",
+          type: "success"
+        });
+        setShowConfirm(false);
+      }
     } catch (error) {
       console.error("Error deleting client:", error);
       setStatusModal({
@@ -68,7 +77,7 @@ export default function ClientActions({ clientId, clientName }: ClientActionsPro
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           ></div>
-          <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-48 rounded-2xl shadow-2xl bg-white ring-1 ring-black/5 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="py-1" role="menu" aria-orientation="vertical">
               <Link
                 href={`/dashboard/clients/${clientId}/edit`}
