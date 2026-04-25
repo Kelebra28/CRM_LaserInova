@@ -19,7 +19,7 @@ export default function QuickQuotePage() {
   const [folio, setFolio] = useState(`LI-${new Date().getFullYear()}-ESP-${Math.floor(Math.random() * 1000)}`);
   
   const [concepts, setConcepts] = useState([
-    { id: crypto.randomUUID(), description: "Activación especial / Evento", quantity: 1 as number | string, unitPrice: 0 as number | string }
+    { id: crypto.randomUUID(), description: "Activación especial / Evento", quantity: 1 as number | string, unitPrice: 0 as number | string, margin: 50 as number | string }
   ]);
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -37,7 +37,7 @@ export default function QuickQuotePage() {
   });
 
   const addConcept = () => {
-    setConcepts([...concepts, { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0 }]);
+    setConcepts([...concepts, { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0, margin: 50 }]);
   };
 
   const removeConcept = (id: string) => {
@@ -130,6 +130,7 @@ export default function QuickQuotePage() {
         description: c.description,
         quantity: c.quantity,
         unitPrice: c.unitPrice,
+        margin: c.margin,
         totalAmount: (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0)
       }))
     };
@@ -234,7 +235,7 @@ export default function QuickQuotePage() {
                       className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/10"
                     />
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-1 md:col-span-2 gap-3">
+                  <div className="grid grid-cols-3 md:grid-cols-1 md:col-span-2 gap-3">
                     <div>
                       <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Cant.</label>
                       <input 
@@ -243,6 +244,16 @@ export default function QuickQuotePage() {
                         value={concept.quantity === 0 && String(concept.quantity) !== "0" ? "" : concept.quantity} 
                         onChange={e => updateConcept(concept.id, 'quantity', e.target.value === "" ? "" : Number(e.target.value))}
                         className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white text-center"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Margen %</label>
+                      <input 
+                        type="number" 
+                        value={concept.margin === 0 && String(concept.margin) !== "0" ? "" : concept.margin} 
+                        onChange={e => updateConcept(concept.id, 'margin', e.target.value === "" ? "" : Number(e.target.value))}
+                        className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white text-center text-emerald-600"
+                        placeholder="50"
                       />
                     </div>
                     <div>

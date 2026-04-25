@@ -220,16 +220,26 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string) {
       subtotal: mockQuote.subtotal,
       tax: mockQuote.tax,
       total: mockQuote.total,
-      realCostTotal: 0,
-      estimatedUtility: mockQuote.subtotal,
+      realCostTotal: mockQuote.concepts.reduce((sum: number, c: any) => {
+        const price = (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0);
+        const margin = (Number(c.margin) || 0) / 100;
+        const cost = price * (1 - margin);
+        return sum + cost;
+      }, 0),
+      estimatedUtility: mockQuote.concepts.reduce((sum: number, c: any) => {
+        const price = (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0);
+        const margin = (Number(c.margin) || 0) / 100;
+        return sum + (price * margin);
+      }, 0),
       concepts: {
         create: mockQuote.concepts.map((c: any, index: number) => ({
           conceptType: "OTRO",
           description: c.description || `Concepto Libre ${index + 1}`,
           quantity: Number(c.quantity) || 1,
-          finalUnitPrice: Number(c.finalUnitPrice) || 0,
+          finalUnitPrice: Number(c.unitPrice) || 0,
           totalAmount: Number(c.totalAmount) || 0,
-          realCost: 0,
+          margin: Number(c.margin) || 0,
+          realCost: (Number(c.totalAmount) || 0) * (1 - (Number(c.margin) || 0) / 100),
           suggestedPrice: Number(c.totalAmount) || 0,
           order: index,
         })),
