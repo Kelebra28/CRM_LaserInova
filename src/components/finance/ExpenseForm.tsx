@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
-import { createExpense } from "@/app/dashboard/finance/actions";
+// NOTE: This component is deprecated. Use TransactionForm instead.
+// Kept for backward compatibility only.
+import { createTransaction as createExpense } from "@/app/dashboard/finance/actions";
 import SubmitButton from "@/components/ui/SubmitButton";
 
 const categories = [

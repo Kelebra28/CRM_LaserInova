@@ -98,18 +98,23 @@ export default async function DashboardPage() {
     }, 0);
   }
 
-  const expenses = await prisma.expense.findMany({
-    where: { active: true, date: { gte: startDate, lte: endDate } }
-  });
+  // Gastos operativos — resiliente si la tabla FinancialTransaction aún no existe en DB
+  let totalManualExpenses = 0;
+  try {
+    const opExpenses = await prisma.financialTransaction.findMany({
+      where: { isDeleted: false, type: "GASTO_OPERATIVO", date: { gte: startDate, lte: endDate } }
+    });
+    totalManualExpenses = opExpenses.reduce((sum: number, e: { amount: number }) => sum + e.amount, 0);
+  } catch {
+    // Tabla pendiente de migración en DB
+  }
 
   const configs = await prisma.costConfiguration.findMany();
   const configMap = new Map(configs.map(c => [c.key, c.value]));
-  const fixedMonthlyOverhead = configMap.get("gastos_fijos_mensuales") || 3910;
 
-  const totalManualExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalOperationCost = totalProjectCostsProportional + totalManualExpenses + fixedMonthlyOverhead;
-  const totalUtilityReal = totalIncomeNet - (totalProjectCostsProportional + totalManualExpenses + fixedMonthlyOverhead);
-  const totalTaxQuoted = activeQuotes.reduce((sum, q) => sum + q.tax, 0);
+  const totalOperationCost = totalProjectCostsProportional + totalManualExpenses;
+  const totalUtilityReal = totalIncomeNet - totalOperationCost;
+  const totalTaxQuoted = activeQuotes.reduce((sum: number, q: { tax: number }) => sum + q.tax, 0);
 
   return (
     <div className="space-y-10 pb-20 animate-in fade-in duration-1000">

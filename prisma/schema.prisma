@@ -8,30 +8,33 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         String   @default("SELLER")
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  quotes       Quote[]
+  id                   String                 @id @default(uuid())
+  name                 String
+  email                String                 @unique
+  passwordHash         String
+  role                 String                 @default("SELLER")
+  active               Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  quotes               Quote[]
+  createdTransactions  FinancialTransaction[] @relation("TransactionCreatedBy")
+  deletedTransactions  FinancialTransaction[] @relation("TransactionDeletedBy")
 }
 
 model Client {
-  id        String   @id @default(uuid())
-  name      String
-  company   String?
-  email     String?
-  phone     String?
-  rfc       String?
-  address   String?
-  notes     String?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  quotes    Quote[]
+  id                   String                 @id @default(uuid())
+  name                 String
+  company              String?
+  email                String?
+  phone                String?
+  rfc                  String?
+  address              String?
+  notes                String?
+  active               Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  quotes               Quote[]
+  financialTransactions FinancialTransaction[]
 }
 
 model MaterialCategory {
@@ -79,22 +82,23 @@ model CostConfiguration {
 }
 
 model Quote {
-  id                    String               @id @default(uuid())
-  folio                 String               @unique
+  id                    String                 @id @default(uuid())
+  folio                 String                 @unique
   clientId              String?
   userId                String
   project               String
   description           String?
-  status                String               @default("DRAFT")
-  paymentStatus         String               @default("PENDING")
-  subtotal              Float                @default(0)
-  tax                   Float                @default(0)
-  total                 Float                @default(0)
-  realCostTotal         Float                @default(0)
-  estimatedUtility      Float                @default(0)
-  realAmountCollected   Float?               @default(0)
-  realUtilityTotal      Float?               @default(0)
-  isDone                Boolean              @default(false)
+  status                String                 @default("DRAFT")
+  paymentStatus         String                 @default("PENDING")
+  taxable               Boolean                @default(true)
+  subtotal              Float                  @default(0)
+  tax                   Float                  @default(0)
+  total                 Float                  @default(0)
+  realCostTotal         Float                  @default(0)
+  estimatedUtility      Float                  @default(0)
+  realAmountCollected   Float?                 @default(0)
+  realUtilityTotal      Float?                 @default(0)
+  isDone                Boolean                @default(false)
   sentDate              DateTime?
   closeDate             DateTime?
   deliveryTime          String?
@@ -102,14 +106,15 @@ model Quote {
   paymentConditions     String?
   internalNotes         String?
   visibleConsiderations String?
-  active                Boolean              @default(true)
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  active                Boolean                @default(true)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
   snapshot              CalculationSnapshot?
   emailLogs             EmailLog[]
-  client                Client?              @relation(fields: [clientId], references: [id])
-  user                  User                 @relation(fields: [userId], references: [id])
+  client                Client?                @relation(fields: [clientId], references: [id])
+  user                  User                   @relation(fields: [userId], references: [id])
   concepts              QuoteConcept[]
+  financialTransactions FinancialTransaction[]
 
   @@index([clientId], map: "Quote_clientId_fkey")
   @@index([userId], map: "Quote_userId_fkey")
@@ -170,16 +175,64 @@ model EmailLog {
   @@index([quoteId], map: "EmailLog_quoteId_fkey")
 }
 
-model Expense {
-  id          String   @id @default(uuid())
-  description String
-  amount      Float
-  category    String
-  date        DateTime @default(now())
-  notes       String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// ============================================================
+// MÓDULO FINANCIERO — Movimientos contables operativos
+// ============================================================
+
+model FinancialTransaction {
+  id            String    @id @default(uuid())
+
+  // Clasificación principal
+  // GASTO_OPERATIVO | GASTO_PROYECTO | INGRESO | ANTICIPO | LIQUIDACION | AJUSTE
+  type          String
+
+  // Categoría para agrupar y filtrar
+  category      String
+
+  // Montos
+  amount        Float
+  taxAmount     Float     @default(0)   // IVA separado si aplica
+
+  // Descripción y contexto
+  description   String
+  notes         String?   @db.Text
+  date          DateTime
+  paymentMethod String?   // efectivo | transferencia | tarjeta | deposito | otro
+  provider      String?   // Proveedor u origen del movimiento
+
+  // Relaciones opcionales a proyecto o cliente
+  quoteId       String?
+  clientId      String?
+
+  // Auditoría de creación / edición
+  createdById   String?
+  updatedById   String?
+
+  // Soft delete
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+  deletedById   String?
+  deleteReason  String?
+
+  // Estado: ACTIVO | ANULADO
+  status        String    @default("ACTIVO")
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relaciones
+  quote         Quote?    @relation(fields: [quoteId], references: [id])
+  client        Client?   @relation(fields: [clientId], references: [id])
+  createdBy     User?     @relation("TransactionCreatedBy", fields: [createdById], references: [id])
+  deletedBy     User?     @relation("TransactionDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([quoteId])
+  @@index([clientId])
+  @@index([createdById])
+  @@index([deletedById])
+  @@index([type])
+  @@index([date])
+  @@index([isDeleted])
 }
 
 model MachineProcess {

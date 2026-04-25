@@ -22,6 +22,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
   const [project, setProject] = useState("");
   const [description, setDescription] = useState("");
   const [isWholesale, setIsWholesale] = useState(false);
+  const [taxable, setTaxable] = useState(true);
   const [margin, setMargin] = useState(globalCosts.margen_default || 35);
   
   const [concepts, setConcepts] = useState<any[]>([]);
@@ -111,30 +112,28 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
   };
 
 
-  // Totales de la cotización (Ahora el subtotal de conceptos YA incluye IVA)
+  // Totales — respeta el toggle de IVA
   const { subtotal, iva, total, costoReal, utilidad } = useMemo(() => {
     let conceptsSum = 0;
     let real = 0;
-    
     concepts.forEach(c => {
       conceptsSum += (Number(c.calculated?.totalAmount) || 0);
       real += (Number(c.calculated?.realCost) || 0);
     });
 
     const ivaPercentage = Number(globalCosts?.porcentaje_iva) || 16;
-    
-    // Si la suma ya tiene IVA:
+
+    if (!taxable) {
+      return { subtotal: conceptsSum, iva: 0, total: conceptsSum, costoReal: real, utilidad: conceptsSum - real };
+    }
+
     const totalFinal = conceptsSum;
     const subtotalNeto = totalFinal / (1 + (ivaPercentage / 100));
     const tax = totalFinal - subtotalNeto;
-    
-    // La utilidad se calcula sobre la diferencia bruta desglosando el IVA al final
-    // Esto asegura que si el margen es 50%, la utilidad sea igual al costo (netos ambos)
     const util = (totalFinal - real) / (1 + (ivaPercentage / 100));
-
     return { subtotal: subtotalNeto, iva: tax, total: totalFinal, costoReal: real, utilidad: util };
 
-  }, [concepts, globalCosts, isWholesale, margin]); // Agregar margin a dependencias
+  }, [concepts, globalCosts, isWholesale, margin, taxable]);
 
 
 
@@ -145,6 +144,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       <input type="hidden" name="subtotal" value={subtotal} />
       <input type="hidden" name="iva" value={iva} />
       <input type="hidden" name="total" value={total} />
+      <input type="hidden" name="taxable" value={taxable ? "true" : "false"} />
       <input type="hidden" name="realCostTotal" value={costoReal} />
       <input type="hidden" name="estimatedUtility" value={utilidad} />
       <input type="hidden" name="conceptsData" value={JSON.stringify(concepts)} />
@@ -199,6 +199,17 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                 Aplicar precio de Mayoreo
               </label>
               <input type="hidden" name="isWholesale" value={isWholesale ? "true" : "false"} />
+            </div>
+            <div
+              onClick={() => setTaxable(!taxable)}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition-all select-none ${taxable ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+            >
+              <div className={`w-9 h-5 rounded-full transition-all relative ${taxable ? 'bg-blue-500' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${taxable ? 'left-4' : 'left-0.5'}`} />
+              </div>
+              <span className="text-xs font-black uppercase tracking-wide">
+                {taxable ? 'Con IVA (16%)' : 'Sin IVA / Sin Factura'}
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
