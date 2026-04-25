@@ -90,7 +90,11 @@ export default async function FinancePage() {
     orderBy: { date: 'desc' }
   });
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const configs = await prisma.costConfiguration.findMany();
+  const configMap = new Map(configs.map(c => [c.key, c.value]));
+  const fixedMonthlyOverhead = configMap.get("gastos_fijos_mensuales") || 0;
+
+  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0) + fixedMonthlyOverhead;
   const netProfit = totalIncomeNet - totalExpenses - totalProjectCosts;
   const grossProfit = totalIncomeNet - totalProjectCosts;
   const profitMargin = totalIncomeNet > 0 ? (grossProfit / totalIncomeNet) * 100 : 0;
@@ -155,7 +159,7 @@ export default async function FinancePage() {
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gastos Fijos/Var</span>
           </div>
           <p className="text-2xl font-black text-gray-900">-${totalExpenses.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
-          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Salarios, Renta, etc.</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Configuración + Gastos Extras</p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">

@@ -15,6 +15,7 @@ const DEFAULT_CONFIGS = [
   { key: "porcentaje_iva", name: "Porcentaje de IVA", default: 16, unit: "%" },
   { key: "factor_guarda_default", name: "Factor de Guarda Global (Merma)", default: 1.5, unit: "x" },
   { key: "margen_default", name: "Margen de Ganancia Global", default: 50, unit: "%" },
+  { key: "gastos_fijos_mensuales", name: "Gastos Fijos Mensuales (Overhead)", default: 3910, unit: "$" },
   { key: "dias_laborables_mes", name: "Días Laborables al Mes", default: 22, unit: "días" },
   { key: "horas_maquina_dia", name: "Horas Máquina al Día", default: 8, unit: "horas" },
 ];
