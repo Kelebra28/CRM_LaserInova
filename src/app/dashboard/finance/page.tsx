@@ -53,14 +53,32 @@ export default async function FinancePage() {
     return hasBalance || isExplicitlyPending;
   });
 
-  // Calcular ingreso neto (sin IVA) de lo cobrado
-  const totalIncomeNet = quotesPaid.reduce((sum, q) => {
-    const collected = q.realAmountCollected || 0;
-    const taxPortion = q.total > 0 ? (collected * (q.tax / q.total)) : 0;
-    return sum + (collected - taxPortion);
-  }, 0);
-
   const totalCollectedGross = quotesPaid.reduce((sum, q) => sum + (q.realAmountCollected || 0), 0);
+  
+  // 1. Ingresos y Costos Proporcionales (CASH FLOW)
+  // Calculamos cuánto de lo cobrado es ingreso neto y cuánto es costo proporcional
+  let totalIncomeNet = 0;
+  let totalProjectCosts = 0;
+
+  quotesPaid.forEach(q => {
+    const collected = q.realAmountCollected || 0;
+    if (collected === 0) return;
+
+    const total = q.total || 1;
+    const subtotal = q.subtotal || 1;
+    
+    // Proporción de lo cobrado vs total
+    const proportion = collected / total;
+    
+    // Ingreso neto cobrado (sin IVA)
+    const netCollected = subtotal * proportion;
+    totalIncomeNet += netCollected;
+
+    // Costo proporcional a lo cobrado
+    const proportionalCost = (q.realCostTotal || 0) * proportion;
+    totalProjectCosts += proportionalCost;
+  });
+
   const totalTaxCollected = totalCollectedGross - totalIncomeNet;
 
   // 2. Gastos Manuales (Salarios, Renta, etc.)
@@ -73,7 +91,6 @@ export default async function FinancePage() {
   });
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalProjectCosts = quotesPaid.reduce((sum, q) => sum + (q.realCostTotal || 0), 0);
   const netProfit = totalIncomeNet - totalExpenses - totalProjectCosts;
   const profitMargin = totalIncomeNet > 0 ? (netProfit / totalIncomeNet) * 100 : 0;
 
