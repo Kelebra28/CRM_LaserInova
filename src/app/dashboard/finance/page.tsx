@@ -92,7 +92,11 @@ export default async function FinancePage() {
 
   const configs = await prisma.costConfiguration.findMany();
   const configMap = new Map(configs.map(c => [c.key, c.value]));
-  const fixedMonthlyOverhead = configMap.get("gastos_fijos_mensuales") || 0;
+  
+  // Default de $3,910 si no se ha guardado en DB aún
+  const fixedMonthlyOverhead = configMap.has("gastos_fijos_mensuales") 
+    ? configMap.get("gastos_fijos_mensuales")! 
+    : 3910;
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0) + fixedMonthlyOverhead;
   const netProfit = totalIncomeNet - totalExpenses - totalProjectCosts;
