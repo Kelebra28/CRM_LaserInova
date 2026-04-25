@@ -57,11 +57,11 @@ export default async function DashboardPage() {
 
   // Categorize for Task Board (Kanban)
   const columns = [
-    { id: "DRAFT", label: "Borrador", colorClass: "bg-gray-500", dotClass: "bg-gray-500", shadowClass: "shadow-[0_0_8px_rgba(107,114,128,0.5)]" },
     { id: "SENT", label: "Enviada", colorClass: "bg-blue-500", dotClass: "bg-blue-500", shadowClass: "shadow-[0_0_8px_rgba(59,130,246,0.5)]" },
     { id: "APPROVED", label: "Aprobada", colorClass: "bg-purple-500", dotClass: "bg-purple-500", shadowClass: "shadow-[0_0_8px_rgba(168,85,247,0.5)]" },
     { id: "IN_PRODUCTION", label: "En Proceso", colorClass: "bg-orange-500", dotClass: "bg-orange-500", shadowClass: "shadow-[0_0_8px_rgba(249,115,22,0.5)]" },
     { id: "DELIVERED", label: "Entregada", colorClass: "bg-emerald-500", dotClass: "bg-emerald-500", shadowClass: "shadow-[0_0_8px_rgba(16,185,129,0.5)]" },
+    { id: "DRAFT", label: "Borrador", colorClass: "bg-gray-500", dotClass: "bg-gray-500", shadowClass: "shadow-[0_0_8px_rgba(107,114,128,0.5)]" },
     { id: "CANCELLED", label: "Cancelada / Rechazada", colorClass: "bg-red-500", dotClass: "bg-red-500", shadowClass: "shadow-[0_0_8px_rgba(239,68,68,0.5)]" },
   ];
 
@@ -122,7 +122,7 @@ export default async function DashboardPage() {
             </div>
             <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Panel de <span className="text-red-600">Control</span></h1>
           </div>
-          <p className="text-gray-500 font-medium ml-12">Gestiona tus proyectos y monitorea tu rentabilidad en tiempo real.</p>
+          <p className="text-gray-500 font-medium ml-12 italic">Monitoreo de producción y seguimiento de ventas.</p>
         </div>
         
         <div className="flex items-center gap-3 ml-12 md:ml-0">

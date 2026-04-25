@@ -106,7 +106,7 @@ export default async function FinancePage() {
               Panel de <span className="text-red-500">Control</span>
             </h1>
             <p className="text-white/40 font-medium text-sm md:text-base max-w-md italic">
-              "Si no puedes medirlo, no puedes mejorarlo." — Analiza tu rentabilidad real hoy.
+              Balance estratégico de utilidades y control de flujo de caja.
             </p>
           </div>
 
