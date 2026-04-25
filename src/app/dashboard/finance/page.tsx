@@ -8,6 +8,9 @@ import TransactionForm from "@/components/finance/TransactionForm";
 import TransactionTable from "@/components/finance/TransactionTable";
 import PaymentBoard from "@/components/finance/PaymentBoard";
 
+// Prevent static prerender — data is always live
+export const dynamic = 'force-dynamic';
+
 export default async function FinancePage() {
   const now = new Date();
   const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -31,28 +34,38 @@ export default async function FinancePage() {
     // Tabla pendiente de migración en DB — ejecutar manual_finance_migration.sql en Hostinger
   }
 
-  // ── Ingresos desde Cotizaciones (cobros ya registrados en Quote.realAmountCollected)
-  // Esta es la fuente principal de verdad para ingresos hasta que se registren como FinancialTransaction
-  const paidQuotesThisMonth = await prisma.quote.findMany({
-    where: {
-      active: true,
-      updatedAt: { gte: startDate, lte: endDate },
-      realAmountCollected: { gt: 0 },
-    },
-  });
+  // ── Ingresos desde Cotizaciones — select explícito para no tocar columnas nuevas
+  // La columna `taxable` puede no existir aún si el SQL de migración está pendiente
+  let quoteIncome = 0;
+  let quoteIVA = 0;
+  let quoteProjectCosts = 0;
+  try {
+    const paidQuotesThisMonth = await prisma.quote.findMany({
+      where: {
+        active: true,
+        updatedAt: { gte: startDate, lte: endDate },
+        realAmountCollected: { gt: 0 },
+      },
+      select: {
+        total: true,
+        tax: true,
+        realAmountCollected: true,
+        realCostTotal: true,
+      },
+    });
 
-  const quoteIncome    = paidQuotesThisMonth.reduce((s, q) => s + (q.realAmountCollected || 0), 0);
-  const quoteIVA       = paidQuotesThisMonth.reduce((s, q) => {
-    // taxable defaults to true if the column doesn't exist yet on old rows
-    const isTaxable = (q as any).taxable !== false;
-    if (!isTaxable) return s;
-    const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
-    return s + (q.tax * proportion);
-  }, 0);
-  const quoteProjectCosts = paidQuotesThisMonth.reduce((s, q) => {
-    const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
-    return s + ((q.realCostTotal || 0) * proportion);
-  }, 0);
+    quoteIncome = paidQuotesThisMonth.reduce((s, q) => s + (q.realAmountCollected || 0), 0);
+    quoteIVA    = paidQuotesThisMonth.reduce((s, q) => {
+      const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
+      return s + (q.tax * proportion);
+    }, 0);
+    quoteProjectCosts = paidQuotesThisMonth.reduce((s, q) => {
+      const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
+      return s + ((q.realCostTotal || 0) * proportion);
+    }, 0);
+  } catch {
+    // Columna nueva aún no migrada — KPIs desde Quote serán 0 hasta aplicar SQL
+  }
 
   // ── KPIs combinados: Cotizaciones + Transacciones manuales
   const INCOME_TYPES = ["INGRESO", "ANTICIPO", "LIQUIDACION"];
@@ -69,14 +82,25 @@ export default async function FinancePage() {
   const grossProfit       = totalIncome - totalProjectCosts;
   const netProfit         = grossProfit - totalOpExpenses;
 
-  // ── Cobranza (quotes) ────────────────────────────────────
-  const allPendingQuotes = await prisma.quote.findMany({
-    where: { active: true, status: { notIn: ["CANCELLED", "REJECTED", "DRAFT"] } },
-    include: { client: true },
-  });
-  const fullyPaidQuotes = allPendingQuotes.filter(
-    q => (q.total - (q.realAmountCollected || 0)) <= 0.01 && (q.realAmountCollected || 0) > 0
-  );
+  // ── Cobranza (quotes) — select explícito sin columnas nuevas
+  let allPendingQuotes: any[] = [];
+  let fullyPaidQuotes: any[] = [];
+  try {
+    allPendingQuotes = await prisma.quote.findMany({
+      where: { active: true, status: { notIn: ["CANCELLED", "REJECTED", "DRAFT"] } },
+      select: {
+        id: true, folio: true, project: true, status: true, paymentStatus: true,
+        total: true, tax: true, subtotal: true, realAmountCollected: true,
+        realCostTotal: true, sentDate: true, closeDate: true,
+        client: { select: { id: true, name: true, company: true } },
+      },
+    });
+    fullyPaidQuotes = allPendingQuotes.filter(
+      (q: any) => (q.total - (q.realAmountCollected || 0)) <= 0.01 && (q.realAmountCollected || 0) > 0
+    );
+  } catch {
+    // fallback silencioso
+  }
 
   // ── For forms ────────────────────────────────────────────
   const quotes  = await prisma.quote.findMany({

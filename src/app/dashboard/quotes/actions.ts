@@ -43,7 +43,8 @@ export async function createQuoteAction(formData: FormData) {
       description,
       visibleConsiderations,
       status: "CALCULATED",
-      taxable,
+      // taxable: only included once the migration SQL has been applied
+      ...(taxable !== undefined ? { taxable } : {}),
       subtotal,
       tax,
       total,
