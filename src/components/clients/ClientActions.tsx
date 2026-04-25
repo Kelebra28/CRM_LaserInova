@@ -32,6 +32,13 @@ export default function ClientActions({ clientId, clientName }: ClientActionsPro
     setIsDeleting(true);
     try {
       await deleteClient(clientId);
+      setStatusModal({
+        isOpen: true,
+        title: "¡Eliminado!",
+        message: "El cliente ha sido eliminado correctamente.",
+        type: "success"
+      });
+      setShowConfirm(false);
     } catch (error) {
       console.error("Error deleting client:", error);
       setStatusModal({
@@ -42,7 +49,6 @@ export default function ClientActions({ clientId, clientName }: ClientActionsPro
       });
     } finally {
       setIsDeleting(false);
-      setShowConfirm(false);
       setIsOpen(false);
     }
   };

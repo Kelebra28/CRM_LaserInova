@@ -88,8 +88,6 @@ export default function ConfirmationModal({
             disabled={isLoading}
             onClick={() => {
               onConfirm();
-              // No cerramos automáticamente si está cargando, dejamos que el padre decida
-              if (!isLoading) onClose();
             }}
             className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 ${currentVariant.confirmBtn}`}
           >
