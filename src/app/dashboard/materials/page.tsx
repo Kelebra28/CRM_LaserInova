@@ -45,7 +45,9 @@ export default async function MaterialsPage(props: {
         search ? {
           OR: [
             { name: { contains: search } },
-            { slug: { contains: search } },
+            { brand: { contains: search } },
+            { family: { contains: search } },
+            { color: { contains: search } },
           ]
         } : {},
       ]

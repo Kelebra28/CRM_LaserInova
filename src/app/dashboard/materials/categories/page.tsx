@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ArrowLeft, Plus, MoreVertical } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
+import CategoryActions from "@/components/materials/CategoryActions";
 
 export default async function CategoriesPage() {
   const categories = await prisma.materialCategory.findMany({
@@ -52,9 +53,7 @@ export default async function CategoriesPage() {
                       {category._count.materials} materiales
                     </p>
                   </div>
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <MoreVertical className="h-5 w-5" />
-                  </button>
+                  <CategoryActions categoryId={category.id} categoryName={category.name} />
                 </div>
               </li>
             ))

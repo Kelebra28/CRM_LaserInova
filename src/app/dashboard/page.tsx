@@ -1,5 +1,19 @@
 import { prisma } from "@/lib/prisma";
-import { DollarSign, FileText, CheckCircle, TrendingUp, Clock, Package, CheckSquare, AlertCircle, Download, ArrowLeft } from "lucide-react";
+import { 
+  DollarSign, 
+  FileText, 
+  CheckCircle, 
+  TrendingUp, 
+  Clock, 
+  Package, 
+  CheckSquare, 
+  AlertCircle, 
+  Download, 
+  ArrowLeft,
+  LayoutDashboard,
+  Zap,
+  Receipt
+} from "lucide-react";
 import Link from "next/link";
 import KanbanBoard from "@/components/dashboard/KanbanBoard";
 
@@ -41,9 +55,6 @@ export default async function DashboardPage() {
     return sum + (balance > 0 ? balance : 0);
   }, 0);
 
-
-  const totalQuotes = quotesThisMonth.length;
-  
   // Categorize for Task Board (Kanban)
   const columns = [
     { id: "DRAFT", label: "Borrador", colorClass: "bg-gray-500", dotClass: "bg-gray-500", shadowClass: "shadow-[0_0_8px_rgba(107,114,128,0.5)]" },
@@ -54,13 +65,6 @@ export default async function DashboardPage() {
     { id: "CANCELLED", label: "Cancelada / Rechazada", colorClass: "bg-red-500", dotClass: "bg-red-500", shadowClass: "shadow-[0_0_8px_rgba(239,68,68,0.5)]" },
   ];
 
-  const getQuotesByStatus = (statusId: string) => {
-    if (statusId === "CANCELLED") {
-      return quotesThisMonth.filter(q => q.status === "CANCELLED" || q.status === "REJECTED");
-    }
-    return quotesThisMonth.filter(q => q.status === statusId);
-  };
-
   const activeQuotes = quotesThisMonth.filter(q => q.status !== "CANCELLED" && q.status !== "REJECTED");
   
   const salesWithAnticipo = activeQuotes.filter(q => 
@@ -70,108 +74,170 @@ export default async function DashboardPage() {
 
   const totalAmountWithAnticipo = salesWithAnticipo.reduce((sum, q) => sum + q.total, 0);
   
-  // Traer gastos manuales del mes para el Dashboard
-  const expenses = await prisma.expense.findMany({
-    where: {
-      active: true,
-      date: { gte: startDate, lte: endDate },
-    }
+  // Logic Synchronization with Finance Page
+  const quotesPaid = quotesThisMonth.filter(q => (q.realAmountCollected || 0) > 0 || ["PAID", "PARTIAL"].includes(q.paymentStatus));
+  let totalIncomeNet = 0;
+  let totalProjectCostsProportional = 0;
+
+  quotesPaid.forEach(q => {
+    const collected = q.realAmountCollected || 0;
+    if (collected === 0) return;
+    const total = q.total || 1;
+    const subtotal = q.subtotal || 1;
+    const proportion = collected / total;
+    totalIncomeNet += subtotal * proportion;
+    totalProjectCostsProportional += (q.realCostTotal || 0) * proportion;
   });
 
+  const totalTaxCollected = realCollectedTotalTax(quotesThisMonth);
+  function realCollectedTotalTax(quotes: any[]) {
+    return quotes.reduce((sum, q) => {
+      const collected = q.realAmountCollected || 0;
+      const taxPortion = q.total > 0 ? (collected * (q.tax / q.total)) : 0;
+      return sum + taxPortion;
+    }, 0);
+  }
+
+  const expenses = await prisma.expense.findMany({
+    where: { active: true, date: { gte: startDate, lte: endDate } }
+  });
+
+  const configs = await prisma.costConfiguration.findMany();
+  const configMap = new Map(configs.map(c => [c.key, c.value]));
+  const fixedMonthlyOverhead = configMap.get("gastos_fijos_mensuales") || 3910;
+
   const totalManualExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalProjectCosts = activeQuotes.reduce((sum, q) => sum + (q.realCostTotal || 0), 0);
-  
-  // Gasto Operativo Total = Costos de proyectos + Gastos manuales
-  const totalOperationCost = totalProjectCosts + totalManualExpenses;
-
+  const totalOperationCost = totalProjectCostsProportional + totalManualExpenses + fixedMonthlyOverhead;
+  const totalUtilityReal = totalIncomeNet - (totalProjectCostsProportional + totalManualExpenses + fixedMonthlyOverhead);
   const totalTaxQuoted = activeQuotes.reduce((sum, q) => sum + q.tax, 0);
-  const realCollected = quotesThisMonth.reduce((sum, q) => sum + (q.realAmountCollected || 0), 0);
-  
-  // Calcular IVA recolectado de forma proporcional
-  const totalTaxCollected = quotesThisMonth.reduce((sum, q) => {
-    const collected = q.realAmountCollected || 0;
-    const taxPortion = q.total > 0 ? (collected * (q.tax / q.total)) : 0;
-    return sum + taxPortion;
-  }, 0);
-
-  const totalCollectedNet = realCollected - totalTaxCollected;
-  
-  // Utilidad Real = Dinero que entró (sin IVA) - Costos de Proyectos - Gastos Manuales
-  const totalUtilityReal = totalCollectedNet - totalProjectCosts - totalManualExpenses;
-
-  const stats = [
-    { 
-      name: "Ventas Totales (C/IVA)", 
-      value: `$${totalAmountWithAnticipo.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
-      subValue: `Por cobrar: $${totalGlobalPending.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
-      icon: DollarSign,
-      color: "text-gray-600",
-      bgColor: "bg-gray-50"
-    },
-    { 
-      name: "IVA por Pagar (Total)", 
-      value: `$${totalTaxQuoted.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
-      subValue: `Cobrado: $${totalTaxCollected.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
-      icon: AlertCircle,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50"
-    },
-    { 
-      name: "Gastos Operativos", 
-      value: `$${totalOperationCost.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
-      subValue: "Materiales + Gastos Fijos",
-      icon: Package,
-      color: "text-red-600",
-      bgColor: "bg-red-50"
-    },
-    { 
-      name: "Utilidad Real (Neta)", 
-      value: `$${totalUtilityReal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
-      subValue: "Libre de Gastos e IVA",
-      icon: TrendingUp,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50"
-    },
-  ];
-
 
   return (
-    <div className="space-y-8 pb-10">
-      <div className="flex items-center justify-between">
+    <div className="space-y-10 pb-20 animate-in fade-in duration-1000">
+      {/* Premium Dashboard Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Panel de Control</h1>
-          <p className="text-sm text-gray-500">Resumen operativo y financiero de Laser Inova</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-red-600 rounded-xl text-white shadow-lg shadow-red-600/20">
+               <LayoutDashboard className="h-5 w-5" />
+            </div>
+            <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Panel de <span className="text-red-600">Control</span></h1>
+          </div>
+          <p className="text-gray-500 font-medium ml-12">Gestiona tus proyectos y monitorea tu rentabilidad en tiempo real.</p>
         </div>
-        <Link 
-          href="/dashboard/quotes/new"
-          className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition-colors shadow-sm"
-        >
-          Nueva Cotización
-        </Link>
+        
+        <div className="flex items-center gap-3 ml-12 md:ml-0">
+          <Link 
+            href="/dashboard/quotes/new"
+            className="group relative flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-black transition-all shadow-xl hover:shadow-gray-900/20 active:scale-95"
+          >
+            <PlusIcon className="h-5 w-5 text-red-500 group-hover:rotate-90 transition-transform duration-300" />
+            Nueva Cotización
+          </Link>
+        </div>
       </div>
       
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-        {stats.map((stat) => (
-          <div key={stat.name} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-            <div className="flex items-center">
-              <div className={`p-3 rounded-xl ${stat.bgColor}`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} aria-hidden="true" />
-              </div>
-              <div className="ml-4">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.name}</p>
-                <p className="text-lg font-black text-gray-900">{stat.value}</p>
-                {stat.subValue && (
-                  <p className="text-[9px] font-bold text-gray-400 mt-1">{stat.subValue}</p>
-                )}
-              </div>
-            </div>
+      {/* Stats Grid - Redesigned for Maximum Impact */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Ventas Totales */}
+        <div className="relative bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+            <DollarSign className="h-24 w-24" />
           </div>
-        ))}
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Ventas Totales (C/IVA)</p>
+          <h3 className="text-3xl font-black text-gray-900 leading-none mb-2">
+            ${totalAmountWithAnticipo.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+          </h3>
+          <div className="flex items-center gap-2 mt-4 text-[10px] font-bold">
+            <span className="px-2 py-1 rounded-full bg-orange-50 text-orange-600 border border-orange-100">
+               Por cobrar: ${totalGlobalPending.toLocaleString('es-MX')}
+            </span>
+          </div>
+        </div>
+
+        {/* IVA */}
+        <div className="relative bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+            <Receipt className="h-24 w-24" />
+          </div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">IVA por Pagar (Total)</p>
+          <h3 className="text-3xl font-black text-orange-600 leading-none mb-2">
+            ${totalTaxQuoted.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+          </h3>
+          <div className="flex items-center gap-2 mt-4 text-[10px] font-bold">
+            <span className="px-2 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+               Cobrado: ${totalTaxCollected.toLocaleString('es-MX')}
+            </span>
+          </div>
+        </div>
+
+        {/* Gastos */}
+        <div className="relative bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+            <Package className="h-24 w-24" />
+          </div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Gastos Operativos</p>
+          <h3 className="text-3xl font-black text-red-600 leading-none mb-2">
+            -${totalOperationCost.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+          </h3>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-2">Materiales + Gastos Fijos</p>
+        </div>
+
+        {/* Utilidad Neta */}
+        <div className={`relative p-6 rounded-[2.5rem] border shadow-2xl overflow-hidden group transition-all duration-500 ${totalUtilityReal >= 0 ? 'bg-gray-900 border-white/5 shadow-gray-900/20' : 'bg-red-600 border-white/10 shadow-red-600/20'}`}>
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-white">
+            <TrendingUp className="h-24 w-24" />
+          </div>
+          <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+            <Zap className={`h-3 w-3 ${totalUtilityReal >= 0 ? 'text-emerald-400 fill-emerald-400' : 'text-white fill-white'}`} />
+            Utilidad Real (Neta)
+          </p>
+          <h3 className={`text-3xl font-black leading-none mb-2 ${totalUtilityReal >= 0 ? 'text-emerald-400' : 'text-white'}`}>
+            ${totalUtilityReal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+          </h3>
+          <p className="text-[9px] font-bold text-white/40 uppercase mt-2">Libre de Gastos e IVA</p>
+        </div>
       </div>
 
-      {/* Kanban Board Section */}
-      <KanbanBoard initialQuotes={quotesThisMonth} columns={columns} />
+      {/* Kanban Board Section - Enhanced Container */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between px-4">
+           <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.3em] flex items-center gap-3">
+             <div className="p-2 bg-gray-100 rounded-xl text-gray-900">
+                <Clock className="h-4 w-4" />
+             </div>
+             Flujo de Trabajo (Mes Actual)
+           </h3>
+           <div className="flex items-center gap-4 text-[10px] font-black text-gray-400 uppercase">
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {quotesThisMonth.length} Cotizaciones
+              </span>
+           </div>
+        </div>
+        
+        <div className="bg-white/50 backdrop-blur-sm rounded-[3rem] border border-gray-100 shadow-2xl p-2 min-h-[600px]">
+          <KanbanBoard initialQuotes={quotesThisMonth} columns={columns} />
+        </div>
+      </div>
     </div>
+  );
+}
+
+function PlusIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </svg>
   );
 }

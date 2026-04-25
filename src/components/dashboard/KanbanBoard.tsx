@@ -95,8 +95,8 @@ export default function KanbanBoard({
   };
 
   return (
-    <div className="pb-4">
-      <div className="flex flex-col md:flex-row gap-6">
+    <div className="pb-4 overflow-x-auto">
+      <div className="flex gap-6 pb-6 min-w-max px-2">
         {columns.map(col => {
           const columnQuotes = getQuotesByStatus(col.id);
           const getDropZoneColor = (statusId: string) => {
@@ -117,10 +117,10 @@ export default function KanbanBoard({
               onDragOver={(e) => onDragOver(e, col.id)}
               onDragLeave={onDragLeave}
               onDrop={(e) => onDrop(e, col.id)}
-              className={`flex flex-col h-full rounded-3xl p-4 border transition-all duration-200 w-full md:w-72 md:flex-shrink-0 ${
+              className={`flex flex-col h-full rounded-[2rem] p-4 border transition-all duration-200 w-[300px] shrink-0 ${
                 dragOverCol === col.id 
                   ? `${getDropZoneColor(col.id)} shadow-inner scale-[1.01]` 
-                  : 'bg-gray-50/50 border-gray-100/50'
+                  : 'bg-gray-50/30 border-gray-100/50'
               }`}
             >
 
