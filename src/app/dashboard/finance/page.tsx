@@ -75,6 +75,7 @@ export default async function FinancePage() {
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const totalProjectCosts = quotesPaid.reduce((sum, q) => sum + (q.realCostTotal || 0), 0);
   const netProfit = totalIncomeNet - totalExpenses - totalProjectCosts;
+  const profitMargin = totalIncomeNet > 0 ? (netProfit / totalIncomeNet) * 100 : 0;
 
   // Categorizar para el Tablero de Cobranza
   const unpaidQuotes = allPendingQuotes.filter(q => (q.realAmountCollected || 0) === 0);
@@ -158,6 +159,17 @@ export default async function FinancePage() {
           </div>
           <p className="text-2xl font-black">${netProfit.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
           <p className="text-[9px] font-bold text-white/40 uppercase mt-1">Balance después de todo</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-t-4 border-t-emerald-500">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Margen de Ganancia</span>
+          </div>
+          <p className="text-2xl font-black text-gray-900">{profitMargin.toFixed(1)}%</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Eficiencia Operativa</p>
         </div>
       </div>
 
