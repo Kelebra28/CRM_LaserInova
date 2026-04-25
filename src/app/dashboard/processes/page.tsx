@@ -7,6 +7,17 @@ export default async function ProcessesPage() {
     orderBy: { createdAt: "desc" }
   });
 
+  const materials = await prisma.material.findMany({
+    where: { active: true },
+    select: { 
+      categoryId: true,
+      category: { select: { name: true } },
+      thickness: true 
+    },
+    distinct: ['categoryId', 'thickness'],
+    orderBy: { category: { name: 'asc' } }
+  });
+
   return (
     <div className="space-y-6 pb-10">
       <div className="flex items-center justify-between">
@@ -22,7 +33,7 @@ export default async function ProcessesPage() {
       </div>
 
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-        <ProcessTabs initialProcesses={processes} />
+        <ProcessTabs initialProcesses={processes} materials={materials} />
       </div>
     </div>
   );

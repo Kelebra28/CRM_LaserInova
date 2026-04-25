@@ -69,8 +69,8 @@ export async function createQuoteAction(formData: FormData) {
       },
       snapshot: {
         create: {
-          globalValues: JSON.parse(globalCostsSnapshotStr || "{}"),
-          factors: {}, // Aquí se guardarían los custom margins de cada concepto
+          globalValues: globalCostsSnapshotStr || "{}",
+          factors: "{}", // Aquí se guardarían los custom margins de cada concepto
         }
       }
     },
@@ -246,8 +246,8 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string) {
       },
       snapshot: {
         create: {
-          globalValues: {},
-          factors: {},
+          globalValues: "{}",
+          factors: "{}",
         }
       }
     },

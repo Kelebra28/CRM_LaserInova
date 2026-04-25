@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Trash2, Settings2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Trash2, Settings2, Search } from "lucide-react";
 import { createProcessAction, deleteProcessAction } from "./actions";
 import SubmitButton from "@/components/ui/SubmitButton";
+import MaterialRecipeSelector from "@/components/processes/MaterialRecipeSelector";
+import SearchInput from "@/components/ui/SearchInput";
 
 const MACHINES = [
   { id: "FIBRA", name: "Fibra Óptica" },
@@ -12,11 +14,35 @@ const MACHINES = [
   { id: "XTOOL", name: "xTool" },
 ];
 
-export default function ProcessTabs({ initialProcesses }: { initialProcesses: any[] }) {
+export default function ProcessTabs({ 
+  initialProcesses, 
+  materials 
+}: { 
+  initialProcesses: any[],
+  materials: { category: { name: string }, thickness: number | null }[]
+}) {
   const [activeTab, setActiveTab] = useState("FIBRA");
   const [isAdding, setIsAdding] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredProcesses = initialProcesses.filter(p => p.machineName === activeTab);
+  // Group materials by Category Name + Thickness for the select
+  const materialOptions = useMemo(() => {
+    const optionsMap = new Map();
+    materials.forEach(m => {
+      const label = `${m.category.name}${m.thickness ? ` ${m.thickness}mm` : ""}`;
+      if (!optionsMap.has(label)) {
+        optionsMap.set(label, { label, category: m.category.name });
+      }
+    });
+    return Array.from(optionsMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [materials]);
+
+  const filteredProcesses = useMemo(() => {
+    return initialProcesses
+      .filter(p => p.machineName === activeTab)
+      .filter(p => p.material.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [initialProcesses, activeTab, searchQuery]);
 
   return (
     <div>
@@ -28,6 +54,7 @@ export default function ProcessTabs({ initialProcesses }: { initialProcesses: an
             onClick={() => {
               setActiveTab(machine.id);
               setIsAdding(false);
+              setSearchQuery("");
             }}
             className={`px-4 py-3 text-xs font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors ${
               activeTab === machine.id
@@ -40,24 +67,39 @@ export default function ProcessTabs({ initialProcesses }: { initialProcesses: an
         ))}
       </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">
-          Recetas de {MACHINES.find(m => m.id === activeTab)?.name}
-        </h2>
-        <button
-          onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors shadow-sm"
-        >
-          {isAdding ? "Cancelar" : <><Plus className="h-4 w-4" /> Nueva Receta</>}
-        </button>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">
+            Recetas de {MACHINES.find(m => m.id === activeTab)?.name}
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+            {filteredProcesses.length} RECETAS ENCONTRADAS
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <SearchInput 
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Buscar por material..."
+            />
+          </div>
+          <button
+            onClick={() => setIsAdding(!isAdding)}
+            className="flex items-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 active:scale-95 shrink-0"
+          >
+            {isAdding ? "Cancelar" : <><Plus className="h-4 w-4" /> Nueva Receta</>}
+          </button>
+        </div>
       </div>
 
       {isAdding && (
-        <div className="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+        <div className="mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-100 animate-in slide-in-from-top-4 duration-300">
           <form action={async (formData) => {
             const data = {
               machineName: activeTab,
-              material: formData.get("material") as string,
+              material: selectedMaterial,
               engravePower: formData.get("engravePower") ? Number(formData.get("engravePower")) : undefined,
               engraveSpeed: formData.get("engraveSpeed") ? Number(formData.get("engraveSpeed")) : undefined,
               engraveFrequency: formData.get("engraveFrequency") ? Number(formData.get("engraveFrequency")) : undefined,
@@ -68,54 +110,40 @@ export default function ProcessTabs({ initialProcesses }: { initialProcesses: an
             };
             await createProcessAction(data);
             setIsAdding(false);
+            setSelectedMaterial("");
           }} className="space-y-4">
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="col-span-full md:col-span-2">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Material / Grosor</label>
-                <input type="text" name="material" required placeholder="Ej: Acero Inox, Acrílico 3mm..." className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600" />
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Material Base (Grosor)</label>
+                <MaterialRecipeSelector 
+                  options={materialOptions}
+                  value={selectedMaterial}
+                  onChange={setSelectedMaterial}
+                />
+                <input type="hidden" name="material" value={selectedMaterial} required />
               </div>
 
-              {/* CO2 Fields */}
-              {activeTab === "CO2" && (
-                <>
-                  <div className="col-span-full mt-2"><span className="text-[10px] font-black text-red-600 uppercase tracking-widest bg-red-50 px-2 py-1 rounded">Parámetros de Corte</span></div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Vel. Corte (mm/s)</label>
-                    <input type="number" step="0.1" name="cutSpeed" className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pot. Corte (%)</label>
-                    <input type="number" step="0.1" name="cutPower" className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600" />
-                  </div>
-                </>
-              )}
+              <div className="col-span-full mt-2"><span className="text-[10px] font-black text-red-600 uppercase tracking-widest bg-red-50 px-2 py-1 rounded">Parámetros de Corte</span></div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Vel. Corte (mm/s)</label>
+                <input type="number" step="0.1" name="cutSpeed" className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pot. Corte (%)</label>
+                <input type="number" step="0.1" name="cutPower" className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all" />
+              </div>
 
-              {/* Engrave Fields (All Machines) */}
               <div className="col-span-full mt-2"><span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded">Parámetros de Grabado</span></div>
               
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Velocidad (mm/s)</label>
-                <input type="number" step="0.1" name="engraveSpeed" required className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600" />
+                <input type="number" step="0.1" name="engraveSpeed" required className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all" />
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Potencia (%)</label>
-                <input type="number" step="0.1" name="engravePower" required className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600" />
+                <input type="number" step="0.1" name="engravePower" required className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all" />
               </div>
-
-              {(activeTab === "FIBRA" || activeTab === "UV" || activeTab === "XTOOL") && (
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Frecuencia (kHz)</label>
-                  <input type="number" step="0.1" name="engraveFrequency" className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600" />
-                </div>
-              )}
-
-              {(activeTab === "UV" || activeTab === "XTOOL") && (
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tipo de Onda</label>
-                  <input type="text" name="waveType" className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600" />
-                </div>
-              )}
 
               <div className="col-span-full">
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Notas / Observaciones</label>
@@ -124,7 +152,7 @@ export default function ProcessTabs({ initialProcesses }: { initialProcesses: an
             </div>
 
             <div className="flex justify-end pt-2">
-              <SubmitButton className="bg-red-600 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-red-700">
+              <SubmitButton className="bg-red-600 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-600/20 hover:bg-red-700 transition-all active:scale-95">
                 Guardar Receta
               </SubmitButton>
             </div>
@@ -138,66 +166,54 @@ export default function ProcessTabs({ initialProcesses }: { initialProcesses: an
           <thead>
             <tr className="bg-gray-50/50">
               <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest rounded-l-xl">Material</th>
-              {activeTab === "CO2" && (
-                <th className="px-6 py-4 text-[10px] font-black text-red-400 uppercase tracking-widest">Corte (Vel / Pot)</th>
-              )}
-              <th className="px-6 py-4 text-[10px] font-black text-blue-400 uppercase tracking-widest">Grabado (Vel / Pot)</th>
-              {(activeTab === "FIBRA" || activeTab === "UV" || activeTab === "XTOOL") && (
-                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Frecuencia</th>
-              )}
-              {(activeTab === "UV" || activeTab === "XTOOL") && (
-                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Onda</th>
-              )}
+              <th className="px-6 py-4 text-[10px] font-black text-red-400 uppercase tracking-widest text-center">Corte (Vel / Pot)</th>
+              <th className="px-6 py-4 text-[10px] font-black text-blue-400 uppercase tracking-widest text-center">Grabado (Vel / Pot)</th>
               <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Notas</th>
-              <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest rounded-r-xl"></th>
+              <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest rounded-r-xl text-right">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {filteredProcesses.map((process) => (
               <tr key={process.id} className="hover:bg-gray-50/50 transition-colors group">
-                <td className="px-6 py-4 text-sm font-black text-gray-900">{process.material}</td>
-                
-                {activeTab === "CO2" && (
-                  <td className="px-6 py-4">
-                    <span className="text-xs font-bold text-gray-600 bg-red-50/50 px-2 py-1 rounded">
-                      {process.cutSpeed || '-'} mm/s / {process.cutPower || '-'} %
-                    </span>
-                  </td>
-                )}
-                
                 <td className="px-6 py-4">
-                  <span className="text-xs font-bold text-gray-600 bg-blue-50/50 px-2 py-1 rounded">
-                    {process.engraveSpeed || '-'} mm/s / {process.engravePower || '-'} %
-                  </span>
+                  <span className="text-sm font-black text-gray-900 group-hover:text-red-600 transition-colors">{process.material}</span>
                 </td>
                 
-                {(activeTab === "FIBRA" || activeTab === "UV" || activeTab === "XTOOL") && (
-                  <td className="px-6 py-4 text-xs font-bold text-gray-600">{process.engraveFrequency ? `${process.engraveFrequency} kHz` : '-'}</td>
-                )}
+                <td className="px-6 py-4">
+                  <div className="flex flex-col items-center">
+                    <span className="text-sm font-black text-gray-900 bg-red-50/50 px-3 py-1.5 rounded-xl border border-red-100/50 w-fit">
+                      {process.cutSpeed || '0'}<span className="text-[10px] text-red-400 ml-0.5">ms</span> / {process.cutPower || '0'}<span className="text-[10px] text-red-400">%</span>
+                    </span>
+                  </div>
+                </td>
                 
-                {(activeTab === "UV" || activeTab === "XTOOL") && (
-                  <td className="px-6 py-4 text-xs font-bold text-gray-600">{process.waveType || '-'}</td>
-                )}
+                <td className="px-6 py-4">
+                  <div className="flex flex-col items-center">
+                    <span className="text-sm font-black text-gray-900 bg-blue-50/50 px-3 py-1.5 rounded-xl border border-blue-100/50 w-fit">
+                      {process.engraveSpeed || '0'}<span className="text-[10px] text-blue-400 ml-0.5">ms</span> / {process.engravePower || '0'}<span className="text-[10px] text-blue-400">%</span>
+                    </span>
+                  </div>
+                </td>
                 
-                <td className="px-6 py-4 text-[11px] font-medium text-gray-500 max-w-xs truncate" title={process.notes}>
+                <td className="px-6 py-4 text-[11px] font-medium text-gray-400 max-w-xs truncate" title={process.notes}>
                   {process.notes || '-'}
                 </td>
                 
                 <td className="px-6 py-4 text-right">
                   <form action={deleteProcessAction}>
                     <input type="hidden" name="id" value={process.id} />
-                    <SubmitButton variant="danger" className="p-2 text-gray-300 hover:text-red-600 transition-colors">
-                      <Trash2 className="h-4 w-4" />
-                    </SubmitButton>
+                    <button className="p-2.5 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all active:scale-90 group/del">
+                      <Trash2 className="h-4 w-4 transition-transform group-hover/del:scale-110" />
+                    </button>
                   </form>
                 </td>
               </tr>
             ))}
             {filteredProcesses.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-20 text-center">
-                  <Settings2 className="h-6 w-6 text-gray-200 mx-auto mb-3" />
-                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">No hay recetas configuradas para esta máquina</p>
+                <td colSpan={5} className="px-6 py-24 text-center">
+                  <Settings2 className="h-8 w-8 text-gray-200 mx-auto mb-4 animate-spin-slow" />
+                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">No se encontraron recetas</p>
                 </td>
               </tr>
             )}
