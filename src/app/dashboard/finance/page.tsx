@@ -92,7 +92,9 @@ export default async function FinancePage() {
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const netProfit = totalIncomeNet - totalExpenses - totalProjectCosts;
-  const profitMargin = totalIncomeNet > 0 ? (netProfit / totalIncomeNet) * 100 : 0;
+  const grossProfit = totalIncomeNet - totalProjectCosts;
+  const profitMargin = totalIncomeNet > 0 ? (grossProfit / totalIncomeNet) * 100 : 0;
+  const netMargin = totalIncomeNet > 0 ? (netProfit / totalIncomeNet) * 100 : 0;
 
   // Categorizar para el Tablero de Cobranza
   const unpaidQuotes = allPendingQuotes.filter(q => (q.realAmountCollected || 0) === 0);
@@ -111,7 +113,7 @@ export default async function FinancePage() {
       </div>
 
       {/* Stats Board */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -194,10 +196,21 @@ export default async function FinancePage() {
             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
               <TrendingUp className="h-4 w-4" />
             </div>
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Margen de Ganancia</span>
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Margen Bruto (Proyectos)</span>
           </div>
           <p className="text-2xl font-black text-gray-900">{profitMargin.toFixed(1)}%</p>
-          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Eficiencia Operativa</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Rentabilidad por Trabajo</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-t-4 border-t-blue-500">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Margen Neto Real</span>
+          </div>
+          <p className="text-2xl font-black text-gray-900">{netMargin.toFixed(1)}%</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Después de Gastos Fijos</p>
         </div>
       </div>
 
