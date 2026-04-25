@@ -1,4 +1,8 @@
-import SearchInput from "@/components/ui/SearchInput";
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import ClientActions from "@/components/clients/ClientActions";
+import SearchInput from "../../../components/ui/SearchInput";
 
 export default async function ClientsPage({
   searchParams,

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { QuoteStatus } from "@/types/prisma";
 
 const statusColors: Record<string, string> = {
@@ -25,7 +25,7 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "Cancelada",
 };
 
-import SearchInput from "@/components/ui/SearchInput";
+import SearchInput from "../../../components/ui/SearchInput";
 
 export default async function QuotesPage({
   searchParams,

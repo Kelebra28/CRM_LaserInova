@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { MaterialRow } from "@/components/materials/MaterialRow";
-import { Plus, Search, Tag, Edit, Trash2 } from "lucide-react";
+import { Plus, Tag, Edit, Trash2 } from "lucide-react";
 import { deleteMaterial } from "./actions";
+import SearchInput from "../../../components/ui/SearchInput";
 
 const categoryColors = [
   "bg-blue-100 text-blue-800",
