@@ -26,6 +26,8 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "Cancelada",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function QuotesPage({
   searchParams,
 }: {

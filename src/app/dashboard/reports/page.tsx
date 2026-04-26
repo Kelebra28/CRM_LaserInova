@@ -24,6 +24,8 @@ const statusColors: Record<string, string> = {
   CANCELLED: "bg-black text-white",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReportsPage(props: { searchParams: Promise<{ month?: string; year?: string }> }) {
   const searchParams = await props.searchParams;
   

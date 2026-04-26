@@ -17,6 +17,8 @@ import {
 import Link from "next/link";
 import KanbanBoard from "@/components/dashboard/KanbanBoard";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
