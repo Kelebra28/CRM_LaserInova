@@ -7,7 +7,7 @@ import {
   CreditCard, Building, FileText, CalendarDays
 } from "lucide-react";
 import { createTransaction } from "@/app/dashboard/finance/actions";
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from "@/app/dashboard/finance/actions";
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from "@/app/dashboard/finance/constants";
 
 const TYPES = [
   {

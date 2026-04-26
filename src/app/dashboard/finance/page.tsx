@@ -16,56 +16,38 @@ export default async function FinancePage() {
   const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
   const endDate   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  // Transacciones del mes — resiliente si la tabla aún no existe en DB
-  let transactions: any[] = [];
-  try {
-    transactions = await prisma.financialTransaction.findMany({
-      where: {
-        isDeleted: false,
-        date: { gte: startDate, lte: endDate },
-      },
-      include: {
-        quote:  { select: { folio: true, project: true } },
-        client: { select: { name: true } },
-      },
-      orderBy: { date: "desc" },
-    });
-  } catch {
-    // Tabla pendiente de migración en DB — ejecutar manual_finance_migration.sql en Hostinger
-  }
+  // ── FinancialTransaction KPIs ────────────────────────────
+  const transactions = await prisma.financialTransaction.findMany({
+    where: {
+      isDeleted: false,
+      date: { gte: startDate, lte: endDate },
+    },
+    include: {
+      quote:  { select: { folio: true, project: true } },
+      client: { select: { name: true } },
+    },
+    orderBy: { date: "desc" },
+  });
 
-  // ── Ingresos desde Cotizaciones — select explícito para no tocar columnas nuevas
-  // La columna `taxable` puede no existir aún si el SQL de migración está pendiente
-  let quoteIncome = 0;
-  let quoteIVA = 0;
-  let quoteProjectCosts = 0;
-  try {
-    const paidQuotesThisMonth = await prisma.quote.findMany({
-      where: {
-        active: true,
-        updatedAt: { gte: startDate, lte: endDate },
-        realAmountCollected: { gt: 0 },
-      },
-      select: {
-        total: true,
-        tax: true,
-        realAmountCollected: true,
-        realCostTotal: true,
-      },
-    });
+  // ── Ingresos desde Cotizaciones (cobros ya registrados en Quote.realAmountCollected)
+  const paidQuotesThisMonth = await prisma.quote.findMany({
+    where: {
+      active: true,
+      updatedAt: { gte: startDate, lte: endDate },
+      realAmountCollected: { gt: 0 },
+    },
+  });
 
-    quoteIncome = paidQuotesThisMonth.reduce((s, q) => s + (q.realAmountCollected || 0), 0);
-    quoteIVA    = paidQuotesThisMonth.reduce((s, q) => {
-      const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
-      return s + (q.tax * proportion);
-    }, 0);
-    quoteProjectCosts = paidQuotesThisMonth.reduce((s, q) => {
-      const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
-      return s + ((q.realCostTotal || 0) * proportion);
-    }, 0);
-  } catch {
-    // Columna nueva aún no migrada — KPIs desde Quote serán 0 hasta aplicar SQL
-  }
+  const quoteIncome    = paidQuotesThisMonth.reduce((s, q) => s + (q.realAmountCollected || 0), 0);
+  const quoteIVA       = paidQuotesThisMonth.reduce((s, q) => {
+    if (!q.taxable) return s;
+    const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
+    return s + (q.tax * proportion);
+  }, 0);
+  const quoteProjectCosts = paidQuotesThisMonth.reduce((s, q) => {
+    const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
+    return s + ((q.realCostTotal || 0) * proportion);
+  }, 0);
 
   // ── KPIs combinados: Cotizaciones + Transacciones manuales
   const INCOME_TYPES = ["INGRESO", "ANTICIPO", "LIQUIDACION"];
@@ -82,25 +64,14 @@ export default async function FinancePage() {
   const grossProfit       = totalIncome - totalProjectCosts;
   const netProfit         = grossProfit - totalOpExpenses;
 
-  // ── Cobranza (quotes) — select explícito sin columnas nuevas
-  let allPendingQuotes: any[] = [];
-  let fullyPaidQuotes: any[] = [];
-  try {
-    allPendingQuotes = await prisma.quote.findMany({
-      where: { active: true, status: { notIn: ["CANCELLED", "REJECTED", "DRAFT"] } },
-      select: {
-        id: true, folio: true, project: true, status: true, paymentStatus: true,
-        total: true, tax: true, subtotal: true, realAmountCollected: true,
-        realCostTotal: true, sentDate: true, closeDate: true,
-        client: { select: { id: true, name: true, company: true } },
-      },
-    });
-    fullyPaidQuotes = allPendingQuotes.filter(
-      (q: any) => (q.total - (q.realAmountCollected || 0)) <= 0.01 && (q.realAmountCollected || 0) > 0
-    );
-  } catch {
-    // fallback silencioso
-  }
+  // ── Cobranza (quotes) ────────────────────────────────────
+  const allPendingQuotes = await prisma.quote.findMany({
+    where: { active: true, status: { notIn: ["CANCELLED", "REJECTED", "DRAFT"] } },
+    include: { client: true },
+  });
+  const fullyPaidQuotes = allPendingQuotes.filter(
+    q => (q.total - (q.realAmountCollected || 0)) <= 0.01 && (q.realAmountCollected || 0) > 0
+  );
 
   // ── For forms ────────────────────────────────────────────
   const quotes  = await prisma.quote.findMany({
@@ -116,6 +87,25 @@ export default async function FinancePage() {
   });
 
   const monthName = now.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+
+  // ── Combined Transactions for Table ───────────────────────
+  const virtualTransactions = paidQuotesThisMonth.map(q => ({
+    id: `virtual-${q.id}`,
+    type: "INGRESO",
+    category: "Cobro de Proyecto",
+    amount: q.realAmountCollected || 0,
+    taxAmount: q.taxable ? (q.total > 0 ? (q.realAmountCollected || 0) * (q.tax / q.total) : 0) : 0,
+    description: `Pago registrado: ${q.project}`,
+    date: q.updatedAt,
+    status: "ACTIVO",
+    isVirtual: true,
+    quote: { folio: q.folio, project: q.project },
+    client: null,
+  }));
+
+  const combinedTransactions = [...transactions, ...virtualTransactions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   return (
     <div className="space-y-8 max-w-7xl pb-20 animate-in fade-in duration-500">
@@ -271,11 +261,11 @@ export default async function FinancePage() {
             Movimientos del Mes
           </h3>
           <div className="text-[10px] font-black text-gray-400 uppercase bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-            {transactions.length} registros
+            {combinedTransactions.length} registros
           </div>
         </div>
         <TransactionTable 
-          transactions={transactions as any} 
+          transactions={combinedTransactions as any} 
           quotes={quotes} 
           clients={clients} 
         />

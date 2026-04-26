@@ -13,6 +13,7 @@ export async function createQuoteAction(formData: FormData) {
   const subtotal = parseFloat(formData.get("subtotal") as string) || 0;
   const tax = parseFloat(formData.get("iva") as string) || 0;
   const total = parseFloat(formData.get("total") as string) || 0;
+  const taxable = formData.get("taxable") !== "false";
   const realCostTotal = parseFloat(formData.get("realCostTotal") as string) || 0;
   const estimatedUtility = parseFloat(formData.get("estimatedUtility") as string) || 0;
 
@@ -42,6 +43,7 @@ export async function createQuoteAction(formData: FormData) {
       description,
       visibleConsiderations,
       status: "CALCULATED",
+      taxable,
       subtotal,
       tax,
       total,

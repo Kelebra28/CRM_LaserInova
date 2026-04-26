@@ -21,6 +21,7 @@ type Transaction = {
   paymentMethod?: string | null;
   provider?: string | null;
   status: string;
+  isVirtual?: boolean;
   quote?: { folio: string; project: string } | null;
   client?: { name: string } | null;
 };
@@ -230,7 +231,11 @@ export default function TransactionTable({ transactions, quotes = [], clients = 
                         </p>
                       </td>
                       <td className="px-5 py-4">
-                        {isConfirming ? (
+                        {t.isVirtual ? (
+                          <div className="flex justify-center">
+                            <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest border border-gray-100 px-2 py-0.5 rounded-md bg-gray-50/50">Histórico</span>
+                          </div>
+                        ) : isConfirming ? (
                           <div className="flex items-center gap-2 justify-center">
                             <button
                               onClick={() => handleDelete(t.id)}

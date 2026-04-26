@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { X, Loader2, Save } from "lucide-react";
-import { updateTransaction, EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from "@/app/dashboard/finance/actions";
+import { updateTransaction } from "@/app/dashboard/finance/actions";
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from "@/app/dashboard/finance/constants";
 
 const INCOME_TYPES = ["INGRESO", "ANTICIPO", "LIQUIDACION"];
 const EXPENSE_TYPES = ["GASTO_OPERATIVO", "GASTO_PROYECTO"];
