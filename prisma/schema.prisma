@@ -90,7 +90,7 @@ model Quote {
   description           String?
   status                String                 @default("DRAFT")
   paymentStatus         String                 @default("PENDING")
-  taxable               Boolean                @default(true)
+  // taxable: will be added back after running manual_finance_migration.sql in Hostinger
   subtotal              Float                  @default(0)
   tax                   Float                  @default(0)
   total                 Float                  @default(0)
