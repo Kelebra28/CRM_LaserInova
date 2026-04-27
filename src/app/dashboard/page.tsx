@@ -76,29 +76,25 @@ export default async function DashboardPage() {
 
   const totalAmountWithAnticipo = salesWithAnticipo.reduce((sum, q) => sum + q.total, 0);
   
-  // Logic Synchronization with Finance Page
-  const quotesPaid = quotesThisMonth.filter(q => (q.realAmountCollected || 0) > 0 || ["PAID", "PARTIAL"].includes(q.paymentStatus));
-  let totalIncomeNet = 0;
-  let totalProjectCostsProportional = 0;
+  // Solo cotizaciones con anticipo o liquidación para los KPIs financieros
+  const quotesPaidFilter = quotesThisMonth.filter(q =>
+    ["PARTIAL", "PAID"].includes(q.paymentStatus) && (q.realAmountCollected || 0) > 0
+  );
 
-  quotesPaid.forEach(q => {
+  // IVA por pagar: solo de cotizaciones con cobro real
+  const totalTaxQuoted = quotesPaidFilter.reduce((sum, q) => {
+    if (!q.taxable) return sum;
+    const proportion = q.total > 0 ? (q.realAmountCollected || 0) / q.total : 0;
+    return sum + (q.tax * proportion);
+  }, 0);
+
+  // IVA de ingresos ya cobrados del mes
+  const totalTaxCollected = quotesPaidFilter.reduce((sum, q) => {
+    if (!q.taxable) return sum;
     const collected = q.realAmountCollected || 0;
-    if (collected === 0) return;
-    const total = q.total || 1;
-    const subtotal = q.subtotal || 1;
-    const proportion = collected / total;
-    totalIncomeNet += subtotal * proportion;
-    totalProjectCostsProportional += (q.realCostTotal || 0) * proportion;
-  });
-
-  const totalTaxCollected = realCollectedTotalTax(quotesThisMonth);
-  function realCollectedTotalTax(quotes: any[]) {
-    return quotes.reduce((sum, q) => {
-      const collected = q.realAmountCollected || 0;
-      const taxPortion = q.total > 0 ? (collected * (q.tax / q.total)) : 0;
-      return sum + taxPortion;
-    }, 0);
-  }
+    const proportion = q.total > 0 ? collected / q.total : 0;
+    return sum + Math.round(q.tax * proportion * 100) / 100;
+  }, 0);
 
   // Gastos operativos — resiliente si la tabla FinancialTransaction aún no existe en DB
   let totalManualExpenses = 0;
@@ -114,9 +110,14 @@ export default async function DashboardPage() {
   const configs = await prisma.costConfiguration.findMany();
   const configMap = new Map(configs.map(c => [c.key, c.value]));
 
-  const totalOperationCost = totalProjectCostsProportional + totalManualExpenses;
-  const totalUtilityReal = totalIncomeNet - totalOperationCost;
-  const totalTaxQuoted = activeQuotes.reduce((sum: number, q: { tax: number }) => sum + q.tax, 0);
+  const totalOperationCost = totalManualExpenses;
+  const totalUtilityReal = quotesPaidFilter.reduce((sum, q) => {
+    const collected = q.realAmountCollected || 0;
+    const proportion = q.total > 0 ? collected / q.total : 0;
+    const netIncome = (q.subtotal || 0) * proportion;
+    return sum + netIncome;
+  }, 0) - totalOperationCost;
+
 
   return (
     <div className="space-y-10 pb-20 animate-in fade-in duration-1000">

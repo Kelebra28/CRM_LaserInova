@@ -59,9 +59,11 @@ export default async function FinancePage() {
   const txTaxCollected  = transactions.filter(t => INCOME_TYPES.includes(t.type)).reduce((s, t) => s + (t.taxAmount || 0), 0);
 
   // Totales finales
+  // Nota: quoteProjectCosts (costo estimado de producción) NO se suma a los gastos reales.
+  // Solo los GASTO_PROYECTO manuales son gastos reales del proyecto.
   const totalIncome       = quoteIncome + txIncome;
   const totalOpExpenses   = txOpExpenses;
-  const totalProjectCosts = quoteProjectCosts + txProjectCosts;
+  const totalProjectCosts = txProjectCosts;           // solo gastos reales manuales
   const totalTaxCollected = quoteIVA + txTaxCollected;
   const grossProfit       = totalIncome - totalProjectCosts;
   const netProfit         = grossProfit - totalOpExpenses;
