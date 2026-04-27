@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 export async function createQuoteAction(formData: FormData) {
   const clientId = formData.get("clientId") as string;
+  const prospectName = (formData.get("prospectName") as string) || null;
   const project = formData.get("project") as string;
   const description = formData.get("description") as string;
   const userId = formData.get("userId") as string;
@@ -38,6 +39,7 @@ export async function createQuoteAction(formData: FormData) {
     data: {
       folio,
       clientId: clientId || null,
+      prospectName: clientId ? null : (prospectName || null),
       userId,
       project,
       description,

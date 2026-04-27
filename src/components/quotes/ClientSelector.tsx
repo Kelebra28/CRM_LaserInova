@@ -1,21 +1,33 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Search, ChevronDown, Check } from "lucide-react";
+import { Search, ChevronDown, Check, UserPlus, X } from "lucide-react";
 
 interface ClientSelectorProps {
   clients: any[];
   value: string;
   onChange: (id: string) => void;
+  onProspectNameChange?: (name: string) => void;
+  prospectName?: string;
   disabled?: boolean;
 }
 
-export default function ClientSelector({ clients, value, onChange, disabled }: ClientSelectorProps) {
+export default function ClientSelector({
+  clients,
+  value,
+  onChange,
+  onProspectNameChange,
+  prospectName = "",
+  disabled,
+}: ClientSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [mode, setMode] = useState<"select" | "prospect">(
+    prospectName && !value ? "prospect" : "select"
+  );
+  const [localProspect, setLocalProspect] = useState(prospectName);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -26,16 +38,61 @@ export default function ClientSelector({ clients, value, onChange, disabled }: C
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [wrapperRef]);
 
-  // Filter clients based on search
   const filteredClients = useMemo(() => {
-    return clients.filter(c => {
-      return c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             (c.email && c.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-             (c.company && c.company.toLowerCase().includes(searchTerm.toLowerCase()));
+    return clients.filter((c) => {
+      return (
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.email && c.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (c.company && c.company.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
     });
   }, [clients, searchTerm]);
 
-  const selectedClient = clients.find(c => c.id === value);
+  const selectedClient = clients.find((c) => c.id === value);
+
+  const switchToProspect = () => {
+    onChange("");
+    setMode("prospect");
+    setIsOpen(false);
+  };
+
+  const switchToClient = () => {
+    setLocalProspect("");
+    onProspectNameChange?.("");
+    setMode("select");
+  };
+
+  if (mode === "prospect") {
+    return (
+      <div ref={wrapperRef} className="relative w-full">
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            type="text"
+            value={localProspect}
+            onChange={(e) => {
+              setLocalProspect(e.target.value);
+              onProspectNameChange?.(e.target.value);
+            }}
+            placeholder="Nombre del prospecto / empresa..."
+            className="flex-1 text-sm border-orange-300 rounded-md py-2 px-3 border bg-orange-50 text-gray-900 focus:ring-2 focus:ring-orange-400 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={switchToClient}
+            className="p-2 text-gray-400 hover:text-gray-700 rounded-md hover:bg-gray-100 transition-all"
+            title="Buscar cliente registrado"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="text-[10px] text-orange-500 font-bold mt-1 uppercase tracking-wide">
+          Modo Prospecto — no se guardará como cliente
+        </p>
+        <input type="hidden" name="clientId" value="" />
+        <input type="hidden" name="prospectName" value={localProspect} />
+      </div>
+    );
+  }
 
   return (
     <div ref={wrapperRef} className="relative w-full">
@@ -53,13 +110,16 @@ export default function ClientSelector({ clients, value, onChange, disabled }: C
         <ChevronDown className="h-4 w-4 text-gray-400 shrink-0 ml-2" />
       </button>
 
-      {/* Hidden input to ensure the form submission still gets the value */}
-      <input type="hidden" name="clientId" value={value} required />
+      {/* Hidden inputs */}
+      <input type="hidden" name="clientId" value={value} />
+      <input type="hidden" name="prospectName" value="" />
 
       {isOpen && !disabled && (
-        <div className="absolute z-50 mt-1 w-full bg-white shadow-xl rounded-md border border-gray-200 overflow-hidden" style={{ minWidth: "250px" }}>
+        <div
+          className="absolute z-50 mt-1 w-full bg-white shadow-xl rounded-md border border-gray-200 overflow-hidden"
+          style={{ minWidth: "260px" }}
+        >
           <div className="p-2 border-b border-gray-100 bg-gray-50">
-            {/* Search Input */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-gray-400" />
@@ -76,16 +136,25 @@ export default function ClientSelector({ clients, value, onChange, disabled }: C
           </div>
 
           <ul className="max-h-60 overflow-y-auto py-1 text-sm text-gray-700">
+            {/* Clear selection */}
+            {value && (
+              <li
+                onClick={() => { onChange(""); setIsOpen(false); }}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-50"
+              >
+                <X className="h-3 w-3" /> Quitar selección
+              </li>
+            )}
+
             {filteredClients.length === 0 ? (
-              <li className="px-3 py-4 text-center text-gray-500 text-sm">No se encontraron clientes</li>
+              <li className="px-3 py-4 text-center text-gray-500 text-sm">
+                No se encontraron clientes
+              </li>
             ) : (
               filteredClients.map((c) => (
                 <li
                   key={c.id}
-                  onClick={() => {
-                    onChange(c.id);
-                    setIsOpen(false);
-                  }}
+                  onClick={() => { onChange(c.id); setIsOpen(false); }}
                   className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-red-50 transition-colors ${
                     value === c.id ? "bg-red-50 text-red-900 font-medium" : ""
                   }`}
@@ -94,7 +163,9 @@ export default function ClientSelector({ clients, value, onChange, disabled }: C
                     <span className="font-medium">{c.name}</span>
                     {(c.email || c.company) && (
                       <span className="text-xs text-gray-500 mt-0.5">
-                        {c.company ? `${c.company} ` : ''}{c.company && c.email ? '• ' : ''}{c.email}
+                        {c.company ? `${c.company} ` : ""}
+                        {c.company && c.email ? "• " : ""}
+                        {c.email}
                       </span>
                     )}
                   </div>
@@ -103,6 +174,18 @@ export default function ClientSelector({ clients, value, onChange, disabled }: C
               ))
             )}
           </ul>
+
+          {/* Prospect mode option */}
+          <div className="border-t border-gray-100 p-2">
+            <button
+              type="button"
+              onClick={switchToProspect}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 rounded-md transition-all uppercase tracking-wider"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              Agregar como Prospecto (sin registro)
+            </button>
+          </div>
         </div>
       )}
     </div>

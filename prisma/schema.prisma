@@ -85,6 +85,7 @@ model Quote {
   id                    String                 @id @default(uuid())
   folio                 String                 @unique
   clientId              String?
+  prospectName          String?
   userId                String
   project               String
   description           String?

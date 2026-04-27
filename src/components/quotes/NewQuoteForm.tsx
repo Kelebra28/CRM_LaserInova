@@ -19,6 +19,7 @@ interface NewQuoteFormProps {
 
 export default function NewQuoteForm({ clients, materials, globalCosts, userId }: NewQuoteFormProps) {
   const [clientId, setClientId] = useState("");
+  const [prospectName, setProspectName] = useState("");
   const [project, setProject] = useState("");
   const [description, setDescription] = useState("");
   const [isWholesale, setIsWholesale] = useState(false);
@@ -27,7 +28,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
   
   const [concepts, setConcepts] = useState<any[]>([]);
 
-  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO") => {
+  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE") => {
     setConcepts([
       ...concepts,
       {
@@ -41,6 +42,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
         partHeight: "",
         timeMin: "",
         manualUnitPrice: "",
+        manualUnitCost: "",
         // Resultados calculados
         materialCost: 0,
         productionCost: 0,
@@ -76,6 +78,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       clientProvidesMaterial: concept.clientProvidesMaterial,
       isWholesale: isWholesale,
       manualUnitPrice: Number(concept.manualUnitPrice) || 0,
+      manualCost: (Number(concept.manualUnitCost) || 0) * (Number(concept.quantity) || 1),
     };
 
     if (concept.materialId) {
@@ -148,6 +151,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       <input type="hidden" name="realCostTotal" value={costoReal} />
       <input type="hidden" name="estimatedUtility" value={utilidad} />
       <input type="hidden" name="conceptsData" value={JSON.stringify(concepts)} />
+      <input type="hidden" name="prospectName" value={prospectName} />
       <input type="hidden" name="globalCostsSnapshot" value={JSON.stringify(globalCosts)} />
 
       {/* 1. Datos Generales */}
@@ -160,6 +164,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
               clients={clients}
               value={clientId}
               onChange={(id) => setClientId(id)}
+              onProspectNameChange={(name) => setProspectName(name)}
+              prospectName={prospectName}
             />
           </div>
           <div>
@@ -246,6 +252,9 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
             <button type="button" onClick={() => addConcept("GRABADO")} className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1.5 px-3 rounded-md font-medium transition-colors">
               + Grabado
             </button>
+            <button type="button" onClick={() => addConcept("RESALE")} className="text-sm bg-red-50 hover:bg-red-100 text-red-700 py-1.5 px-3 rounded-md font-bold transition-colors border border-red-200">
+              + Reventa
+            </button>
             <button type="button" onClick={() => addConcept("IMPRESION")} className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1.5 px-3 rounded-md font-medium transition-colors">
               + Impresión
             </button>
@@ -277,9 +286,10 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                     concept.type === "CORTE" ? "bg-red-600" :
                     concept.type === "GRABADO" ? "bg-orange-600" :
                     concept.type === "IMPRESION" ? "bg-blue-600" :
-                    concept.type === "PRODUCTO" ? "bg-emerald-600" : "bg-gray-600"
+                    concept.type === "PRODUCTO" ? "bg-emerald-600" : 
+                    concept.type === "RESALE" ? "bg-red-700" : "bg-gray-600"
                   }`}>
-                    {concept.type}
+                    {concept.type === "RESALE" ? "REVENTA" : concept.type}
                   </span>
                   <span className="text-sm font-medium text-gray-700">Concepto #{index + 1}</span>
                 </div>
@@ -362,15 +372,28 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                     </>
                   )}
 
-                  {/* Campos para IMPRESION, PRODUCTO, OTRO (Manuales) */}
-                  {(concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO") && (
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs font-medium text-gray-700">Precio Unitario ($)</label>
+                  {/* Campos para IMPRESION, PRODUCTO, OTRO, RESALE (Manuales) */}
+                  {(concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO" || concept.type === "RESALE") && (
+                    <div className={`${concept.type === "RESALE" ? "sm:col-span-1" : "sm:col-span-2"}`}>
+                      <label className="block text-xs font-medium text-gray-700">Precio Unitario Venta ($)</label>
                       <input
                         type="number"
                         value={concept.manualUnitPrice === 0 && String(concept.manualUnitPrice) !== "0" ? "" : concept.manualUnitPrice}
                         onChange={e => updateConcept(concept.id, "manualUnitPrice", e.target.value === "" ? "" : Number(e.target.value))}
-                        className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border"
+                        className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-emerald-700"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  )}
+
+                  {concept.type === "RESALE" && (
+                    <div className="sm:col-span-1">
+                      <label className="block text-xs font-medium text-gray-700">Costo Unitario Compra ($)</label>
+                      <input
+                        type="number"
+                        value={concept.manualUnitCost === 0 && String(concept.manualUnitCost) !== "0" ? "" : concept.manualUnitCost}
+                        onChange={e => updateConcept(concept.id, "manualUnitCost", e.target.value === "" ? "" : Number(e.target.value))}
+                        className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-red-600 bg-red-50"
                         placeholder="0.00"
                       />
                     </div>

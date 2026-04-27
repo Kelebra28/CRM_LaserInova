@@ -40,6 +40,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
       unitPrice: c.finalUnitPrice,
       totalAmount: c.totalAmount,
       realCost: c.realCost,
+      manualUnitPrice: c.finalUnitPrice,
+      manualUnitCost: (c.realCost || 0) / (c.quantity || 1),
       utility: c.utility || (c.totalAmount - c.realCost),
       finalUnitPrice: c.finalUnitPrice,
       calculated: {
@@ -79,7 +81,9 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
               partHeight: Number(updated.partHeight),
               timeMin: Number(updated.timeMin),
               clientProvidesMaterial: updated.clientProvidesMaterial,
-              isWholesale: isWholesale
+              isWholesale: isWholesale,
+              manualUnitPrice: Number(updated.manualUnitPrice) || 0,
+              manualCost: (Number(updated.manualUnitCost) || 0) * (Number(updated.quantity) || 1),
             },
             { ...globalCosts, margen_default: Number(margin) || 35 } // Usar el margen actual
           );
@@ -124,7 +128,9 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           partHeight: Number(c.partHeight),
           timeMin: Number(c.timeMin),
           clientProvidesMaterial: c.clientProvidesMaterial,
-          isWholesale: isWholesale
+          isWholesale: isWholesale,
+          manualUnitPrice: Number(c.manualUnitPrice) || 0,
+          manualCost: (Number(c.manualUnitCost) || 0) * (Number(c.quantity) || 1),
         },
         { ...globalCosts, margen_default: Number(margin) || 35 }
       );
@@ -136,7 +142,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
     }));
   }, [margin, isWholesale, globalCosts, materials]);
 
-  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO") => {
+  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE") => {
     const newId = crypto.randomUUID();
     setConcepts([
       ...concepts,
@@ -149,6 +155,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
         partWidth: 0,
         partHeight: 0,
         timeMin: 0,
+        manualUnitPrice: "",
+        manualUnitCost: "",
         clientProvidesMaterial: false,
         finalUnitPrice: 0,
         totalAmount: 0,
@@ -285,8 +293,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
             <button type="button" onClick={() => addConcept("IMPRESION")} className="text-xs bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
               + Impresión
             </button>
-            <button type="button" onClick={() => addConcept("PRODUCTO")} className="text-xs bg-gray-100 hover:bg-emerald-600 hover:text-white text-gray-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
-              + Producto
+            <button type="button" onClick={() => addConcept("RESALE")} className="text-xs bg-red-100 hover:bg-red-600 hover:text-white text-red-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
+              + Reventa
             </button>
           </div>
         </div>
@@ -307,9 +315,10 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                   concept.type === "CORTE" ? "bg-red-600" :
                   concept.type === "GRABADO" ? "bg-orange-600" :
                   concept.type === "IMPRESION" ? "bg-blue-600" :
-                  concept.type === "PRODUCTO" ? "bg-emerald-600" : "bg-gray-600"
+                  concept.type === "PRODUCTO" ? "bg-emerald-600" : 
+                  concept.type === "RESALE" ? "bg-red-700 border border-white/20" : "bg-gray-600"
                 }`}>
-                  {concept.type}
+                  {concept.type === "RESALE" ? "REVENTA" : concept.type}
                 </span>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Concepto #{index + 1}</span>
               </div>
@@ -346,6 +355,31 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                 </div>
 
                 {/* Parámetros según tipo */}
+                {concept.type === "RESALE" && (
+                  <>
+                    <div className="sm:col-span-3">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Precio Venta Unitario ($)</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        value={concept.manualUnitPrice === 0 && String(concept.manualUnitPrice) !== "0" ? "" : concept.manualUnitPrice} 
+                        onChange={e => updateConcept(concept.id, "manualUnitPrice", e.target.value)} 
+                        className="w-full text-sm font-black border-emerald-200 rounded-lg p-2.5 border bg-emerald-50/30 text-emerald-700" 
+                      />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Costo Compra Unitario ($)</label>
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        value={concept.manualUnitCost === 0 && String(concept.manualUnitCost) !== "0" ? "" : concept.manualUnitCost} 
+                        onChange={e => updateConcept(concept.id, "manualUnitCost", e.target.value)} 
+                        className="w-full text-sm font-black border-red-200 rounded-lg p-2.5 border bg-red-50/30 text-red-600" 
+                      />
+                    </div>
+                  </>
+                )}
+
                 {concept.type === "CORTE" && (
                   <>
                     <div className="sm:col-span-3">

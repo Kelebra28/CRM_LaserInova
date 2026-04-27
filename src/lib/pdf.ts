@@ -36,20 +36,34 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
   doc.setFontSize(10);
   const formattedDate = new Date(quote.createdAt).toLocaleDateString("es-MX");
   doc.text(`Fecha:   ${formattedDate}`, pageWidth - 14, 36, { align: "right" });
-  doc.text(`ID Proyecto:   ${quote.folio}`, pageWidth - 14, 42, { align: "right" });
+  doc.text(`No. de Cotización:   ${quote.folio}`, pageWidth - 14, 42, { align: "right" });
 
   // Top Left Details (Client & Project)
-  let currentY = 40;
-  if (quote.client) {
+  let currentY = 36;
+
+  // Show registered client OR prospect name
+  const displayName = quote.client?.name || quote.prospectName;
+  const displayCompany = quote.client?.company;
+
+  if (displayName) {
     doc.setFont("helvetica", "normal");
-    doc.text("CLIENTE:", 14, currentY);
+    doc.text("PARA:", 14, currentY);
     doc.setFont("helvetica", "bold");
-    doc.text(quote.client.name, 35, currentY);
+    doc.text(displayName, 35, currentY);
     currentY += 6;
-    if (quote.client.company) {
+    if (displayCompany) {
       doc.setFont("helvetica", "normal");
-      doc.text(quote.client.company, 35, currentY);
+      doc.text(displayCompany, 35, currentY);
       currentY += 6;
+    }
+    if (!quote.client && quote.prospectName) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(150, 100, 0);
+      doc.text("(Prospecto)", 35, currentY);
+      doc.setTextColor(0);
+      doc.setFontSize(10);
+      currentY += 5;
     }
   }
 
@@ -67,12 +81,14 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
     tableStartY = currentY + (splitDesc.length * 5) + 5;
   }
 
-  // Concepts Table
-  const tableColumn = ["Descripción", "Cant", "Detalles", "Importe\nUnitario", "Importe"];
+  // Concepts Table — headers: Descripción | Cant | Detalles | Importe Unitario | Importe
+  const tableColumn = ["Descripción", "Cant", "Detalles", "Importe Unitario", "Importe"];
   const tableRows: any[][] = [];
 
+  const fmt = (n: number) =>
+    `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   quote.concepts.forEach((concept: any) => {
-    // Construct the details string based on the concept type and available data
     let detalles = concept.details || "";
     if (!detalles) {
       const parts = [];
@@ -81,16 +97,21 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
         if (concept.material) parts.push(`en ${concept.material.name}`);
         if (concept.width && concept.height) parts.push(`Medidas: ${concept.width}x${concept.height}cm`);
         if (concept.clientProvidesMaterial) parts.push(`(Material proporcionado por el cliente)`);
+      } else if (concept.conceptType === "RESALE") {
+        parts.push("Artículo de reventa");
       }
       detalles = parts.join(". ") + (parts.length > 0 ? "." : "");
     }
+
+    const unitPrice = concept.finalUnitPrice ?? 0;
+    const total = unitPrice * concept.quantity;
 
     tableRows.push([
       concept.description,
       concept.quantity.toString(),
       detalles,
-      `$${concept.finalUnitPrice.toFixed(2)}`,
-      `$${concept.totalAmount.toFixed(2)}`,
+      fmt(unitPrice),        // Importe Unitario
+      fmt(total),            // Importe = Unitario × Cantidad
     ]);
   });
 

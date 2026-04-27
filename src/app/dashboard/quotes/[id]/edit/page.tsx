@@ -26,6 +26,7 @@ export default async function EditQuotePage(props: { params: Promise<{ id: strin
 
   const materials = await prisma.material.findMany({
     where: { active: true },
+    include: { category: true },
     orderBy: { name: "asc" }
   });
 

@@ -29,12 +29,14 @@ export default async function FinancePage() {
     orderBy: { date: "desc" },
   });
 
-  // ── Ingresos desde Cotizaciones (cobros ya registrados en Quote.realAmountCollected)
+  // ── Ingresos desde Cotizaciones
+  // Solo cotizaciones que YA tienen un cobro real (adelanto o liquidación)
   const paidQuotesThisMonth = await prisma.quote.findMany({
     where: {
       active: true,
       updatedAt: { gte: startDate, lte: endDate },
       realAmountCollected: { gt: 0 },
+      paymentStatus: { in: ["PARTIAL", "PAID"] }, // ← solo si hay anticipo o liquidación
     },
   });
 
@@ -179,6 +181,10 @@ export default async function FinancePage() {
           <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
             <p className="text-[9px] font-black text-gray-400 uppercase">Costos de proyectos</p>
             <p className="text-xs font-black text-orange-600">-${totalProjectCosts.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <p className="text-[9px] font-black text-gray-400 uppercase">Total gastos</p>
+            <p className="text-xs font-black text-red-700">-${(totalOpExpenses + totalProjectCosts).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
           </div>
         </div>
 

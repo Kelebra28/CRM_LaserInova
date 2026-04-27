@@ -1,5 +1,5 @@
 // Tipos de cálculo soportados
-export type CalculationType = "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO";
+export type CalculationType = "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE";
 
 export interface GlobalCosts {
   costo_minuto_mayoreo: number;
@@ -34,8 +34,9 @@ export interface CalculationInput {
   timeMin?: number;
   isWholesale?: boolean; // Mayoreo o menudeo
   
-  // Para IMPRESION, PRODUCTO, OTRO
+  // Para IMPRESION, PRODUCTO, OTRO, RESALE
   manualUnitPrice?: number;
+  manualCost?: number;
 }
 
 export interface CalculationResult {
@@ -108,6 +109,12 @@ export function calculateConcept(input: CalculationInput, globals: GlobalCosts):
       // El usuario solicitó Precio Sugerido = Costo Total / (1 - Margen)
       const marginFactor = (100 - (globals.margen_default || 50)) / 100;
       suggestedPrice = realCost / marginFactor;
+      break;
+
+    case "RESALE":
+      // Para reventa pura, el costo real es el costo manual ingresado
+      realCost = input.manualCost || 0;
+      suggestedPrice = input.manualUnitPrice || 0;
       break;
 
     case "IMPRESION":

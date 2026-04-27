@@ -213,6 +213,7 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
             <form action={updateQuoteConsiderations} className="space-y-4">
               <input type="hidden" name="quoteId" value={quote.id} />
               <textarea
+                key={quote.visibleConsiderations ?? "default"}
                 name="visibleConsiderations"
                 defaultValue={quote.visibleConsiderations || defaultConsiderations}
                 rows={5}
@@ -268,6 +269,14 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
                     </div>
                   )}
                 </div>
+              </div>
+            ) : (quote as any).prospectName ? (
+              <div className="space-y-2">
+                <p className="text-base font-black text-gray-900">{(quote as any).prospectName}</p>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-[10px] font-black text-orange-600 uppercase tracking-widest">
+                  Prospecto
+                </span>
+                <p className="text-[10px] text-gray-400 font-medium">No registrado como cliente aún</p>
               </div>
             ) : (
               <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest bg-gray-50 p-6 rounded-xl border border-dashed border-gray-200 text-center">
