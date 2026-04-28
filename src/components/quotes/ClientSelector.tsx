@@ -26,6 +26,7 @@ export default function ClientSelector({
     prospectName && !value ? "prospect" : "select"
   );
   const [localProspect, setLocalProspect] = useState(prospectName);
+  const [saveAsClient, setSaveAsClient] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function ClientSelector({
 
   const switchToClient = () => {
     setLocalProspect("");
+    setSaveAsClient(false);
     onProspectNameChange?.("");
     setMode("select");
   };
@@ -85,11 +87,28 @@ export default function ClientSelector({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="text-[10px] text-orange-500 font-bold mt-1 uppercase tracking-wide">
-          Modo Prospecto — no se guardará como cliente
-        </p>
+        <div className="flex items-center justify-between mt-1 px-1">
+          <p className="text-[10px] text-orange-500 font-bold uppercase tracking-wide">
+            Modo Prospecto
+          </p>
+          <label className="flex items-center gap-1.5 cursor-pointer group">
+            <div className="relative flex items-center">
+              <input
+                type="checkbox"
+                checked={saveAsClient}
+                onChange={(e) => setSaveAsClient(e.target.checked)}
+                className="peer h-3.5 w-3.5 appearance-none rounded-sm border border-orange-300 bg-white checked:bg-orange-500 checked:border-orange-500 transition-all cursor-pointer"
+              />
+              <Check className="absolute h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" />
+            </div>
+            <span className="text-[10px] font-black text-orange-600 uppercase tracking-tighter group-hover:text-orange-700 transition-colors">
+              ¿Guardar como cliente?
+            </span>
+          </label>
+        </div>
         <input type="hidden" name="clientId" value="" />
         <input type="hidden" name="prospectName" value={localProspect} />
+        <input type="hidden" name="saveAsClient" value={saveAsClient ? "true" : "false"} />
       </div>
     );
   }

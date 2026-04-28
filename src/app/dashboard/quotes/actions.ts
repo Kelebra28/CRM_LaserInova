@@ -20,15 +20,27 @@ export async function createQuoteAction(formData: FormData) {
 
   const conceptsDataStr = formData.get("conceptsData") as string;
   const globalCostsSnapshotStr = formData.get("globalCostsSnapshot") as string;
-
+  const saveAsClient = formData.get("saveAsClient") === "true";
   const visibleConsiderations = formData.get("visibleConsiderations") as string;
-
+  
   if (!project || !conceptsDataStr) {
     throw new Error("Faltan datos requeridos (Proyecto y Conceptos)");
   }
 
   const conceptsData = JSON.parse(conceptsDataStr);
   
+  // Logic to save prospect as a real client if requested
+  let finalClientId = clientId || null;
+  let finalProspectName = clientId ? null : (prospectName || null);
+
+  if (saveAsClient && prospectName && !clientId) {
+    const newClient = await prisma.client.create({
+      data: { name: prospectName }
+    });
+    finalClientId = newClient.id;
+    finalProspectName = null;
+  }
+
   // Generar folio (ej: LI-2026-0001)
   const count = await prisma.quote.count();
   const year = new Date().getFullYear();
@@ -38,8 +50,8 @@ export async function createQuoteAction(formData: FormData) {
   const quote = await prisma.quote.create({
     data: {
       folio,
-      clientId: clientId || null,
-      prospectName: clientId ? null : (prospectName || null),
+      clientId: finalClientId,
+      prospectName: finalProspectName,
       userId,
       project,
       description,
@@ -88,6 +100,7 @@ export async function updateQuoteAction(formData: FormData) {
   const quoteId = formData.get("quoteId") as string;
   const clientId = formData.get("clientId") as string || null;
   const prospectName = (formData.get("prospectName") as string) || null;
+  const saveAsClient = formData.get("saveAsClient") === "true";
   const userId = formData.get("userId") as string;
   const project = formData.get("project") as string;
   const description = formData.get("description") as string;
@@ -99,12 +112,24 @@ export async function updateQuoteAction(formData: FormData) {
   
   const conceptsData = JSON.parse(formData.get("concepts") as string);
 
+  // Logic to save prospect as a real client if requested
+  let finalClientId = clientId || null;
+  let finalProspectName = clientId ? null : (prospectName || null);
+
+  if (saveAsClient && prospectName && !clientId) {
+    const newClient = await prisma.client.create({
+      data: { name: prospectName }
+    });
+    finalClientId = newClient.id;
+    finalProspectName = null;
+  }
+
   await prisma.quote.update({
     where: { id: quoteId },
     data: {
-      clientId: clientId || null,
+      clientId: finalClientId,
       // Si vinculamos un cliente real, borramos el prospecto y viceversa
-      prospectName: clientId ? null : (prospectName || null),
+      prospectName: finalProspectName,
       userId,
       project,
       description,
@@ -190,9 +215,11 @@ export async function updateQuotePaymentAction(quoteId: string, type: 'unpaid' |
   revalidatePath(`/dashboard/quotes/${quoteId}`);
 }
 
-export async function saveQuickQuoteAction(mockQuote: any, userId: string) {
+export async function saveQuickQuoteAction(mockQuote: any, userId: string, saveAsClient: boolean = false) {
   // 1. Manejar cliente
   let finalClientId = null;
+  let finalProspectName = mockQuote.client.name || null;
+
   if (mockQuote.client.name) {
     const existingClient = await prisma.client.findFirst({
       where: { name: mockQuote.client.name }
@@ -200,7 +227,8 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string) {
 
     if (existingClient) {
       finalClientId = existingClient.id;
-    } else {
+      finalProspectName = null;
+    } else if (saveAsClient) {
       const newClient = await prisma.client.create({
         data: {
           name: mockQuote.client.name,
@@ -208,6 +236,7 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string) {
         }
       });
       finalClientId = newClient.id;
+      finalProspectName = null;
     }
   }
 
@@ -220,6 +249,7 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string) {
     data: {
       folio,
       clientId: finalClientId,
+      prospectName: finalProspectName,
       userId,
       project: mockQuote.project || "Cotización Libre",
       description: mockQuote.description,

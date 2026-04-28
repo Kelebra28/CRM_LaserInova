@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Plus, Trash2, Download, RefreshCw, Save } from "lucide-react";
+import { FileText, Plus, Trash2, Download, RefreshCw, Save, Check } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { saveQuickQuoteAction } from "@/app/dashboard/quotes/actions";
 import { useRouter } from "next/navigation";
@@ -27,6 +27,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveAsClient, setSaveAsClient] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean;
@@ -140,7 +141,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
     };
 
     try {
-      const result = await saveQuickQuoteAction(mockQuote, userId);
+      const result = await saveQuickQuoteAction(mockQuote, userId, saveAsClient);
       if (result.success) {
         setStatusModal({
           isOpen: true,
@@ -190,6 +191,22 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
               placeholder="Ej. Juan Pérez / Empresa S.A." 
               className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all"
             />
+            <div className="mt-2 flex justify-end">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <div className="relative flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={saveAsClient}
+                    onChange={(e) => setSaveAsClient(e.target.checked)}
+                    className="peer h-4 w-4 appearance-none rounded border border-gray-300 bg-white checked:bg-red-600 checked:border-red-600 transition-all cursor-pointer"
+                  />
+                  <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" />
+                </div>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-red-600 transition-colors">
+                  ¿Guardar en catálogo de clientes?
+                </span>
+              </label>
+            </div>
           </div>
           <div>
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nombre del Proyecto / Evento</label>
