@@ -342,6 +342,17 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                   />
                 </div>
 
+                <div className="sm:col-span-8">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Detalles (para el PDF - Opcional)</label>
+                  <textarea 
+                    value={concept.details || ""} 
+                    onChange={e => updateConcept(concept.id, "details", e.target.value)}
+                    className="w-full text-xs font-medium border-gray-200 rounded-lg p-2.5 border bg-gray-50 focus:bg-white transition-all outline-none"
+                    placeholder="Ej. Grabado profundo, limpieza de bordes, etc. Si se deja vacío, se generará automáticamente."
+                    rows={1}
+                  />
+                </div>
+
                 <div className="sm:col-span-2">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cantidad</label>
                   <input

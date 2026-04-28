@@ -80,6 +80,7 @@ export async function createQuoteAction(formData: FormData) {
           suggestedPrice: Number(c.calculated?.suggestedPrice || 0),
           materialCost: Number(c.calculated?.materialCost || 0),
           productionCost: Number(c.calculated?.productionCost || 0),
+          details: c.details || null,
           order: index,
         })),
       },
@@ -156,6 +157,7 @@ export async function updateQuoteAction(formData: FormData) {
           suggestedPrice: Number(c.suggestedPrice || c.calculated?.suggestedPrice || 0),
           materialCost: Number(c.materialCost || c.calculated?.materialCost || 0),
           productionCost: Number(c.productionCost || c.calculated?.productionCost || 0),
+          details: c.details || null,
           order: index,
         })),
       }
@@ -278,6 +280,7 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string, saveA
           margin: Number(c.margin) || 0,
           realCost: (Number(c.totalAmount) || 0) * (1 - (Number(c.margin) || 0) / 100),
           suggestedPrice: Number(c.totalAmount) || 0,
+          details: c.details || null,
           order: index,
         })),
       },

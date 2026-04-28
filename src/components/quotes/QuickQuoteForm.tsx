@@ -72,7 +72,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
       concepts: concepts.map(c => ({
         description: c.description,
         quantity: c.quantity,
-        details: "Servicio especial (Cotización Libre)",
+        details: c.details || "Servicio especial (Cotización Libre)",
         finalUnitPrice: c.unitPrice,
         totalAmount: (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0),
         conceptType: "OTRO"
@@ -136,7 +136,8 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
         quantity: c.quantity,
         unitPrice: c.unitPrice,
         margin: c.margin,
-        totalAmount: (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0)
+        totalAmount: (Number(c.quantity) || 0) * (Number(c.unitPrice) || 0),
+        details: c.details || null
       }))
     };
 
@@ -255,6 +256,16 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
                       placeholder="Ej. Servicio de Corte Laser" 
                       className="w-full text-sm font-bold border-gray-200 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-red-600/10"
                     />
+                    <div className="mt-2">
+                      <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Detalles para el PDF (Opcional)</label>
+                      <input 
+                        type="text" 
+                        value={concept.details || ""} 
+                        onChange={e => updateConcept(concept.id, 'details', e.target.value)}
+                        placeholder="Ej. Acabado brillante, medidas especiales..." 
+                        className="w-full text-[10px] border-gray-200 rounded-lg px-3 py-1.5 bg-gray-100/50 focus:bg-white focus:ring-1 focus:ring-red-600/20 transition-all outline-none"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 md:grid-cols-1 md:col-span-2 gap-3">
                     <div>

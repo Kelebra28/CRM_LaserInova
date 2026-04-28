@@ -308,6 +308,16 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                       className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border text-gray-900"
                     />
                   </div>
+                  <div className="sm:col-span-4">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Detalles (para el PDF - Opcional)</label>
+                    <textarea 
+                      value={concept.details || ""} 
+                      onChange={e => updateConcept(concept.id, "details", e.target.value)}
+                      className="mt-1 block w-full text-xs border-gray-300 rounded-md py-1.5 px-2 border bg-gray-50 focus:bg-white transition-all"
+                      placeholder="Ej. Grabado profundo, limpieza de bordes, etc. Si se deja vacío, se generará automáticamente."
+                      rows={1}
+                    />
+                  </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700">Cantidad</label>
                     <input
