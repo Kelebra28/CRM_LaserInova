@@ -29,7 +29,7 @@ model Client {
   phone                String?
   rfc                  String?
   address              String?
-  notes                String?
+  notes                String? @db.Text
   active               Boolean                @default(true)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
@@ -59,7 +59,7 @@ model Material {
   guardPercentage Float?
   productionPrice Float?
   pricePerCm2     Float?
-  notes           String?
+  notes           String? @db.Text
   active          Boolean          @default(true)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -88,7 +88,7 @@ model Quote {
   prospectName          String?
   userId                String
   project               String
-  description           String?
+  description           String? @db.Text
   status                String                 @default("DRAFT")
   paymentStatus         String                 @default("PENDING")
   taxable               Boolean                @default(true)
@@ -104,9 +104,9 @@ model Quote {
   closeDate             DateTime?
   deliveryTime          String?
   validityDays          Int?
-  paymentConditions     String?
-  internalNotes         String?
-  visibleConsiderations String?
+  paymentConditions     String? @db.Text
+  internalNotes         String? @db.Text
+  visibleConsiderations String? @db.Text
   active                Boolean                @default(true)
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
@@ -125,7 +125,7 @@ model QuoteConcept {
   id                     String    @id @default(uuid())
   quoteId                String
   conceptType            String
-  description            String
+  description            String @db.Text
   quantity               Int       @default(1)
   materialId             String?
   clientProvidesMaterial Boolean   @default(false)
@@ -135,7 +135,7 @@ model QuoteConcept {
   cutTime                Float?
   engraveTime            Float?
   machineType            String?
-  details                String?
+  details                String? @db.Text
   materialCost           Float?    @default(0)
   productionCost         Float?    @default(0)
   realCost               Float?    @default(0)

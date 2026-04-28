@@ -170,30 +170,54 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
   doc.setFontSize(9);
   doc.setTextColor(0);
   
-  const considerationsText = quote.visibleConsiderations 
-    ? ["- Consideraciones:", ...quote.visibleConsiderations.split("\n")]
-    : [
-        "- Consideraciones:",
-        "- Tiempo de entrega: de 1 a 3 días hábiles.",
-        "- 50% anticipo, 50% al programar envío o entrega.",
-        "- El costo puede variar si hay cambios en medidas o diseño.",
-        "- Vigencia de cotización 20 días."
-      ];
+  const rawConsiderations = quote.visibleConsiderations || 
+    "- Tiempo de entrega: de 1 a 3 días hábiles.\n- 50% anticipo, 50% al programar envío o entrega.\n- El costo puede variar si hay cambios en medidas o diseño.\n- Vigencia de cotización 20 días.";
 
-  // Calculate footer position (bottom of page or below table, whichever is lower)
+  const considerationsLines = [
+    "- Consideraciones:",
+    ...rawConsiderations.split("\n")
+  ];
+
+  // Calculate footer position
   const pageHeight = doc.internal.pageSize.height;
-  const footerY = Math.max(totalsY + 40, pageHeight - 40);
+  const footerLineY = pageHeight - 30; // Fixed position for the bottom line
   
-  doc.text(considerationsText, 14, footerY - 15);
+  // Wrap and print text
+  const maxWidth = pageWidth - 28;
+  
+  // 1. Calculate total height needed
+  const wrappedLines: string[] = [];
+  considerationsLines.forEach(line => {
+    const split = doc.splitTextToSize(line, maxWidth);
+    if (Array.isArray(split)) {
+      wrappedLines.push(...split);
+    } else {
+      wrappedLines.push(split);
+    }
+  });
+
+  const totalTextHeight = wrappedLines.length * 4; // 4 units per line roughly
+  
+  // Aligned to the bottom (just above the footer line)
+  let currentTextY = footerLineY - totalTextHeight - 5;
+  
+  // If it overlaps with totals, we should check, but usually sticking to bottom is better
+  if (currentTextY < totalsY + 15) {
+    // If table is too long, we might overlap or need a new page. 
+    // For now, let's keep it below totals if there's space.
+    currentTextY = totalsY + 20;
+  }
+  
+  doc.text(wrappedLines, 14, currentTextY);
 
   // Footer Line and Contact Info
   doc.setDrawColor(0);
   doc.setLineWidth(0.5);
-  doc.line(14, footerY, pageWidth - 14, footerY);
+  doc.line(14, footerLineY, pageWidth - 14, footerLineY);
 
   doc.setFont("helvetica", "bold");
-  doc.text("www.laserinova.com", 14, footerY + 6);
-  doc.text("info@laserinova.com", pageWidth - 14, footerY + 6, { align: "right" });
+  doc.text("www.laserinova.com", 14, footerLineY + 6);
+  doc.text("info@laserinova.com", pageWidth - 14, footerLineY + 6, { align: "right" });
 
   const buffer = Buffer.from(doc.output("arraybuffer"));
   return buffer;
