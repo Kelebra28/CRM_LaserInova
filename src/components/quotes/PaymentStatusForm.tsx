@@ -22,7 +22,7 @@ const paymentStatusLabels: Record<string, string> = {
 
 export default function PaymentStatusForm({ quoteId, currentStatus, currentAmount, totalAmount }: PaymentStatusFormProps) {
   const [status, setStatus] = useState(currentStatus || "PENDING");
-  const [amount, setAmount] = useState(currentAmount === 0 && status !== "REFUNDED" ? totalAmount : currentAmount);
+  const [amount, setAmount] = useState(currentAmount);
 
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
