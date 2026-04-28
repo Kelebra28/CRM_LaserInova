@@ -20,6 +20,7 @@ interface EditQuoteFormProps {
 
 export default function EditQuoteForm({ quote, clients, materials, globalCosts }: EditQuoteFormProps) {
   const [clientId, setClientId] = useState(quote.clientId || "");
+  const [prospectName, setProspectName] = useState((quote as any).prospectName || "");
   const [project, setProject] = useState(quote.project || "");
   const [description, setDescription] = useState(quote.description || "");
   const [isWholesale, setIsWholesale] = useState(false); // Podríamos guardarlo en DB pero por ahora default false
@@ -208,9 +209,11 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
             <ClientSelector 
               clients={clients} 
               value={clientId} 
-              onChange={setClientId} 
+              onChange={setClientId}
+              onProspectNameChange={setProspectName}
+              prospectName={prospectName}
             />
-            <input type="hidden" name="clientId" value={clientId} />
+            {/* hidden inputs are emitted by ClientSelector itself */}
           </div>
 
           <div className="sm:col-span-3">

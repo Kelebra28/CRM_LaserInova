@@ -32,7 +32,7 @@ export default function QuoteRow({ quote, statusColors, statusLabels }: QuoteRow
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-        {quote.client?.name || "Sin cliente"}
+        {quote.client?.name || quote.prospectName || "Sin cliente"}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
         {quote.project}

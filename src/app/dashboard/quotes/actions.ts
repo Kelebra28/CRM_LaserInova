@@ -87,6 +87,7 @@ export async function createQuoteAction(formData: FormData) {
 export async function updateQuoteAction(formData: FormData) {
   const quoteId = formData.get("quoteId") as string;
   const clientId = formData.get("clientId") as string || null;
+  const prospectName = (formData.get("prospectName") as string) || null;
   const userId = formData.get("userId") as string;
   const project = formData.get("project") as string;
   const description = formData.get("description") as string;
@@ -101,7 +102,9 @@ export async function updateQuoteAction(formData: FormData) {
   await prisma.quote.update({
     where: { id: quoteId },
     data: {
-      clientId,
+      clientId: clientId || null,
+      // Si vinculamos un cliente real, borramos el prospecto y viceversa
+      prospectName: clientId ? null : (prospectName || null),
       userId,
       project,
       description,
