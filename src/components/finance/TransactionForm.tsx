@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { createTransaction } from "@/app/dashboard/finance/actions";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from "@/app/dashboard/finance/constants";
+import Select from "@/components/ui/Select";
 
 const TYPES = [
   {
@@ -59,6 +60,10 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
   const [selectedType, setSelectedType] = useState<string>("");
   const [applyIVA, setApplyIVA]   = useState(false);
   const [amount, setAmount]       = useState("");
+  const [category, setCategory]   = useState("");
+  const [quoteId, setQuoteId]     = useState("");
+  const [clientId, setClientId]   = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -75,6 +80,10 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
     setSelectedType("");
     setApplyIVA(false);
     setAmount("");
+    setCategory("");
+    setQuoteId("");
+    setClientId("");
+    setPaymentMethod("");
     formRef.current?.reset();
   }
 
@@ -221,17 +230,14 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
 
                 {/* Categoría */}
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                    Categoría *
-                  </label>
-                  <select
-                    name="category"
-                    required
-                    className="w-full text-xs font-bold p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-gray-900 transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="">Seleccionar categoría...</option>
-                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                  <input type="hidden" name="category" value={category} />
+                  <Select
+                    label="Categoría *"
+                    options={categories.map(c => ({ value: c, label: c }))}
+                    value={category}
+                    onChange={setCategory}
+                    placeholder="Seleccionar categoría..."
+                  />
                 </div>
 
                 {/* IVA Toggle */}
@@ -263,52 +269,50 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
                 {/* Proyecto (si es GASTO_PROYECTO) */}
                 {isProject && (
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                      <Briefcase className="h-3 w-3 inline mr-1" />Proyecto / Cotización
-                    </label>
-                    <select
-                      name="quoteId"
-                      className="w-full text-xs font-bold p-3 bg-orange-50 border border-orange-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-400 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="">Sin proyecto específico</option>
-                      {quotes.map(q => (
-                        <option key={q.id} value={q.id}>{q.folio} — {q.project}</option>
-                      ))}
-                    </select>
+                    <input type="hidden" name="quoteId" value={quoteId} />
+                    <Select
+                      label="Proyecto / Cotización"
+                      options={[
+                        { value: "", label: "Sin proyecto específico" },
+                        ...quotes.map(q => ({ value: q.id, label: `${q.folio} — ${q.project}` }))
+                      ]}
+                      value={quoteId}
+                      onChange={setQuoteId}
+                      className="bg-orange-50/30 rounded-xl"
+                    />
                   </div>
                 )}
 
                 {/* Cliente (opcional en ingresos) */}
                 {!isExpense && (
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                      <Building className="h-3 w-3 inline mr-1" />Cliente
-                    </label>
-                    <select
-                      name="clientId"
-                      className="w-full text-xs font-bold p-3 bg-emerald-50 border border-emerald-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="">Seleccionar cliente...</option>
-                      {clients.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ""}</option>
-                      ))}
-                    </select>
+                    <input type="hidden" name="clientId" value={clientId} />
+                    <Select
+                      label="Cliente"
+                      options={[
+                        { value: "", label: "Seleccionar cliente..." },
+                        ...clients.map(c => ({ value: c.id, label: `${c.name}${c.company ? ` (${c.company})` : ""}` }))
+                      ]}
+                      value={clientId}
+                      onChange={setClientId}
+                      className="bg-emerald-50/30 rounded-xl"
+                    />
                   </div>
                 )}
 
                 {/* Método de pago + Proveedor */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                      <CreditCard className="h-3 w-3 inline mr-1" />Método
-                    </label>
-                    <select
-                      name="paymentMethod"
-                      className="w-full text-xs font-bold p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-gray-900 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="">Seleccionar...</option>
-                      {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                    </select>
+                    <input type="hidden" name="paymentMethod" value={paymentMethod} />
+                    <Select
+                      label="Método"
+                      options={[
+                        { value: "", label: "Seleccionar..." },
+                        ...PAYMENT_METHODS.map(m => ({ value: m.value, label: m.label }))
+                      ]}
+                      value={paymentMethod}
+                      onChange={setPaymentMethod}
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">

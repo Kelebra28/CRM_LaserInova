@@ -184,16 +184,16 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
         {/* Datos Generales */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nombre del Cliente / Empresa</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Cliente / Empresa *</label>
             <input 
               type="text" 
               value={clientName} 
               onChange={e => setClientName(e.target.value)}
               placeholder="Ej. Juan Pérez / Empresa S.A." 
-              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all"
+              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900 shadow-sm"
             />
-            <div className="mt-2 flex justify-end">
-              <label className="flex items-center gap-2 cursor-pointer group">
+            <div className="mt-3 flex justify-end">
+              <label className="flex items-center gap-2 cursor-pointer group px-3 py-1.5 bg-gray-50 rounded-full border border-gray-100 hover:border-red-200 transition-all">
                 <div className="relative flex items-center">
                   <input
                     type="checkbox"
@@ -204,19 +204,19 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
                   <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" />
                 </div>
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-red-600 transition-colors">
-                  ¿Guardar en catálogo de clientes?
+                  ¿Guardar en catálogo?
                 </span>
               </label>
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nombre del Proyecto / Evento</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Proyecto *</label>
             <input 
               type="text" 
               value={project} 
               onChange={e => setProject(e.target.value)}
-              placeholder="Ej. Activación 10 días en Expo" 
-              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all"
+              placeholder="Ej. Proyecto Especial" 
+              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900 shadow-sm"
             />
           </div>
           <div className="col-span-full">

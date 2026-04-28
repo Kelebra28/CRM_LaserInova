@@ -78,9 +78,43 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
   // Concepts Table — headers: Descripción | Cant | Detalles | Importe Unitario | Importe
   const tableColumn = ["Descripción", "Cant", "Detalles", "Importe Unitario", "Importe"];
   const tableRows: any[][] = [];
-
   const fmt = (n: number) =>
     `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const drawHeader = (d: jsPDF) => {
+    try {
+      const logoPath = path.join(process.cwd(), "public", "logo_pdf.png");
+      const logoBuffer = fs.readFileSync(logoPath);
+      const logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+      d.addImage(logoBase64, "PNG", 14, 10, 50, 15);
+    } catch (error) {
+      d.setFont("helvetica", "bolditalic");
+      d.setFontSize(24);
+      d.text("LASER INOVA", 14, 22);
+    }
+    d.setFont("helvetica", "bold");
+    d.setFontSize(22);
+    d.text("COTIZACIÓN", pageWidth / 2, 22, { align: "center" });
+    d.setDrawColor(0);
+    d.setLineWidth(0.5);
+    d.line(14, 30, pageWidth - 14, 30);
+  };
+
+  const drawFooter = (d: jsPDF) => {
+    const pHeight = d.internal.pageSize.height;
+    const footerY = pHeight - 30;
+    d.setDrawColor(0);
+    d.setLineWidth(0.5);
+    d.line(14, footerY, pageWidth - 14, footerY);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(9);
+    d.setTextColor(0);
+    d.text("www.laserinova.com", 14, footerY + 6);
+    d.text("info@laserinova.com", pageWidth - 14, footerY + 6, { align: "right" });
+  };
+
+  // Initial header
+  drawHeader(doc);
 
   quote.concepts.forEach((concept: any) => {
     let detalles = concept.details || "";
@@ -100,8 +134,6 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
     let unitPrice = concept.finalUnitPrice ?? 0;
     let total = unitPrice * concept.quantity;
 
-    // Si la cotización tiene IVA (taxable), los precios en la tabla deben ser NETOS (sin IVA)
-    // para que la suma de las filas coincida con el campo "Subtotal" del pie de página.
     if (quote.taxable && quote.subtotal > 0) {
       const taxFactor = 1 + (quote.tax / quote.subtotal);
       unitPrice = unitPrice / taxFactor;
@@ -112,39 +144,32 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
       concept.description,
       concept.quantity.toString(),
       detalles,
-      fmt(unitPrice),        // Importe Unitario (Neto)
-      fmt(total),            // Importe (Neto)
+      fmt(unitPrice),
+      fmt(total),
     ]);
   });
 
   autoTable(doc, {
-    startY: tableStartY,
     head: [tableColumn],
     body: tableRows,
-    theme: 'plain',
-    headStyles: { 
-      fillColor: [102, 102, 102], // Dark gray like the image #666
-      textColor: 255, 
-      fontStyle: 'bold',
-      halign: 'left',
-      valign: 'middle'
-    },
-    bodyStyles: {
-      textColor: [0, 0, 0],
-      fontSize: 9,
-      valign: 'top'
-    },
+    startY: tableStartY,
+    theme: "striped",
+    headStyles: { fillColor: [100, 100, 100], textColor: 255, fontSize: 10, fontStyle: "bold" },
+    bodyStyles: { fontSize: 9, textColor: 50 },
     columnStyles: {
-      0: { cellWidth: 40 }, // Descripción
-      1: { cellWidth: 15, halign: 'center' }, // Cant
-      2: { cellWidth: 'auto' }, // Detalles (takes remaining space)
-      3: { cellWidth: 25, halign: 'right' }, // Importe Unitario
-      4: { cellWidth: 25, halign: 'right' }, // Importe
+      0: { cellWidth: 40 },
+      1: { cellWidth: 15, halign: "center" },
+      2: { cellWidth: "auto" },
+      3: { cellWidth: 30, halign: "right" },
+      4: { cellWidth: 30, halign: "right" }
     },
-    alternateRowStyles: {
-      fillColor: [245, 245, 245] // Light gray background for alternate rows
-    },
-    margin: { left: 14, right: 14 },
+    margin: { top: 35, bottom: 40 },
+    didDrawPage: (data) => {
+      if (data.pageNumber > 1) {
+        drawHeader(doc);
+      }
+      drawFooter(doc);
+    }
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || tableStartY + 20;
@@ -162,8 +187,6 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
 
   doc.setFontSize(13);
   doc.text(`$${quote.total.toFixed(2)}`, pageWidth - 14, totalsY + 20, { align: "right" });
-  // We can't easily bold just the "Total" label differently than the amount, but we'll leave it as is.
-  // Actually, let's just not print "Total:" since the image doesn't have it, just the bold number. Wait, the image doesn't have the word "Total:"? Ah, the image cuts off or just shows the bold number. Let's add it for clarity if it's missing, or omit it. The image shows Subtotal, IVA, and then just a very bold number at the bottom.
 
   // Footer / Consideraciones
   doc.setFont("helvetica", "normal");
@@ -178,14 +201,7 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
     ...rawConsiderations.split("\n")
   ];
 
-  // Calculate footer position
-  const pageHeight = doc.internal.pageSize.height;
-  const footerLineY = pageHeight - 30; // Fixed position for the bottom line
-  
-  // Wrap and print text
   const maxWidth = pageWidth - 28;
-  
-  // 1. Calculate total height needed
   const wrappedLines: string[] = [];
   considerationsLines.forEach(line => {
     const split = doc.splitTextToSize(line, maxWidth);
@@ -196,28 +212,29 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
     }
   });
 
-  const totalTextHeight = wrappedLines.length * 4; // 4 units per line roughly
-  
-  // Aligned to the bottom (just above the footer line)
-  let currentTextY = footerLineY - totalTextHeight - 5;
-  
-  // If it overlaps with totals, we should check, but usually sticking to bottom is better
-  if (currentTextY < totalsY + 15) {
-    // If table is too long, we might overlap or need a new page. 
-    // For now, let's keep it below totals if there's space.
-    currentTextY = totalsY + 20;
+  const pageHeight = doc.internal.pageSize.height;
+  const marginThreshold = pageHeight - 35;
+  let currentTextY = totalsY + 30;
+
+  if (currentTextY > marginThreshold - 10) {
+    doc.addPage();
+    drawHeader(doc);
+    drawFooter(doc);
+    currentTextY = 40;
   }
-  
-  doc.text(wrappedLines, 14, currentTextY);
 
-  // Footer Line and Contact Info
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.5);
-  doc.line(14, footerLineY, pageWidth - 14, footerLineY);
-
-  doc.setFont("helvetica", "bold");
-  doc.text("www.laserinova.com", 14, footerLineY + 6);
-  doc.text("info@laserinova.com", pageWidth - 14, footerLineY + 6, { align: "right" });
+  wrappedLines.forEach(line => {
+    if (currentTextY > marginThreshold) {
+      doc.addPage();
+      drawHeader(doc);
+      drawFooter(doc);
+      currentTextY = 40;
+    }
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(line, 14, currentTextY);
+    currentTextY += 5;
+  });
 
   const buffer = Buffer.from(doc.output("arraybuffer"));
   return buffer;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CreditCard } from "lucide-react";
 import SubmitButton from "@/components/ui/SubmitButton";
+import Select from "@/components/ui/Select";
 import { updateQuotePayment } from "@/app/dashboard/quotes/[id]/actions";
 
 interface PaymentStatusFormProps {
@@ -42,18 +43,14 @@ export default function PaymentStatusForm({ quoteId, currentStatus, currentAmoun
       </div>
       <form action={updateQuotePayment} className="space-y-5">
         <input type="hidden" name="quoteId" value={quoteId} />
+        <input type="hidden" name="paymentStatus" value={status} />
         <div>
-          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Estatus de Cobro</label>
-          <select
-            name="paymentStatus"
+          <Select
+            label="Estatus de Cobro"
+            options={Object.entries(paymentStatusLabels).map(([key, label]) => ({ value: key, label }))}
             value={status}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="w-full text-xs font-black p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-red-500 appearance-none cursor-pointer"
-          >
-            {Object.entries(paymentStatusLabels).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
-            ))}
-          </select>
+            onChange={handleStatusChange}
+          />
         </div>
         <div>
           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Monto Recibido ($)</label>

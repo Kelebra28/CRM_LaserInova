@@ -67,42 +67,50 @@ export default function ClientSelector({
   if (mode === "prospect") {
     return (
       <div ref={wrapperRef} className="relative w-full">
-        <div className="mt-1 flex items-center gap-2">
-          <input
-            type="text"
-            value={localProspect}
-            onChange={(e) => {
-              setLocalProspect(e.target.value);
-              onProspectNameChange?.(e.target.value);
-            }}
-            placeholder="Nombre del prospecto / empresa..."
-            className="flex-1 text-sm border-orange-300 rounded-md py-2 px-3 border bg-orange-50 text-gray-900 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={switchToClient}
-            className="p-2 text-gray-400 hover:text-gray-700 rounded-md hover:bg-gray-100 transition-all"
-            title="Buscar cliente registrado"
-          >
-            <X className="h-4 w-4" />
-          </button>
+        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Cliente / Prospecto *</label>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={localProspect}
+              onChange={(e) => {
+                setLocalProspect(e.target.value);
+                onProspectNameChange?.(e.target.value);
+              }}
+              placeholder="Nombre del prospecto o empresa..."
+              className="w-full text-sm font-medium border-orange-200 rounded-xl py-3 px-4 bg-orange-50/30 text-gray-900 focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 focus:bg-white transition-all outline-none"
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={switchToClient}
+                className="p-1.5 text-orange-400 hover:text-orange-600 hover:bg-orange-100 rounded-lg transition-all"
+                title="Volver a selección de clientes"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center justify-between mt-1 px-1">
-          <p className="text-[10px] text-orange-500 font-bold uppercase tracking-wide">
-            Modo Prospecto
-          </p>
-          <label className="flex items-center gap-1.5 cursor-pointer group">
+        <div className="flex items-center justify-between mt-2 px-1">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+            <p className="text-[10px] text-orange-500 font-black uppercase tracking-widest">
+              Modo Prospecto
+            </p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer group">
             <div className="relative flex items-center">
               <input
                 type="checkbox"
                 checked={saveAsClient}
                 onChange={(e) => setSaveAsClient(e.target.checked)}
-                className="peer h-3.5 w-3.5 appearance-none rounded-sm border border-orange-300 bg-white checked:bg-orange-500 checked:border-orange-500 transition-all cursor-pointer"
+                className="peer h-4 w-4 appearance-none rounded border border-orange-300 bg-white checked:bg-orange-500 checked:border-orange-500 transition-all cursor-pointer"
               />
-              <Check className="absolute h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" />
+              <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" />
             </div>
-            <span className="text-[10px] font-black text-orange-600 uppercase tracking-tighter group-hover:text-orange-700 transition-colors">
-              ¿Guardar como cliente?
+            <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest group-hover:text-orange-700 transition-colors">
+              ¿Guardar en catálogo?
             </span>
           </label>
         </div>
@@ -115,18 +123,23 @@ export default function ClientSelector({
 
   return (
     <div ref={wrapperRef} className="relative w-full">
+      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Cliente *</label>
       <button
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`mt-1 flex items-center justify-between w-full text-base sm:text-sm border-gray-300 rounded-md py-2 px-3 border bg-white focus:outline-none focus:ring-2 focus:ring-red-500 ${
-          disabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-50"
+        className={`flex items-center justify-between w-full text-sm font-medium rounded-xl py-3 px-4 border transition-all duration-200 shadow-sm ${
+          disabled 
+            ? "bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed" 
+            : isOpen
+              ? "bg-white border-red-600 ring-4 ring-red-600/10 text-gray-900"
+              : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-white hover:border-gray-300"
         }`}
       >
         <span className="truncate">
           {selectedClient ? selectedClient.name : "Seleccionar cliente..."}
         </span>
-        <ChevronDown className="h-4 w-4 text-gray-400 shrink-0 ml-2" />
+        <ChevronDown className={`h-4 w-4 text-gray-400 shrink-0 ml-2 transition-transform duration-300 ${isOpen ? 'rotate-180 text-red-600' : ''}`} />
       </button>
 
       {/* Hidden inputs */}
@@ -134,19 +147,16 @@ export default function ClientSelector({
       <input type="hidden" name="prospectName" value="" />
 
       {isOpen && !disabled && (
-        <div
-          className="absolute z-50 mt-1 w-full bg-white shadow-xl rounded-md border border-gray-200 overflow-hidden"
-          style={{ minWidth: "260px" }}
-        >
-          <div className="p-2 border-b border-gray-100 bg-gray-50">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+        <div className="absolute z-50 mt-2 w-full bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200 origin-top" style={{ minWidth: "300px" }}>
+          <div className="p-3 border-b border-gray-50 bg-gray-50/50">
+            <div className="relative mb-2">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-gray-400" />
               </div>
               <input
                 type="text"
                 autoFocus
-                className="block w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                className="block w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all sm:text-xs"
                 placeholder="Buscar por nombre, email o empresa..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -154,55 +164,57 @@ export default function ClientSelector({
             </div>
           </div>
 
-          <ul className="max-h-60 overflow-y-auto py-1 text-sm text-gray-700">
+          <ul className="max-h-64 overflow-y-auto py-2 text-sm text-gray-700">
             {/* Clear selection */}
             {value && (
               <li
                 onClick={() => { onChange(""); setIsOpen(false); }}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-50"
+                className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-50"
               >
                 <X className="h-3 w-3" /> Quitar selección
               </li>
             )}
 
             {filteredClients.length === 0 ? (
-              <li className="px-3 py-4 text-center text-gray-500 text-sm">
-                No se encontraron clientes
-              </li>
+              <div className="px-4 py-8 text-center">
+                <p className="text-gray-400 text-xs font-medium">No se encontraron clientes</p>
+              </div>
             ) : (
               filteredClients.map((c) => (
                 <li
                   key={c.id}
                   onClick={() => { onChange(c.id); setIsOpen(false); }}
-                  className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-red-50 transition-colors ${
-                    value === c.id ? "bg-red-50 text-red-900 font-medium" : ""
+                  className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group ${
+                    value === c.id ? "bg-red-50" : "hover:bg-gray-50"
                   }`}
                 >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{c.name}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className={`truncate text-xs font-bold ${value === c.id ? "text-red-700" : "text-gray-700 group-hover:text-gray-900"}`}>
+                      {c.name}
+                    </span>
                     {(c.email || c.company) && (
-                      <span className="text-xs text-gray-500 mt-0.5">
+                      <span className="truncate text-[10px] text-gray-400 mt-0.5 group-hover:text-gray-500">
                         {c.company ? `${c.company} ` : ""}
                         {c.company && c.email ? "• " : ""}
                         {c.email}
                       </span>
                     )}
                   </div>
-                  {value === c.id && <Check className="h-4 w-4 text-red-600" />}
+                  {value === c.id && <Check className="h-4 w-4 text-red-600 shrink-0 ml-4" />}
                 </li>
               ))
             )}
           </ul>
 
           {/* Prospect mode option */}
-          <div className="border-t border-gray-100 p-2">
+          <div className="border-t border-gray-100 p-3 bg-gray-50/50">
             <button
               type="button"
               onClick={switchToProspect}
-              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 rounded-md transition-all uppercase tracking-wider"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-[10px] font-black text-orange-600 border border-orange-200 rounded-xl shadow-sm hover:bg-orange-50 hover:border-orange-300 transition-all uppercase tracking-widest"
             >
-              <UserPlus className="h-3.5 w-3.5" />
-              Agregar como Prospecto (sin registro)
+              <UserPlus className="h-4 w-4" />
+              Usar como Prospecto
             </button>
           </div>
         </div>

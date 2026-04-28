@@ -163,7 +163,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       <div className="bg-white shadow-sm border border-gray-100 rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-6">Datos Generales</h2>
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700">Cliente (Opcional)</label>
             <ClientSelector
               clients={clients}
@@ -174,7 +174,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Proyecto *</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Proyecto *</label>
             <input
               type="text"
               name="project"
@@ -182,67 +182,67 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
               onChange={e => setProject(e.target.value)}
               required
               placeholder="Ej. Señalética Corporativa"
-              className="mt-1 shadow-sm focus:ring-red-500 focus:border-red-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border text-gray-900 placeholder-gray-500"
+              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Descripción General (Opcional)</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Descripción General (Opcional)</label>
             <input
               type="text"
               name="description"
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm border py-2 px-3"
+              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900"
               placeholder="Ej: Servicio de personalización..."
             />
           </div>
 
-          <div className="sm:col-span-2 flex flex-wrap items-center gap-6">
-            <div className="flex items-center">
-              <input
-                id="isWholesale"
-                type="checkbox"
-                checked={isWholesale}
-                onChange={(e) => setIsWholesale(e.target.checked)}
-                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded cursor-pointer"
-              />
-              <label htmlFor="isWholesale" className="ml-2 block text-sm font-medium text-gray-900 cursor-pointer">
-                Aplicar precio de Mayoreo
+          <div className="sm:col-span-2 flex flex-wrap items-center gap-8">
+            <div className="flex items-center group cursor-pointer">
+              <div className="relative flex items-center">
+                <input
+                  id="isWholesale"
+                  type="checkbox"
+                  checked={isWholesale}
+                  onChange={(e) => setIsWholesale(e.target.checked)}
+                  className="peer h-5 w-5 appearance-none rounded border border-gray-300 bg-white checked:bg-red-600 checked:border-red-600 transition-all cursor-pointer"
+                />
+                <Check className="absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" />
+              </div>
+              <label htmlFor="isWholesale" className="ml-3 block text-[11px] font-black text-gray-500 uppercase tracking-widest cursor-pointer group-hover:text-red-600 transition-colors">
+                Precio de Mayoreo
               </label>
               <input type="hidden" name="isWholesale" value={isWholesale ? "true" : "false"} />
             </div>
+
             <div
               onClick={() => setTaxable(!taxable)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition-all select-none ${taxable ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 cursor-pointer transition-all select-none shadow-sm ${taxable ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
             >
-              <div className={`w-9 h-5 rounded-full transition-all relative ${taxable ? 'bg-blue-500' : 'bg-gray-300'}`}>
-                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${taxable ? 'left-4' : 'left-0.5'}`} />
+              <div className={`w-10 h-5 rounded-full transition-all relative ${taxable ? 'bg-red-600' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${taxable ? 'left-5.5' : 'left-0.5'}`} />
               </div>
-              <span className="text-xs font-black uppercase tracking-wide">
-                {taxable ? 'Con IVA (16%)' : 'Sin IVA / Sin Factura'}
+              <span className="text-[10px] font-black uppercase tracking-[0.1em]">
+                {taxable ? 'Con IVA (16%)' : 'Sin IVA / Efectivo'}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <label htmlFor="margin" className="block text-sm font-medium text-gray-700">
-                Margen de Utilidad:
+            <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+              <label htmlFor="margin" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">
+                Margen:
               </label>
-              <div className="relative rounded-md shadow-sm w-24">
+              <div className="relative w-20">
                 <input
                   type="number"
                   id="margin"
                   value={margin === 0 && String(margin) !== "0" ? "" : margin}
                   onChange={(e) => setMargin(e.target.value === "" ? ("" as any) : Number(e.target.value))}
-                  className="focus:ring-red-500 focus:border-red-500 block w-full pr-7 sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-red-600"
+                  className="w-full text-center text-sm font-black text-red-600 bg-white border border-gray-200 rounded-xl py-2 px-1 focus:ring-2 focus:ring-red-600/20 focus:border-red-600 outline-none"
                 />
-                <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-sm">%</span>
-                </div>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-300">%</span>
               </div>
-              <span className="text-[10px] text-gray-400 font-bold uppercase">(Divisor: {( (100-margin)/100 ).toFixed(2)})</span>
             </div>
           </div>
-
         </div>
       </div>
 
