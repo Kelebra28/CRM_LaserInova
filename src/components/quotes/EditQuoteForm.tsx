@@ -211,6 +211,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           <Info className="w-5 h-5 text-red-600" />
           <h2 className="text-lg font-medium text-gray-900">Información General</h2>
         </div>
+        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-5">
           <div className="md:col-span-2">
             <ClientSelector 
               clients={clients} 
