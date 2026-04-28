@@ -110,6 +110,7 @@ export async function updateQuoteAction(formData: FormData) {
   const total = parseFloat(formData.get("total") as string);
   const realCostTotal = parseFloat(formData.get("realCostTotal") as string);
   const estimatedUtility = parseFloat(formData.get("estimatedUtility") as string);
+  const taxable = formData.get("taxable") === "true";
   
   const conceptsData = JSON.parse(formData.get("concepts") as string);
 

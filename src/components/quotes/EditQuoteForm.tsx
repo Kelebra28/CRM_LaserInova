@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Calculator, Save, Trash2, Info, DollarSign } from "lucide-react";
+import { Calculator, Save, Trash2, Info, DollarSign, Check } from "lucide-react";
 import Link from "next/link";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { calculateConcept, CalculationInput, GlobalCosts, MaterialData } from "@/lib/calculations";
@@ -26,6 +26,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
   const [prospectName, setProspectName] = useState((quote as any).prospectName || "");
   const [project, setProject] = useState(quote.project || "");
   const [description, setDescription] = useState(quote.description || "");
+  const [taxable, setTaxable] = useState(quote.taxable || false);
   const [isWholesale, setIsWholesale] = useState(false); // Podríamos guardarlo en DB pero por ahora default false
   const [margin, setMargin] = useState(globalCosts.margen_default || 35);
 
@@ -201,6 +202,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
       <input type="hidden" name="total" value={total} />
       <input type="hidden" name="realCostTotal" value={costoReal} />
       <input type="hidden" name="estimatedUtility" value={utilidad} />
+      <input type="hidden" name="taxable" value={taxable ? "true" : "false"} />
       <input type="hidden" name="concepts" value={JSON.stringify(concepts)} />
 
       {/* 1. Información General */}
@@ -209,8 +211,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           <Info className="w-5 h-5 text-red-600" />
           <h2 className="text-lg font-medium text-gray-900">Información General</h2>
         </div>
-        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-          <div className="sm:col-span-3">
+          <div className="md:col-span-2">
             <ClientSelector 
               clients={clients} 
               value={clientId} 
@@ -218,12 +219,11 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
               onProspectNameChange={setProspectName}
               prospectName={prospectName}
             />
-            {/* hidden inputs are emitted by ClientSelector itself */}
           </div>
 
-          <div className="sm:col-span-3">
-            <label htmlFor="project" className="block text-sm font-medium text-gray-700">
-              Nombre del Proyecto
+          <div className="md:col-span-1">
+            <label htmlFor="project" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+              Nombre del Proyecto *
             </label>
             <input
               type="text"
@@ -232,55 +232,68 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
               required
               value={project}
               onChange={(e) => setProject(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm p-2 border text-gray-900"
+              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900 shadow-sm"
             />
           </div>
 
-          <div className="sm:col-span-6">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Notas Internas
+          <div className="sm:col-span-2 md:col-span-2">
+            <label htmlFor="description" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+              Descripción General (Opcional)
             </label>
-            <textarea
+            <input
+              type="text"
               id="description"
               name="description"
-              rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm p-2 border text-gray-900"
+              placeholder="Ej: Servicio de personalización..."
+              className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900 shadow-sm"
             />
           </div>
 
-          <div className="sm:col-span-6 flex flex-wrap items-center gap-6">
-            <div className="flex items-center">
-              <input
-                id="isWholesale"
-                type="checkbox"
-                checked={isWholesale}
-                onChange={(e) => setIsWholesale(e.target.checked)}
-                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded cursor-pointer"
-              />
-              <label htmlFor="isWholesale" className="ml-2 block text-sm font-medium text-gray-900 cursor-pointer">
-                Aplicar precio de Mayoreo
+          <div className="sm:col-span-6 flex flex-wrap items-center gap-8 pt-2">
+            <div className="flex items-center group cursor-pointer">
+              <div className="relative flex items-center">
+                <input
+                  id="isWholesale"
+                  type="checkbox"
+                  checked={isWholesale}
+                  onChange={(e) => setIsWholesale(e.target.checked)}
+                  className="peer h-5 w-5 appearance-none rounded border border-gray-300 bg-white checked:bg-red-600 checked:border-red-600 transition-all cursor-pointer"
+                />
+                <Check className="absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5" />
+              </div>
+              <label htmlFor="isWholesale" className="ml-3 block text-[11px] font-black text-gray-500 uppercase tracking-widest cursor-pointer group-hover:text-red-600 transition-colors">
+                Precio de Mayoreo
               </label>
             </div>
 
-            <div className="flex items-center gap-2">
-              <label htmlFor="margin" className="block text-sm font-medium text-gray-700">
-                Margen de Utilidad:
+            <div
+              onClick={() => setTaxable(!taxable)}
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 cursor-pointer transition-all select-none shadow-sm ${taxable ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
+            >
+              <div className={`w-10 h-5 rounded-full transition-all relative ${taxable ? 'bg-red-600' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${taxable ? 'left-5.5' : 'left-0.5'}`} />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.1em]">
+                {taxable ? 'Con IVA (16%)' : 'Sin IVA / Efectivo'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+              <label htmlFor="margin" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">
+                Margen:
               </label>
-              <div className="relative rounded-md shadow-sm w-24">
+              <div className="relative w-20">
                 <input
                   type="number"
                   id="margin"
                   value={margin === 0 && String(margin) !== "0" ? "" : margin}
                   onChange={(e) => setMargin(e.target.value === "" ? ("" as any) : Number(e.target.value))}
-                  className="focus:ring-red-500 focus:border-red-500 block w-full pr-7 sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-red-600"
+                  className="w-full text-center text-sm font-black text-red-600 bg-white border border-gray-200 rounded-xl py-2 px-1 focus:ring-2 focus:ring-red-600/20 focus:border-red-600 outline-none"
                 />
-                <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-sm">%</span>
-                </div>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-300">%</span>
               </div>
-              <span className="text-[10px] text-gray-400 font-bold uppercase">(Divisor: {( (100-margin)/100 ).toFixed(2)})</span>
             </div>
           </div>
 
@@ -333,39 +346,39 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
 
               <div className="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-12">
                 <div className="sm:col-span-4">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Descripción</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Descripción</label>
                   <input
                     type="text"
                     value={concept.description}
                     onChange={e => updateConcept(concept.id, "description", e.target.value)}
                     placeholder="Ej. Letrero de acrílico..."
-                    className="w-full text-sm font-medium border-gray-200 rounded-lg p-2.5 border bg-white focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900 shadow-sm"
                   />
                 </div>
 
                 <div className="sm:col-span-8">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Detalles (para el PDF - Opcional)</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Detalles (para el PDF - Opcional)</label>
                   <textarea 
                     value={concept.details || ""} 
                     onChange={e => updateConcept(concept.id, "details", e.target.value)}
-                    className="w-full text-xs font-medium border-gray-200 rounded-lg p-2.5 border bg-gray-50 focus:bg-white transition-all outline-none"
-                    placeholder="Ej. Grabado profundo, limpieza de bordes, etc. Si se deja vacío, se generará automáticamente."
+                    className="w-full text-sm font-medium border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900 shadow-sm min-h-[46px]"
+                    placeholder="Ej. Grabado profundo, limpieza de bordes, etc."
                     rows={1}
                   />
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cantidad</label>
+                <div className="sm:col-span-3">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Cantidad</label>
                   <input
                     type="number"
                     min="1"
                     value={concept.quantity === 0 && String(concept.quantity) !== "0" ? "" : concept.quantity}
                     onChange={e => updateConcept(concept.id, "quantity", e.target.value === "" ? "" : Number(e.target.value))}
-                    className="w-full text-sm font-bold border-gray-200 rounded-lg p-2.5 border bg-white focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full text-sm font-black border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-4 focus:ring-red-600/10 focus:border-red-600 transition-all outline-none text-gray-900 shadow-sm"
                   />
                 </div>
 
-                <div className="sm:col-span-6">
+                <div className="sm:col-span-9">
                   <MaterialSelector 
                     materials={materials} 
                     value={concept.materialId}
@@ -376,24 +389,24 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                 {/* Parámetros según tipo */}
                 {concept.type === "RESALE" && (
                   <>
-                    <div className="sm:col-span-3">
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Precio Venta Unitario ($)</label>
+                    <div className="sm:col-span-6">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Precio Venta Unitario ($)</label>
                       <input 
                         type="number" 
                         step="0.01" 
                         value={concept.manualUnitPrice === 0 && String(concept.manualUnitPrice) !== "0" ? "" : concept.manualUnitPrice} 
                         onChange={e => updateConcept(concept.id, "manualUnitPrice", e.target.value)} 
-                        className="w-full text-sm font-black border-emerald-200 rounded-lg p-2.5 border bg-emerald-50/30 text-emerald-700" 
+                        className="w-full text-sm font-black border-emerald-200 rounded-xl px-4 py-3 bg-emerald-50/30 text-emerald-700 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all shadow-sm" 
                       />
                     </div>
-                    <div className="sm:col-span-3">
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Costo Compra Unitario ($)</label>
+                    <div className="sm:col-span-6">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Costo Compra Unitario ($)</label>
                       <input 
                         type="number" 
                         step="0.01" 
                         value={concept.manualUnitCost === 0 && String(concept.manualUnitCost) !== "0" ? "" : concept.manualUnitCost} 
                         onChange={e => updateConcept(concept.id, "manualUnitCost", e.target.value)} 
-                        className="w-full text-sm font-black border-red-200 rounded-lg p-2.5 border bg-red-50/30 text-red-600" 
+                        className="w-full text-sm font-black border-red-200 rounded-xl px-4 py-3 bg-red-50/30 text-red-600 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none transition-all shadow-sm" 
                       />
                     </div>
                   </>
