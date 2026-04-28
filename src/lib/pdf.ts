@@ -57,13 +57,7 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
       currentY += 6;
     }
     if (!quote.client && quote.prospectName) {
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(8);
-      doc.setTextColor(150, 100, 0);
-      doc.text("(Prospecto)", 35, currentY);
-      doc.setTextColor(0);
-      doc.setFontSize(10);
-      currentY += 5;
+      currentY += 2;
     }
   }
 
@@ -103,15 +97,23 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
       detalles = parts.join(". ") + (parts.length > 0 ? "." : "");
     }
 
-    const unitPrice = concept.finalUnitPrice ?? 0;
-    const total = unitPrice * concept.quantity;
+    let unitPrice = concept.finalUnitPrice ?? 0;
+    let total = unitPrice * concept.quantity;
+
+    // Si la cotización tiene IVA (taxable), los precios en la tabla deben ser NETOS (sin IVA)
+    // para que la suma de las filas coincida con el campo "Subtotal" del pie de página.
+    if (quote.taxable && quote.subtotal > 0) {
+      const taxFactor = 1 + (quote.tax / quote.subtotal);
+      unitPrice = unitPrice / taxFactor;
+      total = total / taxFactor;
+    }
 
     tableRows.push([
       concept.description,
       concept.quantity.toString(),
       detalles,
-      fmt(unitPrice),        // Importe Unitario
-      fmt(total),            // Importe = Unitario × Cantidad
+      fmt(unitPrice),        // Importe Unitario (Neto)
+      fmt(total),            // Importe (Neto)
     ]);
   });
 
