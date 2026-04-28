@@ -164,6 +164,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
         clientProvidesMaterial: false,
         finalUnitPrice: 0,
         totalAmount: 0,
+        details: "",
         calculated: null
       }
     ]);

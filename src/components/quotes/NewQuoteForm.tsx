@@ -53,6 +53,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
         suggestedPrice: 0,
         finalUnitPrice: 0,
         totalAmount: 0,
+        details: "",
       }
     ]);
   };

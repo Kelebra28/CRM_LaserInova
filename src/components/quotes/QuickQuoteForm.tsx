@@ -22,7 +22,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
   const [folio, setFolio] = useState(`LI-${new Date().getFullYear()}-ESP-${Math.floor(Math.random() * 1000)}`);
   
   const [concepts, setConcepts] = useState([
-    { id: crypto.randomUUID(), description: "Activación especial / Evento", quantity: 1 as number | string, unitPrice: 0 as number | string, margin: defaultMargin as number | string }
+    { id: crypto.randomUUID(), description: "Activación especial / Evento", quantity: 1 as number | string, unitPrice: 0 as number | string, margin: defaultMargin as number | string, details: "" }
   ]);
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -42,7 +42,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
   });
 
   const addConcept = () => {
-    setConcepts([...concepts, { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0, margin: defaultMargin }]);
+    setConcepts([...concepts, { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0, margin: defaultMargin, details: "" }]);
   };
 
   const removeConcept = (id: string) => {
