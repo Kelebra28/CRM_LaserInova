@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Calculator, Save, Plus, Trash2, Info, DollarSign } from "lucide-react";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { calculateConcept, CalculationInput, GlobalCosts, MaterialData } from "@/lib/calculations";
@@ -8,6 +8,7 @@ import { createQuoteAction } from "@/app/dashboard/quotes/actions";
 import MaterialSelector from "@/components/quotes/MaterialSelector";
 import ClientSelector from "@/components/quotes/ClientSelector";
 import CalculationAudit from "@/components/quotes/CalculationAudit";
+import ConfirmSaveModal from "@/components/ui/ConfirmSaveModal";
 
 
 interface NewQuoteFormProps {
@@ -18,6 +19,8 @@ interface NewQuoteFormProps {
 }
 
 export default function NewQuoteForm({ clients, materials, globalCosts, userId }: NewQuoteFormProps) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [clientId, setClientId] = useState("");
   const [prospectName, setProspectName] = useState("");
   const [project, setProject] = useState("");
@@ -141,7 +144,8 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
 
 
   return (
-    <form action={createQuoteAction} className="space-y-8">
+    <>
+    <form ref={formRef} action={createQuoteAction} className="space-y-8">
       {/* Datos ocultos para enviar al server */}
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="subtotal" value={subtotal} />
@@ -573,17 +577,31 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
             </div>
 
             <div className="mt-12 flex justify-end">
-              <SubmitButton
-                loadingText="Guardando Cotización..."
-                className="py-4 px-12 text-sm font-black uppercase tracking-widest rounded-lg shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700 transition-all active:scale-95"
+              <button
+                type="button"
+                onClick={() => setShowConfirm(true)}
+                className="flex items-center py-4 px-12 text-sm font-black uppercase tracking-widest rounded-lg shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700 transition-all active:scale-95 text-white"
               >
                 <Save className="mr-2 h-5 w-5" />
                 Guardar Cotización
-              </SubmitButton>
+              </button>
             </div>
           </div>
         </div>
       </div>
     </form>
+
+    <ConfirmSaveModal
+      isOpen={showConfirm}
+      onConfirm={() => {
+        setShowConfirm(false);
+        formRef.current?.requestSubmit();
+      }}
+      onCancel={() => setShowConfirm(false)}
+      title="¿Guardar cotización?"
+      message={`Proyecto: "${project || 'Sin nombre'}"`}
+      detail={`Total: $${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+    />
+    </>
   );
 }

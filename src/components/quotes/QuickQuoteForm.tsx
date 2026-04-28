@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { saveQuickQuoteAction } from "@/app/dashboard/quotes/actions";
 import { useRouter } from "next/navigation";
 import StatusModal from "@/components/ui/StatusModal";
+import ConfirmSaveModal from "@/components/ui/ConfirmSaveModal";
 
 interface QuickQuoteFormProps {
   defaultMargin: number;
@@ -26,6 +27,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -118,6 +120,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
       return;
     }
     
+    setShowConfirm(false);
     setIsSaving(true);
     
     const mockQuote = {
@@ -310,7 +313,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
         {/* Acciones */}
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
           <button
-            onClick={handleSave}
+            onClick={() => setShowConfirm(true)}
             disabled={isSaving || isGenerating || concepts.length === 0 || subtotal === 0 || !clientName || !project}
             className="flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-black hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
           >
@@ -336,6 +339,15 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
         title={statusModal.title}
         message={statusModal.message}
         type={statusModal.type}
+      />
+
+      <ConfirmSaveModal
+        isOpen={showConfirm}
+        onConfirm={handleSave}
+        onCancel={() => setShowConfirm(false)}
+        title="¿Guardar cotización especial?"
+        message={`"${project || 'Sin proyecto'}" para ${clientName || 'Sin cliente'}`}
+        detail={`Total: $${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`}
       />
     </div>
   );

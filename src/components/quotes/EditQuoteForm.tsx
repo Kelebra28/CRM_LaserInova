@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Calculator, Save, Trash2, Info, DollarSign } from "lucide-react";
 import Link from "next/link";
 import SubmitButton from "@/components/ui/SubmitButton";
@@ -9,6 +9,7 @@ import { updateQuoteAction } from "@/app/dashboard/quotes/actions";
 import MaterialSelector from "@/components/quotes/MaterialSelector";
 import ClientSelector from "@/components/quotes/ClientSelector";
 import CalculationAudit from "@/components/quotes/CalculationAudit";
+import ConfirmSaveModal from "@/components/ui/ConfirmSaveModal";
 
 
 interface EditQuoteFormProps {
@@ -19,6 +20,8 @@ interface EditQuoteFormProps {
 }
 
 export default function EditQuoteForm({ quote, clients, materials, globalCosts }: EditQuoteFormProps) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [clientId, setClientId] = useState(quote.clientId || "");
   const [prospectName, setProspectName] = useState((quote as any).prospectName || "");
   const [project, setProject] = useState(quote.project || "");
@@ -188,7 +191,8 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
 
 
   return (
-    <form action={updateQuoteAction} className="space-y-8">
+    <>
+    <form ref={formRef} action={updateQuoteAction} className="space-y-8">
       <input type="hidden" name="quoteId" value={quote.id} />
       <input type="hidden" name="userId" value={quote.userId} />
       <input type="hidden" name="subtotal" value={subtotal} />
@@ -563,18 +567,32 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
               >
                 Cancelar
               </Link>
-              <SubmitButton
-                variant="primary"
-                loadingText="Actualizando..."
-                className="py-3 px-12 text-sm font-black uppercase tracking-widest rounded-lg shadow-lg shadow-red-900/20"
+              <button
+                type="button"
+                onClick={() => setShowConfirm(true)}
+                className="py-3 px-12 text-sm font-black uppercase tracking-widest rounded-lg shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700 transition-all active:scale-95 text-white"
               >
                 <Save className="mr-2 h-5 w-5" />
                 Guardar Cambios
-              </SubmitButton>
+              </button>
             </div>
           </div>
         </div>
       </div>
     </form>
+
+    <ConfirmSaveModal
+      isOpen={showConfirm}
+      onConfirm={() => {
+        setShowConfirm(false);
+        formRef.current?.requestSubmit();
+      }}
+      onCancel={() => setShowConfirm(false)}
+      title="¿Guardar cambios en cotización?"
+      message={`Se actualizará el folio ${quote.folio}`}
+      detail={`Total: $${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+      confirmLabel="Actualizar"
+    />
+    </>
   );
 }
