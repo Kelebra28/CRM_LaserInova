@@ -42,6 +42,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
       partHeight: c.height,
       timeMin: c.cutTime,
       clientProvidesMaterial: c.clientProvidesMaterial,
+      details: c.details,
       unitPrice: c.finalUnitPrice,
       totalAmount: c.totalAmount,
       realCost: c.realCost,
