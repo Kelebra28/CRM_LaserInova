@@ -11,13 +11,15 @@ import {
   PieChart,
   DollarSign,
   Cpu,
-  X
+  X,
+  CheckSquare
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 const menuItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Cotizaciones", href: "/dashboard/quotes", icon: FileText },
+  { name: "Tareas", href: "/dashboard/tasks", icon: CheckSquare },
   { name: "Clientes", href: "/dashboard/clients", icon: Users },
   { name: "Finanzas", href: "/dashboard/finance", icon: DollarSign, adminOnly: true },
   { name: "Materiales", href: "/dashboard/materials", icon: Package },

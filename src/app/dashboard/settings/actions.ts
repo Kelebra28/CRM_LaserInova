@@ -2,32 +2,111 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+// ─── Cost configs ─────────────────────────────────────────────────────────────
 
 export async function updateCostConfigurations(formData: FormData) {
   const entries = Array.from(formData.entries());
-  
-  // Exclude hidden fields or next.js internals if any, though standard formData doesn't have them
   const configEntries = entries.filter(([key]) => key !== "submit");
 
   for (const [key, value] of configEntries) {
     if (!value) continue;
-    
     const parsedValue = parseFloat(value as string);
     if (isNaN(parsedValue)) continue;
-
-    // We assume the name of the config is a human readable version of the key
-    const name = key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-
+    const name = key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
     await prisma.costConfiguration.upsert({
       where: { key },
       update: { value: parsedValue },
-      create: {
-        key,
-        name,
-        value: parsedValue,
-      },
+      create: { key, name, value: parsedValue },
     });
   }
+  revalidatePath("/dashboard/settings");
+}
 
+// ─── Create user ──────────────────────────────────────────────────────────────
+
+export async function createUserAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.role !== "ADMIN") throw new Error("No autorizado");
+
+  const name     = (formData.get("name") as string).trim();
+  const email    = (formData.get("email") as string).trim().toLowerCase();
+  const password = formData.get("password") as string;
+  const role     = (formData.get("role") as string) || "SELLER";
+
+  if (!name || !email || !password) throw new Error("Faltan campos requeridos");
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw new Error("Ya existe un usuario con ese correo");
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.user.create({ data: { name, email, passwordHash, role } });
+
+  revalidatePath("/dashboard/settings");
+}
+
+// ─── Update user (admin editing any user) ────────────────────────────────────
+
+export async function updateUserAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.role !== "ADMIN") throw new Error("No autorizado");
+
+  const userId = formData.get("userId") as string;
+  const name   = (formData.get("name") as string).trim();
+  const email  = (formData.get("email") as string).trim().toLowerCase();
+  const role   = formData.get("role") as string;
+  const active = formData.get("active") === "true";
+
+  const data: any = { name, email, role, active };
+
+  const newPassword = (formData.get("newPassword") as string)?.trim();
+  if (newPassword && newPassword.length >= 6) {
+    data.passwordHash = await bcrypt.hash(newPassword, 10);
+  }
+
+  await prisma.user.update({ where: { id: userId }, data });
+  revalidatePath("/dashboard/settings");
+}
+
+// ─── Update own profile ───────────────────────────────────────────────────────
+
+export async function updateProfileAction(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  const currentUserId = (session?.user as any)?.id;
+  if (!currentUserId) throw new Error("No autenticado");
+
+  const name  = (formData.get("name") as string).trim();
+  const email = (formData.get("email") as string).trim().toLowerCase();
+
+  const data: any = { name, email };
+
+  const currentPassword = (formData.get("currentPassword") as string)?.trim();
+  const newPassword     = (formData.get("newPassword") as string)?.trim();
+
+  if (currentPassword && newPassword) {
+    const user = await prisma.user.findUnique({ where: { id: currentUserId } });
+    if (!user) throw new Error("Usuario no encontrado");
+
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) throw new Error("La contraseña actual es incorrecta");
+    if (newPassword.length < 6) throw new Error("La nueva contraseña debe tener al menos 6 caracteres");
+
+    data.passwordHash = await bcrypt.hash(newPassword, 10);
+  }
+
+  await prisma.user.update({ where: { id: currentUserId }, data });
+  revalidatePath("/dashboard/settings");
+}
+
+// ─── Toggle user active ───────────────────────────────────────────────────────
+
+export async function toggleUserActiveAction(userId: string, active: boolean) {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.role !== "ADMIN") throw new Error("No autorizado");
+
+  await prisma.user.update({ where: { id: userId }, data: { active } });
   revalidatePath("/dashboard/settings");
 }

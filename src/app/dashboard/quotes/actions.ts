@@ -4,6 +4,32 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+/**
+ * Genera el siguiente folio disponible de forma robusta.
+ * Busca el último folio del año actual y le suma 1.
+ * Si el formato cambia (e.g. año nuevo), empieza en 0001.
+ */
+async function generateNextFolio(): Promise<string> {
+  const year = new Date().getFullYear();
+  const prefix = `LI-${year}-`;
+
+  const lastQuote = await prisma.quote.findFirst({
+    where: { folio: { startsWith: prefix } },
+    orderBy: { folio: "desc" },
+    select: { folio: true },
+  });
+
+  let nextNumber = 1;
+  if (lastQuote) {
+    const lastNumber = parseInt(lastQuote.folio.replace(prefix, ""), 10);
+    if (!isNaN(lastNumber)) {
+      nextNumber = lastNumber + 1;
+    }
+  }
+
+  return `${prefix}${String(nextNumber).padStart(4, "0")}`;
+}
+
 export async function createQuoteAction(formData: FormData) {
   const clientId = formData.get("clientId") as string;
   const prospectName = (formData.get("prospectName") as string) || null;
@@ -41,13 +67,15 @@ export async function createQuoteAction(formData: FormData) {
     finalProspectName = null;
   }
 
-  // Generar folio (ej: LI-2026-0001)
-  const count = await prisma.quote.count();
-  const year = new Date().getFullYear();
-  const folioNumber = String(count + 1).padStart(4, '0');
-  const folio = `LI-${year}-${folioNumber}`;
-
-  const quote = await prisma.quote.create({
+  // Generar folio con retry para evitar race conditions (P2002)
+  let quote: Awaited<ReturnType<typeof prisma.quote.create>>;
+  let attempts = 0;
+  while (true) {
+    attempts++;
+    if (attempts > 5) throw new Error("No se pudo generar un folio único. Intenta de nuevo.");
+    const folio = await generateNextFolio();
+    try {
+      quote = await prisma.quote.create({
     data: {
       folio,
       clientId: finalClientId,
@@ -90,11 +118,21 @@ export async function createQuoteAction(formData: FormData) {
           factors: "{}", // Aquí se guardarían los custom margins de cada concepto
         }
       }
-    },
-  });
+      },
+    });
+      break; // éxito
+    } catch (err: any) {
+      if (err?.code === "P2002" && err?.meta?.target === "Quote_folio_key") {
+        // Folio ya tomado por otra solicitud concurrente, reintentamos
+        await new Promise((r) => setTimeout(r, 50 * attempts));
+        continue;
+      }
+      throw err;
+    }
+  }
 
   revalidatePath("/dashboard/quotes");
-  redirect(`/dashboard/quotes/${quote.id}`);
+  redirect(`/dashboard/quotes/${quote!.id}`);
 }
 
 export async function updateQuoteAction(formData: FormData) {
@@ -243,12 +281,15 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string, saveA
     }
   }
 
-  const count = await prisma.quote.count();
-  const year = new Date().getFullYear();
-  const folioNumber = String(count + 1).padStart(4, '0');
-  const folio = `LI-${year}-${folioNumber}`;
-
-  const quote = await prisma.quote.create({
+  // Generar folio con retry para evitar race conditions (P2002)
+  let quote: Awaited<ReturnType<typeof prisma.quote.create>>;
+  let quickAttempts = 0;
+  while (true) {
+    quickAttempts++;
+    if (quickAttempts > 5) throw new Error("No se pudo generar un folio único. Intenta de nuevo.");
+    const folio = await generateNextFolio();
+    try {
+      quote = await prisma.quote.create({
     data: {
       folio,
       clientId: finalClientId,
@@ -290,14 +331,23 @@ export async function saveQuickQuoteAction(mockQuote: any, userId: string, saveA
           globalValues: "{}",
           factors: "{}",
         }
+        }
+      },
+    });
+      break; // éxito
+    } catch (err: any) {
+      if (err?.code === "P2002" && err?.meta?.target === "Quote_folio_key") {
+        await new Promise((r) => setTimeout(r, 50 * quickAttempts));
+        continue;
       }
-    },
-  });
+      throw err;
+    }
+  }
 
   revalidatePath("/dashboard/quotes");
   revalidatePath("/dashboard/finance");
   
-  return { success: true, quoteId: quote.id };
+  return { success: true, quoteId: quote!.id };
 }
 
 
