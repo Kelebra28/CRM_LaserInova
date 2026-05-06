@@ -8,7 +8,7 @@ import StatusGridButton from "@/components/quotes/StatusGridButton";
 import DeleteQuoteButton from "@/components/quotes/DeleteQuoteButton";
 import PaymentStatusForm from "@/components/quotes/PaymentStatusForm";
 import CalculationAudit from "@/components/quotes/CalculationAudit";
-
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 const statusLabels: Record<string, string> = {
   DRAFT: "Borrador",
@@ -285,7 +285,30 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
             )}
           </div>
 
-          {/* 2. Work Status (Operations) */}
+          {/* 2. Creado por */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <div className="flex items-center gap-2 mb-4 border-b border-gray-50 pb-3">
+              <div className="p-1.5 bg-violet-50 rounded-lg">
+                <User className="h-3.5 w-3.5 text-violet-600" />
+              </div>
+              <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest">Creado por</h3>
+            </div>
+            {quote.user ? (
+              <div className="flex items-center gap-3">
+                <UserAvatar name={quote.user.name} size="md" />
+                <div>
+                  <p className="text-sm font-black text-gray-900">{quote.user.name}</p>
+                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                    {new Date(quote.createdAt).toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" })}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400">Sin información</p>
+            )}
+          </div>
+
+          {/* 3. Work Status (Operations) */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-6 border-b border-gray-50 pb-4">
               <div className="p-2 bg-blue-50 rounded-lg">
@@ -308,7 +331,7 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
             </div>
           </div>
 
-          {/* 3. Payment Control (Finance) */}
+          {/* 4. Payment Control (Finance) */}
           <PaymentStatusForm 
             quoteId={quote.id} 
             currentStatus={quote.paymentStatus || "PENDING"} 
@@ -316,7 +339,7 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
             totalAmount={quote.total}
           />
 
-          {/* 4. Auditoría de Fórmulas */}
+          {/* 5. Auditoría de Fórmulas */}
           <CalculationAudit 
             concepts={quote.concepts} 
             margin={Number(quote.subtotal > 0 ? (((quote.subtotal - quote.realCostTotal) / quote.subtotal) * 100).toFixed(0) : 35)} 
@@ -327,5 +350,3 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
     </div>
   );
 }
-
-

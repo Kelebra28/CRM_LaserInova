@@ -142,7 +142,7 @@ export default function QuickQuoteForm({ defaultMargin }: QuickQuoteFormProps) {
     };
 
     try {
-      const result = await saveQuickQuoteAction(mockQuote, userId, saveAsClient);
+      const result = await saveQuickQuoteAction(mockQuote, saveAsClient);
       if (result.success) {
         setStatusModal({
           isOpen: true,

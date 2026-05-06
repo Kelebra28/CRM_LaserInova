@@ -13,6 +13,7 @@ import {
 } from "@/app/dashboard/tasks/actions";
 import { TaskModal } from "./TaskModal";
 import { ConfirmModal } from "./ConfirmModal";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -96,24 +97,6 @@ const PRIORITY_META: Record<TaskPriority, { label: string; color: string; bg: st
 };
 
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
-
-const AVATAR_GRADIENTS = [
-  "from-red-500 to-rose-600",
-  "from-blue-500 to-indigo-600",
-  "from-emerald-500 to-teal-600",
-  "from-violet-500 to-purple-600",
-  "from-amber-500 to-orange-600",
-];
-
-function avatarGradient(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
-}
-
-function avatarInitials(name: string) {
-  return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-}
 
 function formatDate(iso: string | null) {
   if (!iso) return null;
@@ -201,21 +184,10 @@ function TaskCard({
 
         {/* Assignee avatars */}
         {task.assignees.length > 0 && (
-          <div className="flex -space-x-1.5">
-            {task.assignees.slice(0, 3).map(({ user }) => (
-              <div
-                key={user.id}
-                title={user.name}
-                className={`w-6 h-6 rounded-full bg-gradient-to-br ${avatarGradient(user.name)} text-white text-[10px] font-black flex items-center justify-center ring-2 ring-white shadow-sm`}
-              >
-                {avatarInitials(user.name)}
-              </div>
+          <div className="flex -space-x-1.5 overflow-hidden">
+            {task.assignees.map((a: any) => (
+              <UserAvatar key={a.user.id} name={a.user.name} size="xs" className="ring-2 ring-white" />
             ))}
-            {task.assignees.length > 3 && (
-              <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black flex items-center justify-center ring-2 ring-white">
-                +{task.assignees.length - 3}
-              </div>
-            )}
           </div>
         )}
       </div>

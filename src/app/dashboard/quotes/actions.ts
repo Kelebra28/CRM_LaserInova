@@ -3,6 +3,16 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+/** Obtiene el ID del usuario autenticado o lanza error si no hay sesión. */
+async function getSessionUserId(): Promise<string> {
+  const session = await getServerSession(authOptions);
+  const id = (session?.user as any)?.id as string | undefined;
+  if (!id) throw new Error("No autenticado");
+  return id;
+}
 
 /**
  * Genera el siguiente folio disponible de forma robusta.
@@ -31,11 +41,11 @@ async function generateNextFolio(): Promise<string> {
 }
 
 export async function createQuoteAction(formData: FormData) {
+  const userId = await getSessionUserId();
   const clientId = formData.get("clientId") as string;
   const prospectName = (formData.get("prospectName") as string) || null;
   const project = formData.get("project") as string;
   const description = formData.get("description") as string;
-  const userId = formData.get("userId") as string;
   
   const subtotal = parseFloat(formData.get("subtotal") as string) || 0;
   const tax = parseFloat(formData.get("iva") as string) || 0;
@@ -136,11 +146,11 @@ export async function createQuoteAction(formData: FormData) {
 }
 
 export async function updateQuoteAction(formData: FormData) {
+  const userId = await getSessionUserId();
   const quoteId = formData.get("quoteId") as string;
   const clientId = formData.get("clientId") as string || null;
   const prospectName = (formData.get("prospectName") as string) || null;
   const saveAsClient = formData.get("saveAsClient") === "true";
-  const userId = formData.get("userId") as string;
   const project = formData.get("project") as string;
   const description = formData.get("description") as string;
   const subtotal = parseFloat(formData.get("subtotal") as string);
@@ -256,7 +266,8 @@ export async function updateQuotePaymentAction(quoteId: string, type: 'unpaid' |
   revalidatePath(`/dashboard/quotes/${quoteId}`);
 }
 
-export async function saveQuickQuoteAction(mockQuote: any, userId: string, saveAsClient: boolean = false) {
+export async function saveQuickQuoteAction(mockQuote: any, saveAsClient: boolean = false) {
+  const userId = await getSessionUserId();
   // 1. Manejar cliente
   let finalClientId = null;
   let finalProspectName = mockQuote.client.name || null;

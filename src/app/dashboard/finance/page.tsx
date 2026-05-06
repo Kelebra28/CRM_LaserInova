@@ -23,8 +23,9 @@ export default async function FinancePage() {
       date: { gte: startDate, lte: endDate },
     },
     include: {
-      quote:  { select: { folio: true, project: true } },
-      client: { select: { name: true } },
+      quote:     { select: { folio: true, project: true } },
+      client:    { select: { name: true } },
+      createdBy: { select: { name: true } },
     },
     orderBy: { date: "desc" },
   });

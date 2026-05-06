@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { softDeleteTransaction } from "@/app/dashboard/finance/actions";
 import TransactionEditModal from "./TransactionEditModal";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 type Transaction = {
   id: string;
@@ -24,6 +25,7 @@ type Transaction = {
   isVirtual?: boolean;
   quote?: { folio: string; project: string } | null;
   client?: { name: string } | null;
+  createdBy?: { name: string } | null;
 };
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: any; bg: string }> = {
@@ -174,6 +176,7 @@ export default function TransactionTable({ transactions, quotes = [], clients = 
                   <th className="px-5 py-4 text-left text-[9px] font-black text-gray-400 uppercase tracking-[0.15em]">Tipo</th>
                   <th className="px-5 py-4 text-left text-[9px] font-black text-gray-400 uppercase tracking-[0.15em]">Descripción</th>
                   <th className="px-5 py-4 text-left text-[9px] font-black text-gray-400 uppercase tracking-[0.15em]">Proyecto</th>
+                  <th className="px-5 py-4 text-left text-[9px] font-black text-gray-400 uppercase tracking-[0.15em]">Registrado por</th>
                   <th className="px-5 py-4 text-right text-[9px] font-black text-gray-400 uppercase tracking-[0.15em]">Monto</th>
                   <th className="px-5 py-4 text-center text-[9px] font-black text-gray-400 uppercase tracking-[0.15em]">Acciones</th>
                 </tr>
@@ -225,6 +228,20 @@ export default function TransactionTable({ transactions, quotes = [], clients = 
                           <span className="text-[9px] font-bold text-gray-300 uppercase">General</span>
                         )}
                       </td>
+                      {/* Registrado por */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {t.createdBy ? (
+                          <div className="flex items-center gap-1.5">
+                            <UserAvatar name={t.createdBy.name} size="xs" />
+                            <span className="text-[10px] font-bold text-gray-500 hidden sm:block">
+                              {t.createdBy.name.split(" ")[0]}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-gray-300">—</span>
+                        )}
+                      </td>
+                      {/* Monto */}
                       <td className="px-5 py-4 whitespace-nowrap text-right">
                         <p className={`text-sm font-black font-mono ${isIncome ? "text-emerald-600" : "text-red-600"}`}>
                           {isIncome ? "+" : "-"}${t.amount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
