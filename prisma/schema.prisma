@@ -243,18 +243,20 @@ model FinancialTransaction {
 // ============================================================
 
 model Task {
-  id          String         @id @default(uuid())
-  title       String
-  description String?        @db.Text
-  status      String         @default("PENDING") // PENDING | IN_PROGRESS | DONE
-  priority    String         @default("NORMAL")  // LOW | NORMAL | HIGH
-  dueDate     DateTime?
-  order       Int            @default(0)
-  createdById String?
-  createdBy   User?          @relation("TaskCreatedBy", fields: [createdById], references: [id])
-  assignees   TaskAssignee[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id            String         @id @default(uuid())
+  title         String
+  description   String?        @db.Text
+  status        String         @default("PENDING") // BACKLOG | PENDING | IN_PROGRESS | BLOCKED | DONE
+  priority      String         @default("NORMAL")  // LOW | NORMAL | HIGH
+  points        Int            @default(0)          // 1 punto = 1 hora
+  blockerReason String?        @db.Text             // Obligatorio cuando status = BLOCKED
+  dueDate       DateTime?
+  order         Int            @default(0)
+  createdById   String?
+  createdBy     User?          @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  assignees     TaskAssignee[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([status])
   @@index([createdById])

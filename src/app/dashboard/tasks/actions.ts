@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export type TaskStatus = "PENDING" | "IN_PROGRESS" | "DONE";
+export type TaskStatus = "BACKLOG" | "PENDING" | "IN_PROGRESS" | "BLOCKED" | "DONE";
 export type TaskPriority = "LOW" | "NORMAL" | "HIGH";
 
 // ─── Create ─────────────────────────────────────────────────────────────────
@@ -12,12 +12,12 @@ export async function createTaskAction(data: {
   title: string;
   description?: string;
   priority?: TaskPriority;
+  points?: number;
   dueDate?: string;
   assigneeIds?: string[];
   createdById: string;
   status?: TaskStatus;
 }) {
-  // Get the max order in the target column so new task lands at the bottom
   const maxOrder = await prisma.task.aggregate({
     _max: { order: true },
     where: { status: data.status ?? "PENDING" },
@@ -28,6 +28,7 @@ export async function createTaskAction(data: {
       title: data.title,
       description: data.description ?? null,
       priority: data.priority ?? "NORMAL",
+      points: data.points ?? 0,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       status: data.status ?? "PENDING",
       order: (maxOrder._max.order ?? -1) + 1,
@@ -41,7 +42,7 @@ export async function createTaskAction(data: {
   revalidatePath("/dashboard/tasks");
 }
 
-// ─── Update ──────────────────────────────────────────────────────────────────
+// ─── Update (full edit) ──────────────────────────────────────────────────────
 
 export async function updateTaskAction(
   taskId: string,
@@ -49,7 +50,9 @@ export async function updateTaskAction(
     title?: string;
     description?: string;
     priority?: TaskPriority;
+    points?: number;
     dueDate?: string | null;
+    blockerReason?: string | null;
     assigneeIds?: string[];
   }
 ) {
@@ -60,7 +63,9 @@ export async function updateTaskAction(
         title: data.title,
         description: data.description,
         priority: data.priority,
+        points: data.points,
         dueDate: data.dueDate ? new Date(data.dueDate) : data.dueDate === null ? null : undefined,
+        blockerReason: data.blockerReason,
       },
     });
 
@@ -77,16 +82,39 @@ export async function updateTaskAction(
   revalidatePath("/dashboard/tasks");
 }
 
-// ─── Move (drag & drop status change) ───────────────────────────────────────
+// ─── Quick status change (from card or detail modal) ─────────────────────────
+
+export async function updateTaskStatusAction(
+  taskId: string,
+  newStatus: TaskStatus,
+  blockerReason?: string
+) {
+  await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      status: newStatus,
+      blockerReason: newStatus === "BLOCKED" ? blockerReason ?? null : null,
+    },
+  });
+
+  revalidatePath("/dashboard/tasks");
+}
+
+// ─── Move (drag & drop) ───────────────────────────────────────────────────────
 
 export async function moveTaskAction(
   taskId: string,
   newStatus: TaskStatus,
-  newOrder: number
+  newOrder: number,
+  blockerReason?: string
 ) {
   await prisma.task.update({
     where: { id: taskId },
-    data: { status: newStatus, order: newOrder },
+    data: {
+      status: newStatus,
+      order: newOrder,
+      blockerReason: newStatus === "BLOCKED" ? blockerReason ?? null : null,
+    },
   });
 
   revalidatePath("/dashboard/tasks");

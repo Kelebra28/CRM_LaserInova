@@ -6,7 +6,7 @@ import { TaskBoard } from "@/components/tasks/TaskBoard";
 
 export const metadata = {
   title: "Tareas — Laser Inova CRM",
-  description: "Tablero de tareas del equipo con drag and drop",
+  description: "Tablero de tareas estilo Jira con drag & drop, puntos y filtros",
 };
 
 export default async function TasksPage() {
@@ -34,11 +34,12 @@ export default async function TasksPage() {
     }),
   ]);
 
-  // Serialize dates for client components
   const serializedTasks = tasks.map((t) => ({
     ...t,
-    status: t.status as "PENDING" | "IN_PROGRESS" | "DONE",
+    status: t.status as "BACKLOG" | "PENDING" | "IN_PROGRESS" | "BLOCKED" | "DONE",
     priority: t.priority as "LOW" | "NORMAL" | "HIGH",
+    points: t.points,
+    blockerReason: t.blockerReason ?? null,
     dueDate: t.dueDate?.toISOString() ?? null,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
