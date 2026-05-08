@@ -70,7 +70,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
         const updated = { ...c, [field]: value };
         
         // Si el campo afecta el cálculo, recalcular
-        if (["type", "quantity", "materialId", "partWidth", "partHeight", "timeMin", "clientProvidesMaterial"].includes(field)) {
+        if (["type", "quantity", "materialId", "partWidth", "partHeight", "timeMin", "clientProvidesMaterial", "manualUnitPrice", "manualUnitCost", "serviceDays", "serviceHours", "transportCost"].includes(field)) {
           const mat = materials.find(m => m.id === (field === "materialId" ? value : updated.materialId));
           const result = calculateConcept(
             {
