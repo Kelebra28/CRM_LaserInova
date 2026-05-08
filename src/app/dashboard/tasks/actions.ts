@@ -23,7 +23,7 @@ export async function createTaskAction(data: {
     where: { status: data.status ?? "PENDING" },
   });
 
-  await prisma.task.create({
+  const newTask = await prisma.task.create({
     data: {
       title: data.title,
       description: data.description ?? null,
@@ -37,9 +37,21 @@ export async function createTaskAction(data: {
         ? { create: data.assigneeIds.map((userId) => ({ userId })) }
         : undefined,
     },
+    include: {
+      assignees: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
+      createdBy: { select: { id: true, name: true } },
+    },
   });
 
   revalidatePath("/dashboard/tasks");
+  return {
+    ...newTask,
+    status: newTask.status as TaskStatus,
+    priority: newTask.priority as TaskPriority,
+    dueDate: newTask.dueDate?.toISOString() ?? null,
+    createdAt: newTask.createdAt.toISOString(),
+    updatedAt: newTask.updatedAt.toISOString(),
+  };
 }
 
 // ─── Update (full edit) ──────────────────────────────────────────────────────

@@ -338,7 +338,15 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
     await moveTaskAction(src.id, targetStatus, newOrder);
     const colItems = tasksByStatus(targetStatus).filter((t) => t.id !== src.id);
     colItems.splice(newOrder, 0, src);
-    await reorderTasksAction(colItems.map((t, i) => ({ id: t.id, order: i })));
+    
+    // Filtramos tareas con ID temporal para evitar errores en la base de datos
+    const itemsToReorder = colItems
+      .filter((t) => !t.id.startsWith("tmp-"))
+      .map((t, i) => ({ id: t.id, order: i }));
+      
+    if (itemsToReorder.length > 0) {
+      await reorderTasksAction(itemsToReorder);
+    }
   };
 
   const confirmBlockingDrop = async () => {
@@ -346,13 +354,27 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
     const { src, targetStatus, newOrder } = blockingDrop;
     
     // Update local state with the reason
-    setTasks(prev => prev.map(t => t.id === src.id ? { ...t, blockerReason: dropBlockerReason } : t));
+    setTasks(prev => prev.map(t => t.id === src.id ? { ...t, blockerReason: dropBlockerReason, status: targetStatus } : t));
     
+    // Si la tarea tiene ID temporal, no podemos actualizarla aún en el servidor
+    if (src.id.startsWith("tmp-")) {
+      setBlockingDrop(null);
+      setDropBlockerReason("");
+      return;
+    }
+
     await moveTaskAction(src.id, targetStatus, newOrder, dropBlockerReason);
     
     const colItems = tasksByStatus(targetStatus).filter((t) => t.id !== src.id);
-    colItems.splice(newOrder, 0, { ...src, blockerReason: dropBlockerReason });
-    await reorderTasksAction(colItems.map((t, i) => ({ id: t.id, order: i })));
+    colItems.splice(newOrder, 0, { ...src, blockerReason: dropBlockerReason, status: targetStatus });
+    
+    const itemsToReorder = colItems
+      .filter((t) => !t.id.startsWith("tmp-"))
+      .map((t, i) => ({ id: t.id, order: i }));
+
+    if (itemsToReorder.length > 0) {
+      await reorderTasksAction(itemsToReorder);
+    }
     
     setBlockingDrop(null);
     setDropBlockerReason("");
@@ -418,7 +440,12 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       };
       setTasks((prev) => [...prev, newTask]);
-      await createTaskAction({ ...data, createdById: currentUserId, status: defaultStatus });
+      const created = await createTaskAction({ ...data, createdById: currentUserId, status: defaultStatus });
+      
+      // Reemplazamos la tarea temporal con la real del servidor
+      if (created) {
+        setTasks((prev) => prev.map((t) => (t.id === tempId ? (created as any as Task) : t)));
+      }
     }
   };
 
