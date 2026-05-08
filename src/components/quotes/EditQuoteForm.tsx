@@ -48,6 +48,9 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
       realCost: c.realCost,
       manualUnitPrice: c.finalUnitPrice,
       manualUnitCost: (c.realCost || 0) / (c.quantity || 1),
+      serviceDays: c.serviceDays || 0,
+      serviceHours: c.serviceHours || 0,
+      transportCost: c.transportCost || 0,
       utility: c.utility || (c.totalAmount - c.realCost),
       finalUnitPrice: c.finalUnitPrice,
       calculated: {
