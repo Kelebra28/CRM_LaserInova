@@ -134,11 +134,6 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
     let unitPrice = concept.finalUnitPrice ?? 0;
     let total = unitPrice * concept.quantity;
 
-    if (quote.taxable && quote.subtotal > 0) {
-      const taxFactor = 1 + (quote.tax / quote.subtotal);
-      unitPrice = unitPrice / taxFactor;
-      total = total / taxFactor;
-    }
 
     tableRows.push([
       concept.description,

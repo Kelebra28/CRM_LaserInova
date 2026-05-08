@@ -82,7 +82,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       clientProvidesMaterial: concept.clientProvidesMaterial,
       isWholesale: isWholesale,
       manualUnitPrice: Number(concept.manualUnitPrice) || 0,
-      manualCost: (Number(concept.manualUnitCost) || 0) * (Number(concept.quantity) || 1),
+      manualCost: Number(concept.manualUnitCost) || 0,
     };
 
     if (concept.materialId) {
@@ -389,29 +389,28 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
 
                   {/* Campos para IMPRESION, PRODUCTO, OTRO, RESALE (Manuales) */}
                   {(concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO" || concept.type === "RESALE") && (
-                    <div className={`${concept.type === "RESALE" ? "sm:col-span-1" : "sm:col-span-2"}`}>
-                      <label className="block text-xs font-medium text-gray-700">Precio Unitario Venta ($)</label>
-                      <input
-                        type="number"
-                        value={concept.manualUnitPrice === 0 && String(concept.manualUnitPrice) !== "0" ? "" : concept.manualUnitPrice}
-                        onChange={e => updateConcept(concept.id, "manualUnitPrice", e.target.value === "" ? "" : Number(e.target.value))}
-                        className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-emerald-700"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  )}
-
-                  {concept.type === "RESALE" && (
-                    <div className="sm:col-span-1">
-                      <label className="block text-xs font-medium text-gray-700">Costo Unitario Compra ($)</label>
-                      <input
-                        type="number"
-                        value={concept.manualUnitCost === 0 && String(concept.manualUnitCost) !== "0" ? "" : concept.manualUnitCost}
-                        onChange={e => updateConcept(concept.id, "manualUnitCost", e.target.value === "" ? "" : Number(e.target.value))}
-                        className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-red-600 bg-red-50"
-                        placeholder="0.00"
-                      />
-                    </div>
+                    <>
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-medium text-gray-700">Precio Unitario Venta ($)</label>
+                        <input
+                          type="number"
+                          value={concept.manualUnitPrice === 0 && String(concept.manualUnitPrice) !== "0" ? "" : concept.manualUnitPrice}
+                          onChange={e => updateConcept(concept.id, "manualUnitPrice", e.target.value === "" ? "" : Number(e.target.value))}
+                          className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-emerald-700"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-medium text-gray-700">Costo Real Unitario ($)</label>
+                        <input
+                          type="number"
+                          value={concept.manualUnitCost === 0 && String(concept.manualUnitCost) !== "0" ? "" : concept.manualUnitCost}
+                          onChange={e => updateConcept(concept.id, "manualUnitCost", e.target.value === "" ? "" : Number(e.target.value))}
+                          className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border font-bold text-red-600 bg-red-50"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </>
                   )}
 
                   <div className="sm:col-span-4 mt-2 flex justify-end">

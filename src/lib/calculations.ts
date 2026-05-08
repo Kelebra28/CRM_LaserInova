@@ -112,16 +112,10 @@ export function calculateConcept(input: CalculationInput, globals: GlobalCosts):
       break;
 
     case "RESALE":
-      // Para reventa pura, el costo real es el costo manual ingresado
-      realCost = input.manualCost || 0;
-      suggestedPrice = input.manualUnitPrice || 0;
-      break;
-
     case "IMPRESION":
     case "PRODUCTO":
     case "OTRO":
-      realCost = 0; 
-      // Para manuales, si hay un precio unitario manual, lo respetamos como sugerido
+      realCost = input.manualCost || 0;
       suggestedPrice = input.manualUnitPrice || 0;
       break;
 

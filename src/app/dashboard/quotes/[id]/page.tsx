@@ -165,7 +165,9 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
                   <tr className="bg-white">
                     <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Cant</th>
                     <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Descripción</th>
-                    <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Unitario</th>
+                    <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Costo U.</th>
+                    <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Unitario Venta</th>
+                    <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Utilidad</th>
                     <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
                   </tr>
                 </thead>
@@ -178,8 +180,11 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
                         {concept.material && (
                           <div className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{concept.material.name}</div>
                         )}
+                        <div className="text-[9px] font-bold text-gray-400 uppercase mt-1 px-1.5 py-0.5 bg-gray-100 rounded-md inline-block">{concept.conceptType === 'RESALE' ? 'REVENTA' : concept.conceptType}</div>
                       </td>
+                      <td className="px-6 py-4 text-sm text-red-600 text-right font-mono font-bold">${((concept.realCost || 0) / concept.quantity).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono font-bold">${concept.finalUnitPrice.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="px-6 py-4 text-sm text-emerald-600 text-right font-mono font-bold">${((concept.totalAmount || 0) - (concept.realCost || 0)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="px-6 py-4 text-sm font-black text-gray-900 text-right font-mono">${concept.totalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
                   ))}

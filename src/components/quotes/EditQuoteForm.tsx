@@ -89,7 +89,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
               clientProvidesMaterial: updated.clientProvidesMaterial,
               isWholesale: isWholesale,
               manualUnitPrice: Number(updated.manualUnitPrice) || 0,
-              manualCost: (Number(updated.manualUnitCost) || 0) * (Number(updated.quantity) || 1),
+              manualCost: Number(updated.manualUnitCost) || 0,
             },
             { ...globalCosts, margen_default: Number(margin) || 35 } // Usar el margen actual
           );
@@ -98,7 +98,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           const finalUnit = updated.finalUnitPrice && Number(updated.finalUnitPrice) > 0 ? updated.finalUnitPrice : suggestedUnit;
           const finalUnitNum = Number(finalUnit) || 0;
           const totalAmount = finalUnitNum * (Number(updated.quantity) || 1);
-          return { ...updated, calculated: result, finalUnitPrice: finalUnit, totalAmount: totalAmount };
+          return { ...updated, calculated: { ...result, utility: totalAmount - result.realCost }, finalUnitPrice: finalUnit, totalAmount: totalAmount };
         }
         
         // Si se cambia el precio final manualmente
@@ -136,7 +136,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           clientProvidesMaterial: c.clientProvidesMaterial,
           isWholesale: isWholesale,
           manualUnitPrice: Number(c.manualUnitPrice) || 0,
-          manualCost: (Number(c.manualUnitCost) || 0) * (Number(c.quantity) || 1),
+          manualCost: Number(c.manualUnitCost) || 0,
         },
         { ...globalCosts, margen_default: Number(margin) || 35 }
       );
@@ -144,7 +144,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
       const finalUnit = c.finalUnitPrice && Number(c.finalUnitPrice) > 0 ? c.finalUnitPrice : suggestedUnit;
       const finalUnitNum = Number(finalUnit) || 0;
       const totalAmount = finalUnitNum * (Number(c.quantity) || 1);
-      return { ...c, calculated: result, finalUnitPrice: finalUnit, totalAmount: totalAmount };
+      return { ...c, calculated: { ...result, utility: totalAmount - result.realCost }, finalUnitPrice: finalUnit, totalAmount: totalAmount };
     }));
   }, [margin, isWholesale, globalCosts, materials]);
 
@@ -389,7 +389,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                 </div>
 
                 {/* Parámetros según tipo */}
-                {concept.type === "RESALE" && (
+                {(concept.type === "RESALE" || concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO") && (
                   <>
                     <div className="sm:col-span-6">
                       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Precio Venta Unitario ($)</label>
@@ -402,7 +402,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                       />
                     </div>
                     <div className="sm:col-span-6">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Costo Compra Unitario ($)</label>
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Costo Real Unitario ($)</label>
                       <input 
                         type="number" 
                         step="0.01" 
