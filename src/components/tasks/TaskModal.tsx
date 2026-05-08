@@ -27,6 +27,7 @@ interface Props {
   task: Task | null;
   users: TaskUser[];
   currentUserRole: string;
+  initialStatus?: TaskStatus;
   onClose: () => void;
   onSave: (data: {
     title: string;
@@ -67,7 +68,7 @@ function avatarInitials(name: string) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TaskModal({ task, users, currentUserRole, onClose, onSave }: Props) {
+export function TaskModal({ task, initialStatus, users, currentUserRole, onClose, onSave }: Props) {
   const [title, setTitle]           = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
   const [priority, setPriority]     = useState<TaskPriority>(task?.priority ?? "NORMAL");
@@ -77,7 +78,7 @@ export function TaskModal({ task, users, currentUserRole, onClose, onSave }: Pro
   const [assigneeIds, setAssigneeIds] = useState<string[]>(task?.assignees.map((a) => a.user.id) ?? []);
   const [saving, setSaving]         = useState(false);
 
-  const isBlocked = task?.status === "BLOCKED";
+  const isBlocked = task?.status === "BLOCKED" || initialStatus === "BLOCKED";
 
   const toggleAssignee = (userId: string) =>
     setAssigneeIds((prev) => prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]);

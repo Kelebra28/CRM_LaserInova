@@ -257,6 +257,14 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
   // Multi-select user filter: empty = show all
   const [filterUserIds, setFilterUserIds] = useState<string[]>([]);
   const draggedTask = useRef<Task | null>(null);
+  
+  // Blocker prompt for drag & drop
+  const [blockingDrop, setBlockingDrop] = useState<{
+    src: Task;
+    targetStatus: TaskStatus;
+    newOrder: number;
+  } | null>(null);
+  const [dropBlockerReason, setDropBlockerReason] = useState("");
 
   // ── Filters ──────────────────────────────────────────────────────────────
 
@@ -321,10 +329,33 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
     });
 
     draggedTask.current = null;
+
+    if (targetStatus === "BLOCKED" && src.status !== "BLOCKED") {
+      setBlockingDrop({ src, targetStatus, newOrder });
+      return;
+    }
+
     await moveTaskAction(src.id, targetStatus, newOrder);
     const colItems = tasksByStatus(targetStatus).filter((t) => t.id !== src.id);
     colItems.splice(newOrder, 0, src);
     await reorderTasksAction(colItems.map((t, i) => ({ id: t.id, order: i })));
+  };
+
+  const confirmBlockingDrop = async () => {
+    if (!blockingDrop || !dropBlockerReason.trim()) return;
+    const { src, targetStatus, newOrder } = blockingDrop;
+    
+    // Update local state with the reason
+    setTasks(prev => prev.map(t => t.id === src.id ? { ...t, blockerReason: dropBlockerReason } : t));
+    
+    await moveTaskAction(src.id, targetStatus, newOrder, dropBlockerReason);
+    
+    const colItems = tasksByStatus(targetStatus).filter((t) => t.id !== src.id);
+    colItems.splice(newOrder, 0, { ...src, blockerReason: dropBlockerReason });
+    await reorderTasksAction(colItems.map((t, i) => ({ id: t.id, order: i })));
+    
+    setBlockingDrop(null);
+    setDropBlockerReason("");
   };
 
   // ── CRUD ──────────────────────────────────────────────────────────────────
@@ -502,6 +533,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
       {modalOpen && (
         <TaskModal
           task={editingTask}
+          initialStatus={defaultStatus}
           users={users}
           currentUserRole={currentUserRole}
           onClose={() => setModalOpen(false)}
@@ -530,6 +562,48 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
           onConfirm={handleDeleteConfirm}
           onCancel={() => setConfirmId(null)}
         />
+      )}
+
+      {/* ── Blocker Prompt (Drag & Drop) ──────────────────────────────────── */}
+      {blockingDrop && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-6 space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="p-2 bg-rose-50 rounded-xl">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-gray-900 tracking-tight">Tarea Bloqueada</h3>
+                <p className="text-xs text-gray-400">Describe el motivo del bloqueo para continuar.</p>
+              </div>
+            </div>
+
+            <textarea
+              value={dropBlockerReason}
+              onChange={(e) => setDropBlockerReason(e.target.value)}
+              placeholder="¿Qué se necesita para desbloquear esta tarea?"
+              className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 text-sm text-gray-800 placeholder-rose-300 focus:outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-400 transition-all resize-none bg-gray-50/50"
+              rows={3}
+              autoFocus
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setBlockingDrop(null); setDropBlockerReason(""); }}
+                className="flex-1 px-4 py-2.5 rounded-2xl border-2 border-gray-100 text-sm font-bold text-gray-400 hover:bg-gray-50 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmBlockingDrop}
+                disabled={!dropBlockerReason.trim()}
+                className="flex-1 px-4 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-black shadow-lg shadow-rose-600/20 transition-all disabled:opacity-50"
+              >
+                Bloquear Tarea
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
