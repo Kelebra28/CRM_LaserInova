@@ -134,6 +134,12 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
     let unitPrice = concept.finalUnitPrice ?? 0;
     let total = unitPrice * concept.quantity;
 
+    // Si la cotización es taxable, mostramos los importes SIN IVA en la tabla para que la suma cuadre con el subtotal
+    if (quote.taxable && quote.subtotal > 0) {
+      const taxFactor = quote.total / quote.subtotal;
+      unitPrice = unitPrice / taxFactor;
+      total = total / taxFactor;
+    }
 
     tableRows.push([
       concept.description,
@@ -175,13 +181,13 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
   
   doc.setFont("helvetica", "bold");
   doc.text("Subtotal:", pageWidth - 45, totalsY, { align: "right" });
-  doc.text(`$${quote.subtotal.toFixed(2)}`, pageWidth - 14, totalsY, { align: "right" });
+  doc.text(fmt(quote.subtotal), pageWidth - 14, totalsY, { align: "right" });
 
   doc.text("IVA:", pageWidth - 45, totalsY + 8, { align: "right" });
-  doc.text(`$${quote.tax.toFixed(2)}`, pageWidth - 14, totalsY + 8, { align: "right" });
+  doc.text(fmt(quote.tax), pageWidth - 14, totalsY + 8, { align: "right" });
 
   doc.setFontSize(13);
-  doc.text(`$${quote.total.toFixed(2)}`, pageWidth - 14, totalsY + 20, { align: "right" });
+  doc.text(fmt(quote.total), pageWidth - 14, totalsY + 20, { align: "right" });
 
   // Footer / Consideraciones
   doc.setFont("helvetica", "normal");
@@ -218,18 +224,26 @@ export async function generateQuotePDF(quote: any): Promise<Buffer> {
     currentTextY = 40;
   }
 
-  wrappedLines.forEach(line => {
-    if (currentTextY > marginThreshold) {
-      doc.addPage();
-      drawHeader(doc);
-      drawFooter(doc);
-      currentTextY = 40;
-    }
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(line, 14, currentTextY);
-    currentTextY += 5;
-  });
+    wrappedLines.forEach(line => {
+      if (currentTextY > marginThreshold) {
+        doc.addPage();
+        drawHeader(doc);
+        drawFooter(doc);
+        currentTextY = 40;
+      }
+      
+      if (line.includes("- Consideraciones:")) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        // Resaltar un poco más la palabra
+        doc.text(line, 14, currentTextY);
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text(line, 14, currentTextY);
+      }
+      currentTextY += 5;
+    });
 
   const buffer = Buffer.from(doc.output("arraybuffer"));
   return buffer;

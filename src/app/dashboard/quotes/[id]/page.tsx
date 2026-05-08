@@ -172,22 +172,28 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {quote.concepts.map((concept) => (
-                    <tr key={concept.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-600 font-bold">{concept.quantity}</td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-black text-gray-900">{concept.description}</div>
-                        {concept.material && (
-                          <div className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{concept.material.name}</div>
-                        )}
-                        <div className="text-[9px] font-bold text-gray-400 uppercase mt-1 px-1.5 py-0.5 bg-gray-100 rounded-md inline-block">{concept.conceptType === 'RESALE' ? 'REVENTA' : concept.conceptType}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-red-600 text-right font-mono font-bold">${((concept.realCost || 0) / concept.quantity).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono font-bold">${concept.finalUnitPrice.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 text-sm text-emerald-600 text-right font-mono font-bold">${((concept.totalAmount || 0) - (concept.realCost || 0)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="px-6 py-4 text-sm font-black text-gray-900 text-right font-mono">${concept.totalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    </tr>
-                  ))}
+                  {quote.concepts.map((concept) => {
+                    const taxFactor = quote.taxable && quote.subtotal > 0 ? (quote.total / quote.subtotal) : 1;
+                    const netUnitPrice = concept.finalUnitPrice / taxFactor;
+                    const netTotal = concept.totalAmount / taxFactor;
+                    
+                    return (
+                      <tr key={concept.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 text-sm text-gray-600 font-bold">{concept.quantity}</td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-black text-gray-900">{concept.description}</div>
+                          {concept.material && (
+                            <div className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{concept.material.name}</div>
+                          )}
+                          <div className="text-[9px] font-bold text-gray-400 uppercase mt-1 px-1.5 py-0.5 bg-gray-100 rounded-md inline-block">{concept.conceptType === 'RESALE' ? 'REVENTA' : concept.conceptType}</div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-red-600 text-right font-mono font-bold">${((concept.realCost || 0) / concept.quantity).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono font-bold">${netUnitPrice.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="px-6 py-4 text-sm text-emerald-600 text-right font-mono font-bold">${((concept.totalAmount || 0) - (concept.realCost || 0)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className="px-6 py-4 text-sm font-black text-gray-900 text-right font-mono">${netTotal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
