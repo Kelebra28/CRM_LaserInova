@@ -138,6 +138,9 @@ model QuoteConcept {
   engraveTime            Float?
   machineType            String?
   details                String? @db.Text
+  serviceDays            Float?    @default(0)
+  serviceHours           Float?    @default(0)
+  transportCost          Float?    @default(0)
   materialCost           Float?    @default(0)
   productionCost         Float?    @default(0)
   realCost               Float?    @default(0)

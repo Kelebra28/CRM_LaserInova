@@ -90,6 +90,9 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
               isWholesale: isWholesale,
               manualUnitPrice: Number(updated.manualUnitPrice) || 0,
               manualCost: Number(updated.manualUnitCost) || 0,
+              serviceDays: Number(updated.serviceDays) || 0,
+              serviceHours: Number(updated.serviceHours) || 0,
+              transportCost: Number(updated.transportCost) || 0,
             },
             { ...globalCosts, margen_default: Number(margin) || 35 } // Usar el margen actual
           );
@@ -137,6 +140,9 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           isWholesale: isWholesale,
           manualUnitPrice: Number(c.manualUnitPrice) || 0,
           manualCost: Number(c.manualUnitCost) || 0,
+          serviceDays: Number(c.serviceDays) || 0,
+          serviceHours: Number(c.serviceHours) || 0,
+          transportCost: Number(c.transportCost) || 0,
         },
         { ...globalCosts, margen_default: Number(margin) || 35 }
       );
@@ -148,7 +154,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
     }));
   }, [margin, isWholesale, globalCosts, materials]);
 
-  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE") => {
+  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE" | "SERVICIO_SITIO") => {
     const newId = crypto.randomUUID();
     setConcepts([
       ...concepts,
@@ -167,6 +173,9 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
         finalUnitPrice: 0,
         totalAmount: 0,
         details: "",
+        serviceDays: 0,
+        serviceHours: 0,
+        transportCost: 0,
         calculated: null
       }
     ]);
@@ -307,14 +316,20 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <h2 className="text-lg font-medium text-gray-900">Conceptos</h2>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => addConcept("CORTE")} className="text-xs bg-gray-100 hover:bg-red-600 hover:text-white text-gray-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
-              + Corte
+            <button type="button" onClick={() => addConcept("OTRO")} className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
+              + Otro
+            </button>
+            <button type="button" onClick={() => addConcept("SERVICIO_SITIO")} className="text-xs bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
+              + Serv. en Sitio
             </button>
             <button type="button" onClick={() => addConcept("GRABADO")} className="text-xs bg-gray-100 hover:bg-orange-600 hover:text-white text-gray-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
               + Grabado
             </button>
             <button type="button" onClick={() => addConcept("IMPRESION")} className="text-xs bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
               + Impresión
+            </button>
+            <button type="button" onClick={() => addConcept("CORTE")} className="text-xs bg-gray-100 hover:bg-red-600 hover:text-white text-gray-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
+              + Corte
             </button>
             <button type="button" onClick={() => addConcept("RESALE")} className="text-xs bg-red-100 hover:bg-red-600 hover:text-white text-red-800 py-2 px-4 rounded-lg font-bold transition-all uppercase tracking-wider">
               + Reventa
@@ -339,9 +354,10 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                   concept.type === "GRABADO" ? "bg-orange-600" :
                   concept.type === "IMPRESION" ? "bg-blue-600" :
                   concept.type === "PRODUCTO" ? "bg-emerald-600" : 
-                  concept.type === "RESALE" ? "bg-red-700 border border-white/20" : "bg-gray-600"
+                  concept.type === "RESALE" ? "bg-red-700" :
+                  concept.type === "SERVICIO_SITIO" ? "bg-violet-600" : "bg-gray-600"
                 }`}>
-                  {concept.type === "RESALE" ? "REVENTA" : concept.type}
+                  {concept.type === "RESALE" ? "REVENTA" : concept.type === "SERVICIO_SITIO" ? "SERV. EN SITIO" : concept.type}
                 </span>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Concepto #{index + 1}</span>
               </div>
@@ -389,7 +405,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                 </div>
 
                 {/* Parámetros según tipo */}
-                {(concept.type === "RESALE" || concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO") && (
+                {(concept.type === "RESALE" || concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO" || concept.type === "CORTE" || concept.type === "GRABADO" || concept.type === "SERVICIO_SITIO") && (
                   <>
                     <div className="sm:col-span-6">
                       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Precio Venta Unitario ($)</label>
@@ -414,7 +430,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                   </>
                 )}
 
-                {concept.type === "CORTE" && (
+                {(concept.type === "CORTE" || concept.type === "GRABADO") && (
                   <>
                     <div className="sm:col-span-3">
                       <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ancho (cm)</label>
@@ -431,6 +447,24 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
                     <div className="sm:col-span-3 flex items-center pt-4">
                       <input type="checkbox" checked={concept.clientProvidesMaterial} onChange={e => updateConcept(concept.id, "clientProvidesMaterial", e.target.checked)} className="h-4 w-4 text-red-600 rounded" />
                       <label className="ml-2 text-[10px] font-bold text-gray-400 uppercase">Cliente trae material</label>
+                    </div>
+                  </>
+                )}
+
+                {/* Parámetros para SERVICIO_SITIO */}
+                {concept.type === "SERVICIO_SITIO" && (
+                  <>
+                    <div className="sm:col-span-3">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Días</label>
+                      <input type="number" step="0.1" value={concept.serviceDays === 0 && String(concept.serviceDays) !== "0" ? "" : concept.serviceDays} onChange={e => updateConcept(concept.id, "serviceDays", e.target.value === "" ? "" : Number(e.target.value))} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Horas extras</label>
+                      <input type="number" step="0.5" value={concept.serviceHours === 0 && String(concept.serviceHours) !== "0" ? "" : concept.serviceHours} onChange={e => updateConcept(concept.id, "serviceHours", e.target.value === "" ? "" : Number(e.target.value))} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border" />
+                    </div>
+                    <div className="sm:col-span-6">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Viáticos / Transporte ($)</label>
+                      <input type="number" step="0.01" value={concept.transportCost === 0 && String(concept.transportCost) !== "0" ? "" : concept.transportCost} onChange={e => updateConcept(concept.id, "transportCost", e.target.value === "" ? "" : Number(e.target.value))} className="w-full text-sm border-gray-200 rounded-lg p-2.5 border text-orange-700 font-bold" />
                     </div>
                   </>
                 )}

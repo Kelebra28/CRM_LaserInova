@@ -31,7 +31,7 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
   
   const [concepts, setConcepts] = useState<any[]>([]);
 
-  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE") => {
+  const addConcept = (type: "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE" | "SERVICIO_SITIO") => {
     setConcepts([
       ...concepts,
       {
@@ -51,9 +51,11 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
         productionCost: 0,
         realCost: 0,
         suggestedPrice: 0,
-        finalUnitPrice: 0,
         totalAmount: 0,
         details: "",
+        serviceDays: "",
+        serviceHours: "",
+        transportCost: "",
       }
     ]);
   };
@@ -83,6 +85,9 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       isWholesale: isWholesale,
       manualUnitPrice: Number(concept.manualUnitPrice) || 0,
       manualCost: Number(concept.manualUnitCost) || 0,
+      serviceDays: Number(concept.serviceDays) || 0,
+      serviceHours: Number(concept.serviceHours) || 0,
+      transportCost: Number(concept.transportCost) || 0,
     };
 
     if (concept.materialId) {
@@ -269,6 +274,9 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
             <button type="button" onClick={() => addConcept("OTRO")} className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1.5 px-3 rounded-md font-medium transition-colors">
               + Otro
             </button>
+            <button type="button" onClick={() => addConcept("SERVICIO_SITIO")} className="text-sm bg-violet-50 hover:bg-violet-100 text-violet-700 py-1.5 px-3 rounded-md font-bold transition-colors border border-violet-200">
+              + Serv. en Sitio
+            </button>
           </div>
         </div>
 
@@ -292,9 +300,10 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                     concept.type === "GRABADO" ? "bg-orange-600" :
                     concept.type === "IMPRESION" ? "bg-blue-600" :
                     concept.type === "PRODUCTO" ? "bg-emerald-600" : 
-                    concept.type === "RESALE" ? "bg-red-700" : "bg-gray-600"
+                    concept.type === "RESALE" ? "bg-red-700" :
+                    concept.type === "SERVICIO_SITIO" ? "bg-violet-600" : "bg-gray-600"
                   }`}>
-                    {concept.type === "RESALE" ? "REVENTA" : concept.type}
+                    {concept.type === "RESALE" ? "REVENTA" : concept.type === "SERVICIO_SITIO" ? "SERV. EN SITIO" : concept.type}
                   </span>
                   <span className="text-sm font-medium text-gray-700">Concepto #{index + 1}</span>
                 </div>
@@ -387,8 +396,41 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
                     </>
                   )}
 
+                  {/* Campos para SERVICIO_SITIO */}
+                  {concept.type === "SERVICIO_SITIO" && (
+                    <>
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium text-gray-700">Días</label>
+                        <input
+                          type="number"
+                          value={concept.serviceDays === 0 && String(concept.serviceDays) !== "0" ? "" : concept.serviceDays}
+                          onChange={e => updateConcept(concept.id, "serviceDays", e.target.value === "" ? "" : Number(e.target.value))}
+                          className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border"
+                        />
+                      </div>
+                      <div className="sm:col-span-1">
+                        <label className="block text-xs font-medium text-gray-700">Horas extras</label>
+                        <input
+                          type="number"
+                          value={concept.serviceHours === 0 && String(concept.serviceHours) !== "0" ? "" : concept.serviceHours}
+                          onChange={e => updateConcept(concept.id, "serviceHours", e.target.value === "" ? "" : Number(e.target.value))}
+                          className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-medium text-gray-700">Viáticos / Transporte ($)</label>
+                        <input
+                          type="number"
+                          value={concept.transportCost === 0 && String(concept.transportCost) !== "0" ? "" : concept.transportCost}
+                          onChange={e => updateConcept(concept.id, "transportCost", e.target.value === "" ? "" : Number(e.target.value))}
+                          className="mt-1 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-2 border text-orange-700"
+                        />
+                      </div>
+                    </>
+                  )}
+
                   {/* Campos para IMPRESION, PRODUCTO, OTRO, RESALE (Manuales) */}
-                  {(concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO" || concept.type === "RESALE") && (
+                  {(concept.type === "IMPRESION" || concept.type === "PRODUCTO" || concept.type === "OTRO" || concept.type === "RESALE" || concept.type === "CORTE" || concept.type === "GRABADO" || concept.type === "SERVICIO_SITIO") && (
                     <>
                       <div className="sm:col-span-2">
                         <label className="block text-xs font-medium text-gray-700">Precio Unitario Venta ($)</label>

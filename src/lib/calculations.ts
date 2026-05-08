@@ -1,5 +1,5 @@
 // Tipos de cálculo soportados
-export type CalculationType = "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE";
+export type CalculationType = "CORTE" | "GRABADO" | "IMPRESION" | "PRODUCTO" | "OTRO" | "RESALE" | "SERVICIO_SITIO";
 
 export interface GlobalCosts {
   costo_minuto_mayoreo: number;
@@ -35,8 +35,14 @@ export interface CalculationInput {
   isWholesale?: boolean; // Mayoreo o menudeo
   
   // Para IMPRESION, PRODUCTO, OTRO, RESALE
+  // Para IMPRESION, PRODUCTO, OTRO, RESALE
   manualUnitPrice?: number;
   manualCost?: number;
+  
+  // Para SERVICIO_SITIO
+  serviceDays?: number;
+  serviceHours?: number;
+  transportCost?: number;
 }
 
 export interface CalculationResult {
@@ -104,11 +110,13 @@ export function calculateConcept(input: CalculationInput, globals: GlobalCosts):
       productionCost = pureCutCost * fearFactor * prodFactor;
       
       // Costo Real = Costo Material + Costo Producción (Operación)
-      realCost = materialCost + productionCost; 
+      // Si se proporciona un costo manual, se usa ese (para casos "especiales")
+      realCost = input.manualCost || (materialCost + productionCost); 
       
       // El usuario solicitó Precio Sugerido = Costo Total / (1 - Margen)
+      // Si se proporciona un precio manual, se usa ese
       const marginFactor = (100 - (globals.margen_default || 50)) / 100;
-      suggestedPrice = realCost / marginFactor;
+      suggestedPrice = input.manualUnitPrice || (realCost / marginFactor);
       break;
 
     case "RESALE":
@@ -117,6 +125,27 @@ export function calculateConcept(input: CalculationInput, globals: GlobalCosts):
     case "OTRO":
       realCost = input.manualCost || 0;
       suggestedPrice = input.manualUnitPrice || 0;
+      break;
+
+    case "SERVICIO_SITIO":
+      const days = input.serviceDays || 0;
+      const hours = input.serviceHours || 0;
+      const transport = input.transportCost || 0;
+      
+      // Costo de horas de trabajo
+      // Consideraremos un sueldo base o costo hora hombre en globals o un fijo (ej. 150/hr)
+      const costPerHour = globals.costo_hora_hombre || 150;
+      // Si el usuario especifica días (ej. 8 horas por día)
+      const totalHours = hours + (days * 8);
+      
+      const laborCost = totalHours * costPerHour;
+      
+      // Costo Real = Horas de Trabajo + Viáticos / Transporte
+      // Si se proporciona un costo manual, se usa ese
+      realCost = input.manualCost || (laborCost + transport);
+      
+      const serviceMarginFactor = (100 - (globals.margen_default || 50)) / 100;
+      suggestedPrice = input.manualUnitPrice || (realCost / serviceMarginFactor);
       break;
 
   }
