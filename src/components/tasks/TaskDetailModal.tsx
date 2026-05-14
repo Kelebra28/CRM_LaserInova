@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import {
   X, Flag, CalendarDays, Clock, User, Pencil, AlertTriangle,
   CheckCircle2, Loader2, Timer, Users, AlignLeft, Zap,
+  Plus, Trash2, Square, CheckSquare,
 } from "lucide-react";
 import {
   updateTaskStatusAction,
+  updateTaskProgressAction,
+  createSubTaskAction,
+  toggleSubTaskAction,
+  deleteSubTaskAction,
   type TaskStatus,
   type TaskPriority,
 } from "@/app/dashboard/tasks/actions";
@@ -21,6 +26,14 @@ interface TaskUser {
   role: string;
 }
 
+interface SubTask {
+  id: string;
+  title: string;
+  done: boolean;
+  order: number;
+  createdAt: string;
+}
+
 interface Task {
   id: string;
   title: string;
@@ -28,12 +41,14 @@ interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   points: number;
+  progress: number;
   blockerReason: string | null;
   dueDate: string | null;
   order: number;
   createdById: string | null;
   createdBy: { id: string; name: string } | null;
   assignees: { user: TaskUser }[];
+  subtasks: SubTask[];
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +60,7 @@ interface Props {
   onClose: () => void;
   onEdit: (task: Task) => void;
   onStatusChange: (taskId: string, newStatus: TaskStatus, blockerReason?: string) => void;
+  onProgressChange: (taskId: string, progress: number) => void;
 }
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -56,11 +72,11 @@ const STATUS_META: Record<TaskStatus, {
   bg: string;
   border: string;
 }> = {
-  BACKLOG:     { label: "Por Hacer",  icon: AlignLeft,   color: "text-slate-600",  bg: "bg-slate-100",   border: "border-slate-200" },
-  PENDING:     { label: "Pendiente",  icon: Clock,       color: "text-amber-600",  bg: "bg-amber-50",    border: "border-amber-200" },
-  IN_PROGRESS: { label: "En Proceso", icon: Loader2,     color: "text-blue-600",   bg: "bg-blue-50",     border: "border-blue-200"  },
-  BLOCKED:     { label: "Bloqueado",  icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50",     border: "border-rose-200"  },
-  DONE:        { label: "Terminado",  icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
+  BACKLOG:     { label: "Por Hacer",  icon: AlignLeft,     color: "text-slate-600",   bg: "bg-slate-100",   border: "border-slate-200" },
+  PENDING:     { label: "Pendiente",  icon: Clock,         color: "text-amber-600",   bg: "bg-amber-50",    border: "border-amber-200" },
+  IN_PROGRESS: { label: "En Proceso", icon: Loader2,       color: "text-blue-600",    bg: "bg-blue-50",     border: "border-blue-200"  },
+  BLOCKED:     { label: "Bloqueado",  icon: AlertTriangle, color: "text-rose-600",    bg: "bg-rose-50",     border: "border-rose-200"  },
+  DONE:        { label: "Terminado",  icon: CheckCircle2,  color: "text-emerald-600", bg: "bg-emerald-50",  border: "border-emerald-200" },
 };
 
 const PRIORITY_META: Record<TaskPriority, { label: string; color: string; dot: string }> = {
@@ -83,6 +99,12 @@ function isOverdue(iso: string | null, status: TaskStatus) {
   return new Date(iso) < new Date();
 }
 
+function getProgressColor(p: number) {
+  if (p >= 80) return "from-emerald-400 to-emerald-600";
+  if (p >= 40) return "from-blue-400 to-indigo-500";
+  return "from-amber-400 to-orange-500";
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function TaskDetailModal({
@@ -92,16 +114,34 @@ export function TaskDetailModal({
   onClose,
   onEdit,
   onStatusChange,
+  onProgressChange,
 }: Props) {
   const [isPending, startTransition] = useTransition();
   const [showBlockerInput, setShowBlockerInput] = useState(false);
   const [blockerReason, setBlockerReason] = useState("");
   const [pendingStatus, setPendingStatus] = useState<TaskStatus | null>(null);
 
+  // Local progress state
+  const [localProgress, setLocalProgress] = useState(
+    task.status === "DONE" ? 100 : task.progress
+  );
+  const progressTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Subtasks local state
+  const [subtasks, setSubtasks] = useState<SubTask[]>(task.subtasks ?? []);
+  const [newSubTitle, setNewSubTitle] = useState("");
+  const [addingSubtask, setAddingSubtask] = useState(false);
+  const subInputRef = useRef<HTMLInputElement>(null);
+
   const canModify = currentUserRole === "ADMIN" || task.createdBy?.id === currentUserId;
   const sm = STATUS_META[task.status];
   const pm = PRIORITY_META[task.priority];
   const overdue = isOverdue(task.dueDate, task.status);
+
+  const showProgressBar = task.status === "IN_PROGRESS" || task.status === "BLOCKED";
+  const displayProgress = task.status === "DONE" ? 100 : localProgress;
+
+  // ── Status ──────────────────────────────────────────────────────────────────
 
   const handleStatusClick = (status: TaskStatus) => {
     if (status === task.status) return;
@@ -127,6 +167,44 @@ export function TaskDetailModal({
     });
   };
 
+  // ── Progress ─────────────────────────────────────────────────────────────────
+
+  const handleProgressChange = (val: number) => {
+    setLocalProgress(val);
+    onProgressChange(task.id, val); // Optimistic local state update
+    if (progressTimeout.current) clearTimeout(progressTimeout.current);
+    progressTimeout.current = setTimeout(() => {
+      startTransition(async () => {
+        await updateTaskProgressAction(task.id, val);
+      });
+    }, 600);
+  };
+
+  // ── Subtasks ─────────────────────────────────────────────────────────────────
+
+  const handleAddSubtask = async () => {
+    if (!newSubTitle.trim()) return;
+    const tempId = `tmp-${Date.now()}`;
+    const temp: SubTask = { id: tempId, title: newSubTitle.trim(), done: false, order: subtasks.length, createdAt: new Date().toISOString() };
+    setSubtasks((prev) => [...prev, temp]);
+    setNewSubTitle("");
+    const created = await createSubTaskAction(task.id, newSubTitle.trim());
+    setSubtasks((prev) => prev.map((s) => (s.id === tempId ? { ...created } : s)));
+  };
+
+  const handleToggleSubtask = async (subId: string, done: boolean) => {
+    setSubtasks((prev) => prev.map((s) => (s.id === subId ? { ...s, done } : s)));
+    await toggleSubTaskAction(subId, done);
+  };
+
+  const handleDeleteSubtask = async (subId: string) => {
+    setSubtasks((prev) => prev.filter((s) => s.id !== subId));
+    if (!subId.startsWith("tmp-")) await deleteSubTaskAction(subId);
+  };
+
+  const doneCount = subtasks.filter((s) => s.done).length;
+  const subProgress = subtasks.length > 0 ? Math.round((doneCount / subtasks.length) * 100) : 0;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
@@ -142,7 +220,7 @@ export function TaskDetailModal({
         {/* Header */}
         <div className="flex items-start justify-between gap-3 px-6 pt-5 pb-4 border-b border-gray-100">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black border ${sm.bg} ${sm.border} ${sm.color}`}>
                 <sm.icon className="w-3 h-3" />
                 {sm.label}
@@ -192,7 +270,7 @@ export function TaskDetailModal({
             </div>
           )}
 
-          {/* ── Blocker reason input (when switching to BLOCKED) ─────── */}
+          {/* ── Blocker input (when switching to BLOCKED) ─────── */}
           {showBlockerInput && (
             <div className="p-4 bg-rose-50 border-2 border-rose-300 rounded-2xl space-y-3">
               <p className="text-xs font-black text-rose-700 uppercase tracking-widest flex items-center gap-1.5">
@@ -221,6 +299,45 @@ export function TaskDetailModal({
                   {isPending ? "Guardando..." : "Confirmar bloqueador"}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ── Progress bar ─────────────────────────────────────────── */}
+          {(showProgressBar || task.status === "DONE") && (
+            <div className="bg-gray-50 rounded-2xl border border-gray-100 px-4 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                  <Timer className="w-3 h-3" /> Avance
+                </p>
+                <span className="text-sm font-black text-gray-700">{displayProgress}%</span>
+              </div>
+              <div className="relative h-4 bg-gray-200 rounded-full">
+                <div
+                  className={`absolute top-0 left-0 h-full rounded-full bg-gradient-to-r ${getProgressColor(displayProgress)} pointer-events-none transition-all duration-300`}
+                  style={{ width: `${displayProgress}%` }}
+                />
+                {showProgressBar && canModify && (
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={localProgress}
+                    onChange={(e) => handleProgressChange(parseInt(e.target.value))}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                )}
+              </div>
+              {showProgressBar && canModify && (
+                <div className="flex justify-between text-[10px] text-gray-400 font-bold mt-2 px-1">
+                  <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                </div>
+              )}
+              {task.status === "DONE" && (
+                <p className="text-[10px] text-emerald-600 font-black mt-2 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Tarea completada
+                </p>
+              )}
             </div>
           )}
 
@@ -264,6 +381,109 @@ export function TaskDetailModal({
               </p>
             </div>
           )}
+
+          {/* ── Subtasks / Checklist ─────────────────────────────────── */}
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                <CheckSquare className="w-3 h-3" /> Subtareas
+                {subtasks.length > 0 && (
+                  <span className="ml-1.5 text-[10px] font-black px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                    {doneCount}/{subtasks.length}
+                  </span>
+                )}
+              </p>
+              {canModify && (
+                <button
+                  type="button"
+                  onClick={() => { setAddingSubtask(true); setTimeout(() => subInputRef.current?.focus(), 50); }}
+                  className="flex items-center gap-1 text-[10px] font-black text-red-600 hover:text-red-700 px-2 py-1 rounded-lg hover:bg-red-50 transition-all"
+                >
+                  <Plus className="w-3 h-3" /> Agregar
+                </button>
+              )}
+            </div>
+
+            {/* Mini progress for subtasks */}
+            {subtasks.length > 0 && (
+              <div className="mb-2 flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
+                    style={{ width: `${subProgress}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-black text-gray-400 shrink-0">{subProgress}%</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              {subtasks.map((sub) => (
+                <div
+                  key={sub.id}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all ${
+                    sub.done ? "bg-emerald-50/50 border-emerald-100" : "bg-gray-50 border-gray-100 hover:border-gray-200"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleToggleSubtask(sub.id, !sub.done)}
+                    className={`shrink-0 transition-colors ${sub.done ? "text-emerald-500" : "text-gray-300 hover:text-gray-500"}`}
+                  >
+                    {sub.done ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                  </button>
+                  <span className={`flex-1 text-sm ${sub.done ? "line-through text-gray-400" : "text-gray-700 font-medium"}`}>
+                    {sub.title}
+                  </span>
+                  {canModify && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSubtask(sub.id)}
+                      className="shrink-0 text-gray-300 hover:text-red-500 transition-colors p-0.5 rounded"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {addingSubtask && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-red-200 bg-red-50/30">
+                  <Plus className="w-4 h-4 text-red-400 shrink-0" />
+                  <input
+                    ref={subInputRef}
+                    type="text"
+                    value={newSubTitle}
+                    onChange={(e) => setNewSubTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") { e.preventDefault(); handleAddSubtask(); setAddingSubtask(false); }
+                      if (e.key === "Escape") { setNewSubTitle(""); setAddingSubtask(false); }
+                    }}
+                    placeholder="Escribe la subtarea y presiona Enter..."
+                    className="flex-1 bg-transparent text-sm text-gray-800 placeholder-red-300 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { handleAddSubtask(); setAddingSubtask(false); }}
+                    className="text-[10px] font-black text-red-600 hover:text-red-700 shrink-0"
+                  >
+                    ✓ Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setNewSubTitle(""); setAddingSubtask(false); }}
+                    className="text-[10px] text-gray-400 hover:text-gray-600 shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {subtasks.length === 0 && !addingSubtask && (
+                <p className="text-xs text-gray-300 italic text-center py-2">Sin subtareas — agrega una para desglosar el trabajo</p>
+              )}
+            </div>
+          </div>
 
           {/* ── Meta grid ───────────────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-3">

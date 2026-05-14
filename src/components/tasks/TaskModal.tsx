@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { X, CalendarDays, Flag, Users, Check, Zap, AlertTriangle } from "lucide-react";
+import { useState, useRef } from "react";
+import {
+  X, CalendarDays, Flag, Users, Check, Zap, AlertTriangle, UserCheck, Plus, Trash2, CheckSquare
+} from "lucide-react";
 import type { TaskPriority, TaskStatus } from "@/app/dashboard/tasks/actions";
 
 interface TaskUser {
@@ -18,6 +20,7 @@ interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   points: number;
+  progress: number;
   blockerReason: string | null;
   dueDate: string | null;
   assignees: { user: TaskUser }[];
@@ -34,9 +37,11 @@ interface Props {
     description?: string;
     priority: TaskPriority;
     points: number;
+    progress: number;
     blockerReason?: string;
     dueDate?: string;
     assigneeIds: string[];
+    subtasks: string[];
   }) => void;
 }
 
@@ -50,9 +55,9 @@ const PRIORITY_OPTIONS: {
   activeText: string;
   ring: string;
 }[] = [
-  { value: "LOW",    label: "Baja",   icon: "🔵", activeBg: "bg-slate-700 border-slate-700",  activeText: "text-white", ring: "ring-slate-400/30"  },
-  { value: "NORMAL", label: "Normal", icon: "🟡", activeBg: "bg-amber-500 border-amber-500",  activeText: "text-white", ring: "ring-amber-400/30"  },
   { value: "HIGH",   label: "Alta",   icon: "🔴", activeBg: "bg-red-600   border-red-600",    activeText: "text-white", ring: "ring-red-400/30"    },
+  { value: "NORMAL", label: "Normal", icon: "🟡", activeBg: "bg-amber-500 border-amber-500",  activeText: "text-white", ring: "ring-amber-400/30"  },
+  { value: "LOW",    label: "Baja",   icon: "🔵", activeBg: "bg-slate-700 border-slate-700",  activeText: "text-white", ring: "ring-slate-400/30"  },
 ];
 
 function avatarGradient(name: string) {
@@ -66,6 +71,12 @@ function avatarInitials(name: string) {
   return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
+function getProgressColor(p: number) {
+  if (p >= 80) return "from-emerald-400 to-emerald-600";
+  if (p >= 40) return "from-blue-400 to-indigo-500";
+  return "from-amber-400 to-orange-500";
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function TaskModal({ task, initialStatus, users, currentUserRole, onClose, onSave }: Props) {
@@ -73,28 +84,48 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
   const [description, setDescription] = useState(task?.description ?? "");
   const [priority, setPriority]     = useState<TaskPriority>(task?.priority ?? "NORMAL");
   const [points, setPoints]         = useState(task?.points ?? 0);
+  const [progress, setProgress]     = useState(task?.progress ?? 0);
   const [blockerReason, setBlockerReason] = useState(task?.blockerReason ?? "");
   const [dueDate, setDueDate]       = useState(task?.dueDate ? task.dueDate.slice(0, 10) : "");
   const [assigneeIds, setAssigneeIds] = useState<string[]>(task?.assignees.map((a) => a.user.id) ?? []);
+  
+  // Local state for new subtasks (only during creation for simplicity, or we let them add via detail modal later)
+  const [newSubtasks, setNewSubtasks] = useState<string[]>([]);
+  const [subTitle, setSubTitle] = useState("");
+  const subInputRef = useRef<HTMLInputElement>(null);
+
   const [saving, setSaving]         = useState(false);
+  const [triedSubmit, setTriedSubmit] = useState(false);
 
   const isBlocked = task?.status === "BLOCKED" || initialStatus === "BLOCKED";
+  const showProgress = task?.status === "IN_PROGRESS" || task?.status === "BLOCKED";
+  const noAssignee = assigneeIds.length === 0;
 
   const toggleAssignee = (userId: string) =>
     setAssigneeIds((prev) => prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]);
 
+  const handleAddSubtask = () => {
+    if (!subTitle.trim()) return;
+    setNewSubtasks((prev) => [...prev, subTitle.trim()]);
+    setSubTitle("");
+    subInputRef.current?.focus();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    setTriedSubmit(true);
+    if (!title.trim() || noAssignee) return;
     setSaving(true);
     await onSave({
       title: title.trim(),
       description: description.trim() || undefined,
       priority,
       points,
+      progress,
       blockerReason: isBlocked ? (blockerReason.trim() || undefined) : undefined,
       dueDate: dueDate || undefined,
       assigneeIds,
+      subtasks: newSubtasks,
     });
     setSaving(false);
   };
@@ -105,13 +136,13 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
         style={{ animation: "modalIn 0.2s cubic-bezier(0.34,1.56,0.64,1) both" }}
       >
-        <div className="h-1 w-full bg-gradient-to-r from-red-500 via-rose-500 to-orange-400" />
+        <div className="h-1 w-full bg-gradient-to-r from-red-500 via-rose-500 to-orange-400 shrink-0" />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0">
           <div>
             <h2 className="text-lg font-black text-gray-900 tracking-tight">
               {task ? "Editar tarea" : "Nueva tarea"}
@@ -125,8 +156,8 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1 min-h-0">
 
             {/* Title */}
             <div>
@@ -154,6 +185,56 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
               />
             </div>
 
+            {/* Subtasks (Only when creating) */}
+            {!task && (
+              <div>
+                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <CheckSquare className="w-3 h-3" /> Checklist de Subtareas
+                </label>
+                <div className="space-y-2 mb-2">
+                  {newSubtasks.map((st, i) => (
+                    <div key={i} className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl">
+                      <CheckSquare className="w-4 h-4 text-gray-300" />
+                      <span className="flex-1 text-sm text-gray-700">{st}</span>
+                      <button
+                        type="button"
+                        onClick={() => setNewSubtasks((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white">
+                  <Plus className="w-4 h-4 text-gray-400 shrink-0" />
+                  <input
+                    ref={subInputRef}
+                    type="text"
+                    value={subTitle}
+                    onChange={(e) => setSubTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSubtask();
+                      }
+                    }}
+                    placeholder="Agregar una subtarea..."
+                    className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
+                  />
+                  {subTitle.trim() && (
+                    <button
+                      type="button"
+                      onClick={handleAddSubtask}
+                      className="text-[10px] font-black text-blue-600 hover:text-blue-700 shrink-0"
+                    >
+                      AGREGAR
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Blocker reason — only shown when editing a BLOCKED task */}
             {isBlocked && (
               <div>
@@ -171,7 +252,7 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
               </div>
             )}
 
-            {/* Priority */}
+            {/* Priority — sorted HIGH → NORMAL → LOW */}
             <div>
               <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">
                 <Flag className="w-3 h-3 inline mr-1 mb-0.5" /> Prioridad
@@ -199,6 +280,33 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
                 })}
               </div>
             </div>
+
+            {/* Progress — unified bar */}
+            {showProgress && (
+              <div>
+                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 inline-block" /> Avance
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 relative h-4 bg-gray-100 rounded-full">
+                    <div
+                      className={`absolute top-0 left-0 h-full rounded-full bg-gradient-to-r ${getProgressColor(progress)} pointer-events-none transition-all duration-300`}
+                      style={{ width: `${progress}%` }}
+                    />
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={progress}
+                      onChange={(e) => setProgress(parseInt(e.target.value))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                  </div>
+                  <span className="text-sm font-black text-gray-700 w-10 text-right shrink-0">{progress}%</span>
+                </div>
+              </div>
+            )}
 
             {/* Story points */}
             <div>
@@ -249,11 +357,18 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
               />
             </div>
 
-            {/* Assignees */}
+            {/* Assignees — REQUIRED */}
             <div>
-              <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                <Users className="w-3 h-3 inline mr-1 mb-0.5" /> Asignar a
+              <label className="block text-[11px] font-black uppercase tracking-widest mb-1 flex items-center gap-1"
+                style={{ color: triedSubmit && noAssignee ? "#ef4444" : "#9ca3af" }}>
+                <UserCheck className="w-3 h-3" />
+                Responsable *
               </label>
+              {triedSubmit && noAssignee && (
+                <p className="text-xs text-red-500 mb-2 flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" /> Debes asignar al menos un responsable
+                </p>
+              )}
               {users.length === 0 ? (
                 <p className="text-xs text-gray-400 italic">No hay usuarios disponibles.</p>
               ) : (
@@ -266,7 +381,12 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
                         type="button"
                         onClick={() => toggleAssignee(user.id)}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all duration-200 text-left
-                          ${selected ? "border-red-500 bg-red-50/60 shadow-sm shadow-red-500/10" : "border-gray-100 bg-gray-50/60 hover:border-gray-200 hover:bg-gray-100/80"}`}
+                          ${selected
+                            ? "border-red-500 bg-red-50/60 shadow-sm shadow-red-500/10"
+                            : triedSubmit && noAssignee
+                            ? "border-red-200 bg-gray-50/60 hover:border-red-300"
+                            : "border-gray-100 bg-gray-50/60 hover:border-gray-200 hover:bg-gray-100/80"
+                          }`}
                       >
                         <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${avatarGradient(user.name)} text-white text-xs font-black flex items-center justify-center flex-shrink-0 shadow-sm`}>
                           {avatarInitials(user.name)}
@@ -290,7 +410,7 @@ export function TaskModal({ task, initialStatus, users, currentUserRole, onClose
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50">
+          <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50 shrink-0">
             <button
               type="button"
               onClick={onClose}

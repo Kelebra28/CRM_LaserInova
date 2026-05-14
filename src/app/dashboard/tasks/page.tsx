@@ -6,8 +6,10 @@ import { TaskBoard } from "@/components/tasks/TaskBoard";
 
 export const metadata = {
   title: "Tareas — Laser Inova CRM",
-  description: "Tablero de tareas estilo Jira con drag & drop, puntos y filtros",
+  description: "Tablero de tareas estilo Jira con drag & drop, puntos, prioridad y subtareas",
 };
+
+const PRIORITY_ORDER: Record<string, number> = { HIGH: 0, NORMAL: 1, LOW: 2 };
 
 export default async function TasksPage() {
   const session = await getServerSession(authOptions);
@@ -25,6 +27,7 @@ export default async function TasksPage() {
           },
         },
         createdBy: { select: { id: true, name: true } },
+        subtasks: { orderBy: { order: "asc" } },
       },
     }),
     prisma.user.findMany({
@@ -34,17 +37,29 @@ export default async function TasksPage() {
     }),
   ]);
 
-  const serializedTasks = tasks.map((t) => ({
-    ...t,
-    status: t.status as "BACKLOG" | "PENDING" | "IN_PROGRESS" | "BLOCKED" | "DONE",
-    priority: t.priority as "LOW" | "NORMAL" | "HIGH",
-    points: t.points,
-    blockerReason: t.blockerReason ?? null,
-    dueDate: t.dueDate?.toISOString() ?? null,
-    createdAt: t.createdAt.toISOString(),
-    updatedAt: t.updatedAt.toISOString(),
-    assignees: t.assignees.map((a) => ({ user: a.user })),
-  }));
+  const serializedTasks = tasks
+    .map((t) => ({
+      ...t,
+      status: t.status as "BACKLOG" | "PENDING" | "IN_PROGRESS" | "BLOCKED" | "DONE",
+      priority: t.priority as "LOW" | "NORMAL" | "HIGH",
+      points: t.points,
+      progress: t.progress ?? 0,
+      blockerReason: t.blockerReason ?? null,
+      dueDate: t.dueDate?.toISOString() ?? null,
+      createdAt: t.createdAt.toISOString(),
+      updatedAt: t.updatedAt.toISOString(),
+      assignees: t.assignees.map((a) => ({ user: a.user })),
+      subtasks: t.subtasks.map((s) => ({
+        ...s,
+        createdAt: s.createdAt.toISOString(),
+      })),
+    }))
+    // Sort by priority (HIGH first) then by order within each column
+    .sort((a, b) => {
+      if (a.status !== b.status) return 0;
+      const pd = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+      return pd !== 0 ? pd : a.order - b.order;
+    });
 
   return (
     <TaskBoard

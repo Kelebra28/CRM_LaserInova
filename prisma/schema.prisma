@@ -252,12 +252,14 @@ model Task {
   status        String         @default("PENDING") // BACKLOG | PENDING | IN_PROGRESS | BLOCKED | DONE
   priority      String         @default("NORMAL")  // LOW | NORMAL | HIGH
   points        Int            @default(0)          // 1 punto = 1 hora
+  progress      Int            @default(0)          // 0-100 — activo solo en IN_PROGRESS y BLOCKED
   blockerReason String?        @db.Text             // Obligatorio cuando status = BLOCKED
   dueDate       DateTime?
   order         Int            @default(0)
   createdById   String?
   createdBy     User?          @relation("TaskCreatedBy", fields: [createdById], references: [id])
   assignees     TaskAssignee[]
+  subtasks      SubTask[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -272,6 +274,18 @@ model TaskAssignee {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([taskId, userId])
+}
+
+model SubTask {
+  id        String   @id @default(uuid())
+  taskId    String
+  title     String
+  done      Boolean  @default(false)
+  order     Int      @default(0)
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
 }
 
 model MachineProcess {

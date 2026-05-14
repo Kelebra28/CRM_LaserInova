@@ -6,6 +6,13 @@ import { revalidatePath } from "next/cache";
 export type TaskStatus = "BACKLOG" | "PENDING" | "IN_PROGRESS" | "BLOCKED" | "DONE";
 export type TaskPriority = "LOW" | "NORMAL" | "HIGH";
 
+// Helper: include clause shared across queries
+const TASK_INCLUDE = {
+  assignees: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
+  createdBy: { select: { id: true, name: true } },
+  subtasks: { orderBy: { order: "asc" as const } },
+} as const;
+
 // ─── Create ─────────────────────────────────────────────────────────────────
 
 export async function createTaskAction(data: {
@@ -15,6 +22,7 @@ export async function createTaskAction(data: {
   points?: number;
   dueDate?: string;
   assigneeIds?: string[];
+  subtasks?: string[];
   createdById: string;
   status?: TaskStatus;
 }) {
@@ -29,6 +37,7 @@ export async function createTaskAction(data: {
       description: data.description ?? null,
       priority: data.priority ?? "NORMAL",
       points: data.points ?? 0,
+      progress: 0,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       status: data.status ?? "PENDING",
       order: (maxOrder._max.order ?? -1) + 1,
@@ -36,11 +45,11 @@ export async function createTaskAction(data: {
       assignees: data.assigneeIds?.length
         ? { create: data.assigneeIds.map((userId) => ({ userId })) }
         : undefined,
+      subtasks: data.subtasks?.length
+        ? { create: data.subtasks.map((title, i) => ({ title, order: i, done: false })) }
+        : undefined,
     },
-    include: {
-      assignees: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
-      createdBy: { select: { id: true, name: true } },
-    },
+    include: TASK_INCLUDE,
   });
 
   revalidatePath("/dashboard/tasks");
@@ -51,6 +60,7 @@ export async function createTaskAction(data: {
     dueDate: newTask.dueDate?.toISOString() ?? null,
     createdAt: newTask.createdAt.toISOString(),
     updatedAt: newTask.updatedAt.toISOString(),
+    subtasks: newTask.subtasks.map((s) => ({ ...s, createdAt: s.createdAt.toISOString() })),
   };
 }
 
@@ -65,6 +75,7 @@ export async function updateTaskAction(
     points?: number;
     dueDate?: string | null;
     blockerReason?: string | null;
+    progress?: number;
     assigneeIds?: string[];
   }
 ) {
@@ -78,6 +89,7 @@ export async function updateTaskAction(
         points: data.points,
         dueDate: data.dueDate ? new Date(data.dueDate) : data.dueDate === null ? null : undefined,
         blockerReason: data.blockerReason,
+        progress: data.progress,
       },
     });
 
@@ -94,6 +106,16 @@ export async function updateTaskAction(
   revalidatePath("/dashboard/tasks");
 }
 
+// ─── Update progress only ────────────────────────────────────────────────────
+
+export async function updateTaskProgressAction(taskId: string, progress: number) {
+  await prisma.task.update({
+    where: { id: taskId },
+    data: { progress: Math.max(0, Math.min(100, progress)) },
+  });
+  revalidatePath("/dashboard/tasks");
+}
+
 // ─── Quick status change (from card or detail modal) ─────────────────────────
 
 export async function updateTaskStatusAction(
@@ -106,6 +128,8 @@ export async function updateTaskStatusAction(
     data: {
       status: newStatus,
       blockerReason: newStatus === "BLOCKED" ? blockerReason ?? null : null,
+      // Auto-set progress 100 when DONE
+      progress: newStatus === "DONE" ? 100 : undefined,
     },
   });
 
@@ -126,6 +150,7 @@ export async function moveTaskAction(
       status: newStatus,
       order: newOrder,
       blockerReason: newStatus === "BLOCKED" ? blockerReason ?? null : null,
+      progress: newStatus === "DONE" ? 100 : undefined,
     },
   });
 
@@ -152,5 +177,43 @@ export async function reorderTasksAction(
 
 export async function deleteTaskAction(taskId: string) {
   await prisma.task.delete({ where: { id: taskId } });
+  revalidatePath("/dashboard/tasks");
+}
+
+// ─── SubTask: Create ─────────────────────────────────────────────────────────
+
+export async function createSubTaskAction(taskId: string, title: string) {
+  const maxOrder = await prisma.subTask.aggregate({
+    _max: { order: true },
+    where: { taskId },
+  });
+
+  const sub = await prisma.subTask.create({
+    data: {
+      taskId,
+      title: title.trim(),
+      done: false,
+      order: (maxOrder._max.order ?? -1) + 1,
+    },
+  });
+
+  revalidatePath("/dashboard/tasks");
+  return { ...sub, createdAt: sub.createdAt.toISOString() };
+}
+
+// ─── SubTask: Toggle done ────────────────────────────────────────────────────
+
+export async function toggleSubTaskAction(subTaskId: string, done: boolean) {
+  await prisma.subTask.update({
+    where: { id: subTaskId },
+    data: { done },
+  });
+  revalidatePath("/dashboard/tasks");
+}
+
+// ─── SubTask: Delete ─────────────────────────────────────────────────────────
+
+export async function deleteSubTaskAction(subTaskId: string) {
+  await prisma.subTask.delete({ where: { id: subTaskId } });
   revalidatePath("/dashboard/tasks");
 }

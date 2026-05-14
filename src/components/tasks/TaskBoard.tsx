@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import {
   Plus, CheckCircle2, Clock, Loader2, CalendarDays, Trash2,
   Pencil, ListChecks, AlignLeft, AlertTriangle, Zap, Filter, Users,
+  CheckSquare, Flag,
 } from "lucide-react";
 import {
   createTaskAction, deleteTaskAction, moveTaskAction,
@@ -19,6 +20,14 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface TaskUser { id: string; name: string; email: string; role: string; }
 
+interface SubTask {
+  id: string;
+  title: string;
+  done: boolean;
+  order: number;
+  createdAt: string;
+}
+
 interface Task {
   id: string;
   title: string;
@@ -26,12 +35,14 @@ interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   points: number;
+  progress: number;
   blockerReason: string | null;
   dueDate: string | null;
   order: number;
   createdById: string | null;
   createdBy: { id: string; name: string } | null;
   assignees: { user: TaskUser }[];
+  subtasks: SubTask[];
   createdAt: string;
   updatedAt: string;
 }
@@ -72,6 +83,12 @@ function isOverdue(iso: string | null, status: TaskStatus) {
   return new Date(iso) < new Date();
 }
 
+function getProgressColor(p: number) {
+  if (p >= 80) return "from-emerald-400 to-emerald-600";
+  if (p >= 40) return "from-blue-400 to-indigo-500";
+  return "from-amber-400 to-orange-500";
+}
+
 // ─── TaskCard ─────────────────────────────────────────────────────────────────
 
 function TaskCard({
@@ -87,6 +104,12 @@ function TaskCard({
   const overdue = isOverdue(task.dueDate, task.status);
   const canModify = currentUserRole === "ADMIN" || task.createdById === currentUserId;
   const isBlocked = task.status === "BLOCKED";
+
+  const showProgress = task.status === "IN_PROGRESS" || task.status === "BLOCKED" || task.status === "DONE";
+  const displayProgress = task.status === "DONE" ? 100 : task.progress;
+
+  const doneSubtasks = task.subtasks?.filter((s) => s.done).length ?? 0;
+  const totalSubtasks = task.subtasks?.length ?? 0;
 
   return (
     <div
@@ -104,11 +127,19 @@ function TaskCard({
           <span className={`w-1.5 h-1.5 rounded-full ${p.dot}`} />
           <span className={`text-[10px] font-black uppercase tracking-widest ${p.color}`}>{p.label}</span>
         </div>
-        {task.points > 0 && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-black text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-lg">
-            <Zap className="w-2.5 h-2.5" />{task.points}h
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {totalSubtasks > 0 && (
+            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg border
+              ${doneSubtasks === totalSubtasks ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
+              <CheckSquare className="w-2.5 h-2.5" /> {doneSubtasks}/{totalSubtasks}
+            </span>
+          )}
+          {task.points > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-black text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-lg">
+              <Zap className="w-2.5 h-2.5" />{task.points}h
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Blocker badge */}
@@ -148,6 +179,22 @@ function TaskCard({
       {/* Description */}
       {task.description && (
         <p className="text-xs text-gray-400 mb-3 line-clamp-2 leading-relaxed">{task.description}</p>
+      )}
+
+      {/* Mini Progress Bar */}
+      {showProgress && (
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Avance</span>
+            <span className="text-[9px] font-bold text-gray-500">{displayProgress}%</span>
+          </div>
+          <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full bg-gradient-to-r ${getProgressColor(displayProgress)} transition-all duration-500`}
+              style={{ width: `${displayProgress}%` }}
+            />
+          </div>
+        </div>
       )}
 
       {/* Footer */}
@@ -254,8 +301,11 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
   const [detailTask, setDetailTask]   = useState<Task | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<TaskStatus>("PENDING");
   const [confirmId, setConfirmId]     = useState<string | null>(null);
-  // Multi-select user filter: empty = show all
+  
+  // Filters
   const [filterUserIds, setFilterUserIds] = useState<string[]>([]);
+  const [filterPriority, setFilterPriority] = useState<TaskPriority | null>(null);
+  
   const draggedTask = useRef<Task | null>(null);
   
   // Blocker prompt for drag & drop
@@ -273,15 +323,24 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
       prev.includes(uid) ? prev.filter((id) => id !== uid) : [...prev, uid]
     );
 
-  const filteredTasks = filterUserIds.length === 0
-    ? tasks
-    : tasks.filter((t) =>
-        t.assignees.some((a) => filterUserIds.includes(a.user.id))
-      );
+  const togglePriorityFilter = (prio: TaskPriority) =>
+    setFilterPriority((prev) => (prev === prio ? null : prio));
+
+  const filteredTasks = tasks.filter((t) => {
+    if (filterPriority && t.priority !== filterPriority) return false;
+    if (filterUserIds.length > 0 && !t.assignees.some((a) => filterUserIds.includes(a.user.id))) return false;
+    return true;
+  });
 
   const tasksByStatus = useCallback(
     (status: TaskStatus) =>
-      filteredTasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order),
+      filteredTasks.filter((t) => t.status === status).sort((a, b) => {
+        // High -> Normal -> Low order is already somewhat preserved,
+        // but we can enforce it explicitly here if we want:
+        const prioOrder = { HIGH: 0, NORMAL: 1, LOW: 2 };
+        if (a.priority !== b.priority) return prioOrder[a.priority] - prioOrder[b.priority];
+        return a.order - b.order;
+      }),
     [filteredTasks]
   );
 
@@ -289,7 +348,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
 
   const total    = filteredTasks.length;
   const done     = filteredTasks.filter((t) => t.status === "DONE").length;
-  const progress = total > 0 ? Math.round((done / total) * 100) : 0;
+  const progressPercent = total > 0 ? Math.round((done / total) * 100) : 0;
 
   // Total points per user (for the filter bar)
   const pointsByUser = users.reduce<Record<string, number>>((acc, u) => {
@@ -339,7 +398,6 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
     const colItems = tasksByStatus(targetStatus).filter((t) => t.id !== src.id);
     colItems.splice(newOrder, 0, src);
     
-    // Filtramos tareas con ID temporal para evitar errores en la base de datos
     const itemsToReorder = colItems
       .filter((t) => !t.id.startsWith("tmp-"))
       .map((t, i) => ({ id: t.id, order: i }));
@@ -353,10 +411,8 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
     if (!blockingDrop || !dropBlockerReason.trim()) return;
     const { src, targetStatus, newOrder } = blockingDrop;
     
-    // Update local state with the reason
     setTasks(prev => prev.map(t => t.id === src.id ? { ...t, blockerReason: dropBlockerReason, status: targetStatus } : t));
     
-    // Si la tarea tiene ID temporal, no podemos actualizarla aún en el servidor
     if (src.id.startsWith("tmp-")) {
       setBlockingDrop(null);
       setDropBlockerReason("");
@@ -405,7 +461,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
 
   const handleSave = async (data: {
     title: string; description?: string; priority: TaskPriority;
-    points: number; blockerReason?: string; dueDate?: string; assigneeIds: string[];
+    points: number; progress: number; blockerReason?: string; dueDate?: string; assigneeIds: string[]; subtasks: string[];
   }) => {
     setModalOpen(false);
 
@@ -414,7 +470,12 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
         prev.map((t) =>
           t.id === editingTask.id
             ? {
-                ...t, ...data,
+                ...t,
+                title: data.title,
+                description: data.description ?? null,
+                priority: data.priority,
+                points: data.points,
+                progress: data.progress,
                 dueDate: data.dueDate ?? null,
                 blockerReason: data.blockerReason ?? null,
                 assignees: data.assigneeIds.map((uid) => ({ user: users.find((u) => u.id === uid)! })),
@@ -424,7 +485,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
       );
       await updateTaskAction(editingTask.id, {
         title: data.title, description: data.description,
-        priority: data.priority, points: data.points,
+        priority: data.priority, points: data.points, progress: data.progress,
         dueDate: data.dueDate || null, assigneeIds: data.assigneeIds,
         blockerReason: data.blockerReason ?? null,
       });
@@ -432,8 +493,9 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
       const tempId = `tmp-${Date.now()}`;
       const newTask: Task = {
         id: tempId, title: data.title, description: data.description ?? null,
-        status: defaultStatus, priority: data.priority, points: data.points,
-        blockerReason: data.blockerReason ?? null,
+        status: defaultStatus, priority: data.priority, points: data.points, progress: data.progress,
+        blockerReason: data.blockerReason ?? null, 
+        subtasks: data.subtasks.map((st, i) => ({ id: `tmp-st-${i}`, title: st, done: false, order: i, createdAt: new Date().toISOString() })),
         dueDate: data.dueDate ?? null, order: tasksByStatus(defaultStatus).length,
         createdById: currentUserId, createdBy: { id: currentUserId, name: "Tú" },
         assignees: data.assigneeIds.map((uid) => ({ user: users.find((u) => u.id === uid)! })),
@@ -442,23 +504,29 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
       setTasks((prev) => [...prev, newTask]);
       const created = await createTaskAction({ ...data, createdById: currentUserId, status: defaultStatus });
       
-      // Reemplazamos la tarea temporal con la real del servidor
       if (created) {
         setTasks((prev) => prev.map((t) => (t.id === tempId ? (created as any as Task) : t)));
       }
     }
   };
 
-  // Optimistic status change from detail modal
   const handleStatusChangeFromDetail = (taskId: string, newStatus: TaskStatus, blockerReason?: string) => {
     setTasks((prev) =>
       prev.map((t) =>
-        t.id === taskId ? { ...t, status: newStatus, blockerReason: blockerReason ?? null } : t
+        t.id === taskId ? { ...t, status: newStatus, blockerReason: blockerReason ?? null, progress: newStatus === "DONE" ? 100 : t.progress } : t
       )
     );
     if (detailTask?.id === taskId) {
-      setDetailTask((prev) => prev ? { ...prev, status: newStatus, blockerReason: blockerReason ?? null } : prev);
+      setDetailTask((prev) => prev ? { ...prev, status: newStatus, blockerReason: blockerReason ?? null, progress: newStatus === "DONE" ? 100 : prev.progress } : prev);
     }
+  };
+
+  const handleProgressChangeFromDetail = (taskId: string, progress: number) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId ? { ...t, progress } : t
+      )
+    );
   };
 
   return (
@@ -488,54 +556,92 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
           <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-700"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <span className="text-xs font-black text-gray-400 shrink-0">{progress}%</span>
+          <span className="text-xs font-black text-gray-400 shrink-0">{progressPercent}%</span>
         </div>
       )}
 
-      {/* ── User filter bar ──────────────────────────────────────────────── */}
-      {users.length > 0 && (
+      {/* ── Filters ──────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3">
+        {/* Priority Filter */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">
-            <Filter className="w-3.5 h-3.5" /> Filtrar:
+            <Flag className="w-3.5 h-3.5" /> Prioridad:
           </div>
           <button
-            onClick={() => setFilterUserIds([])}
+            onClick={() => setFilterPriority(null)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all
-              ${filterUserIds.length === 0
+              ${filterPriority === null
                 ? "bg-gray-900 border-gray-900 text-white shadow-sm"
                 : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
               }`}
           >
-            <Users className="w-3.5 h-3.5" /> Todos
+            Todas
           </button>
-          {users.map((u) => {
-            const active = filterUserIds.includes(u.id);
-            const pts = pointsByUser[u.id] ?? 0;
+          {(["HIGH", "NORMAL", "LOW"] as TaskPriority[]).map((p) => {
+            const active = filterPriority === p;
+            const meta = PRIORITY_META[p];
             return (
               <button
-                key={u.id}
-                onClick={() => toggleUserFilter(u.id)}
-                className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-xl border text-xs font-bold transition-all
+                key={p}
+                onClick={() => togglePriorityFilter(p)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all
                   ${active
-                    ? "bg-red-600 border-red-600 text-white shadow-sm"
+                    ? "bg-gray-800 border-gray-800 text-white shadow-sm"
                     : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
                   }`}
               >
-                <UserAvatar name={u.name} size="xs" />
-                <span>{u.name.split(" ")[0]}</span>
-                {pts > 0 && (
-                  <span className={`flex items-center gap-0.5 text-[10px] font-black ${active ? "text-white/80" : "text-violet-500"}`}>
-                    <Zap className="w-2.5 h-2.5" />{pts}h
-                  </span>
-                )}
+                <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
+                {meta.label}
               </button>
             );
           })}
         </div>
-      )}
+
+        {/* User Filter */}
+        {users.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">
+              <Users className="w-3.5 h-3.5" /> Asignado:
+            </div>
+            <button
+              onClick={() => setFilterUserIds([])}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all
+                ${filterUserIds.length === 0
+                  ? "bg-gray-900 border-gray-900 text-white shadow-sm"
+                  : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+            >
+              Todos
+            </button>
+            {users.map((u) => {
+              const active = filterUserIds.includes(u.id);
+              const pts = pointsByUser[u.id] ?? 0;
+              return (
+                <button
+                  key={u.id}
+                  onClick={() => toggleUserFilter(u.id)}
+                  className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-xl border text-xs font-bold transition-all
+                    ${active
+                      ? "bg-red-600 border-red-600 text-white shadow-sm"
+                      : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                    }`}
+                >
+                  <UserAvatar name={u.name} size="xs" />
+                  <span>{u.name.split(" ")[0]}</span>
+                  {pts > 0 && (
+                    <span className={`flex items-center gap-0.5 text-[10px] font-black ${active ? "text-white/80" : "text-violet-500"}`}>
+                      <Zap className="w-2.5 h-2.5" />{pts}h
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── Kanban Board ─────────────────────────────────────────────────── */}
       <div className="flex gap-4 flex-1 overflow-x-auto pb-2">
@@ -574,9 +680,14 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
           task={detailTask}
           currentUserRole={currentUserRole}
           currentUserId={currentUserId}
-          onClose={() => setDetailTask(null)}
+          onClose={() => {
+            setDetailTask(null);
+            // Re-fetch or at least refresh local state from detail modifications might be needed,
+            // but handleStatusChangeFromDetail and other optimistics already updated it mostly.
+          }}
           onEdit={handleEdit}
           onStatusChange={handleStatusChangeFromDetail}
+          onProgressChange={handleProgressChangeFromDetail}
         />
       )}
 
