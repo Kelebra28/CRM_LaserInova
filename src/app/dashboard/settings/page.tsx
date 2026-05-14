@@ -6,6 +6,7 @@ import { updateCostConfigurations } from "./actions";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { UsersPanel } from "@/components/settings/UsersPanel";
 import { Save, Settings2, User, Users, SlidersHorizontal } from "lucide-react";
+import { SettingsTabs } from "@/components/settings/SettingsTabs";
 
 const DEFAULT_CONFIGS = [
   { key: "costo_minuto_mayoreo",      name: "Costo por minuto (Mayoreo)",          default: 8.5,    unit: "$"    },
@@ -44,8 +45,80 @@ export default async function SettingsPage() {
 
   const configMap = new Map(savedConfigs.map((c) => [c.key, c.value]));
 
+  const costsContent = (
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+        <div className="p-2 rounded-xl bg-amber-50">
+          <SlidersHorizontal className="w-5 h-5 text-amber-600" />
+        </div>
+        <div>
+          <h2 className="text-base font-black text-gray-800 uppercase tracking-widest">Costos Operativos</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Valores base para el cálculo automático de cotizaciones</p>
+        </div>
+      </div>
+
+      <form action={updateCostConfigurations} className="p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {DEFAULT_CONFIGS.map((config) => {
+            const value = configMap.has(config.key) ? configMap.get(config.key) : config.default;
+            return (
+              <div key={config.key} className="space-y-2">
+                <label
+                  htmlFor={config.key}
+                  className="block text-[11px] font-black text-gray-400 uppercase tracking-widest"
+                >
+                  {config.name}
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    name={config.key}
+                    id={config.key}
+                    defaultValue={value}
+                    className="w-full px-4 py-3 pr-12 rounded-2xl border border-gray-200 text-sm text-gray-900 bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all font-bold"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 pointer-events-none uppercase">
+                    {config.unit}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
+          <button
+            type="submit"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-black shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-95"
+          >
+            <Save className="w-4 h-4" />
+            Guardar configuración
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
+  const usersContent = (
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+        <div className="p-2 rounded-xl bg-violet-50">
+          <Users className="w-5 h-5 text-violet-600" />
+        </div>
+        <div>
+          <h2 className="text-base font-black text-gray-800 uppercase tracking-widest">Equipo</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Administración de accesos y roles del sistema</p>
+        </div>
+      </div>
+      <div className="p-6">
+        <UsersPanel users={users} currentUserId={currentUser.id} />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 pb-12">
       {/* Page header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-md">
@@ -58,19 +131,19 @@ export default async function SettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* ── LEFT COLUMN: Profile + Users ───────────────────────────── */}
-        <div className="lg:col-span-1 space-y-6">
-
-          {/* Profile card */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-              <div className="p-1.5 rounded-xl bg-red-50">
-                <User className="w-4 h-4 text-red-600" />
+        {/* ── LEFT COLUMN: Profile (Fixed) ───────────────────────────── */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden sticky top-6">
+            <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+              <div className="p-2 rounded-xl bg-red-50">
+                <User className="w-5 h-5 text-red-600" />
               </div>
-              <h2 className="text-sm font-black text-gray-700 uppercase tracking-widest">Mi Perfil</h2>
+              <div>
+                <h2 className="text-base font-black text-gray-800 uppercase tracking-widest">Mi Perfil</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Tu información personal</p>
+              </div>
             </div>
-            <div className="p-5">
+            <div className="p-6">
               {me ? (
                 <ProfileForm user={me} />
               ) : (
@@ -78,77 +151,12 @@ export default async function SettingsPage() {
               )}
             </div>
           </div>
-
-          {/* Users panel */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-              <div className="p-1.5 rounded-xl bg-violet-50">
-                <Users className="w-4 h-4 text-violet-600" />
-              </div>
-              <h2 className="text-sm font-black text-gray-700 uppercase tracking-widest">Equipo</h2>
-            </div>
-            <div className="p-5">
-              <UsersPanel users={users} currentUserId={currentUser.id} />
-            </div>
-          </div>
         </div>
 
-        {/* ── RIGHT COLUMN: Cost configs ─────────────────────────────── */}
+        {/* ── RIGHT COLUMN: Config Tabs ─────────────────────────────── */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-              <div className="p-1.5 rounded-xl bg-amber-50">
-                <SlidersHorizontal className="w-4 h-4 text-amber-600" />
-              </div>
-              <div>
-                <h2 className="text-sm font-black text-gray-700 uppercase tracking-widest">Costos Operativos</h2>
-                <p className="text-[11px] text-gray-400 mt-0.5">Valores base para el cálculo de cotizaciones</p>
-              </div>
-            </div>
-
-            <form action={updateCostConfigurations} className="p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {DEFAULT_CONFIGS.map((config) => {
-                  const value = configMap.has(config.key) ? configMap.get(config.key) : config.default;
-                  return (
-                    <div key={config.key} className="space-y-1.5">
-                      <label
-                        htmlFor={config.key}
-                        className="block text-[11px] font-black text-gray-400 uppercase tracking-widest"
-                      >
-                        {config.name}
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          step="0.01"
-                          name={config.key}
-                          id={config.key}
-                          defaultValue={value}
-                          className="w-full px-4 py-2.5 pr-12 rounded-2xl border border-gray-200 text-sm text-gray-900 bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all font-medium"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 pointer-events-none">
-                          {config.unit}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-6 pt-5 border-t border-gray-100 flex justify-end">
-                <button
-                  type="submit"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-sm font-black shadow-lg shadow-red-600/20 transition-all hover:scale-[1.02] active:scale-95"
-                >
-                  <Save className="w-4 h-4" />
-                  Guardar configuración
-                </button>
-              </div>
-            </form>
-          </div>
+          <SettingsTabs costsContent={costsContent} usersContent={usersContent} />
         </div>
-
       </div>
     </div>
   );

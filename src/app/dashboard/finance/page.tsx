@@ -2,8 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { 
   TrendingUp, TrendingDown, DollarSign, Calendar,
   ArrowDownRight, Receipt, Wallet, Package, Activity,
-  BarChart3, Briefcase, Scale
+  BarChart3, Briefcase, Scale, ArrowRight
 } from "lucide-react";
+import Link from "next/link";
 import TransactionForm from "@/components/finance/TransactionForm";
 import TransactionTable from "@/components/finance/TransactionTable";
 import PaymentBoard from "@/components/finance/PaymentBoard";
@@ -141,7 +142,16 @@ export default async function FinancePage() {
                 ${netProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
               </p>
             </div>
-            <TransactionForm quotes={quotes} clients={clients} />
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/dashboard/finance/history" 
+                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-sm font-black transition-all border border-white/5"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Reportes / Historial
+              </Link>
+              <TransactionForm quotes={quotes} clients={clients} />
+            </div>
           </div>
         </div>
       </div>

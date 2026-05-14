@@ -233,7 +233,7 @@ function Column({
 
   return (
     <div
-      className={`flex flex-col rounded-3xl border-2 transition-all duration-200 min-w-[280px] ${
+      className={`flex flex-col rounded-3xl border-2 transition-all duration-200 w-full ${
         isDragOver ? `${col.dropBg} shadow-xl` : "border-transparent bg-gray-50"
       }`}
       onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
@@ -242,12 +242,12 @@ function Column({
     >
       {/* Header */}
       <div className={`flex items-center justify-between px-4 py-3.5 rounded-t-3xl border-b ${col.headerBg}`}>
-        <div className="flex items-center gap-2.5">
-          <div className={`p-1.5 rounded-lg ${col.countBg}`}>
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <div className={`p-1.5 rounded-lg shrink-0 ${col.countBg}`}>
             <col.icon className={`w-3.5 h-3.5 ${col.accentColor}`} />
           </div>
-          <h2 className={`text-sm font-black uppercase tracking-widest ${col.accentColor}`}>{col.label}</h2>
-          <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${col.countBg}`}>{tasks.length}</span>
+          <h2 className={`text-sm font-black uppercase tracking-widest whitespace-nowrap truncate ${col.accentColor}`}>{col.label}</h2>
+          <span className={`text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 ${col.countBg}`}>{tasks.length}</span>
           {totalPoints > 0 && (
             <span className="text-[10px] font-bold text-violet-500 flex items-center gap-0.5">
               <Zap className="w-2.5 h-2.5" />{totalPoints}h
@@ -461,11 +461,16 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
 
   const handleSave = async (data: {
     title: string; description?: string; priority: TaskPriority;
-    points: number; progress: number; blockerReason?: string; dueDate?: string; assigneeIds: string[]; subtasks: string[];
+    points: number; progress: number; blockerReason?: string; dueDate?: string; assigneeIds: string[]; subtasks: { id: string; title: string }[];
   }) => {
     setModalOpen(false);
 
     if (editingTask) {
+      const existingIds = editingTask.subtasks.map((s) => s.id);
+      const keptIds = data.subtasks.filter((s) => !s.id.startsWith("tmp-")).map((s) => s.id);
+      const toDelete = existingIds.filter((id) => !keptIds.includes(id));
+      const toCreate = data.subtasks.filter((s) => s.id.startsWith("tmp-")).map((s) => s.title);
+
       setTasks((prev) =>
         prev.map((t) =>
           t.id === editingTask.id
@@ -479,6 +484,10 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
                 dueDate: data.dueDate ?? null,
                 blockerReason: data.blockerReason ?? null,
                 assignees: data.assigneeIds.map((uid) => ({ user: users.find((u) => u.id === uid)! })),
+                subtasks: data.subtasks.map((st, i) => {
+                  const existing = t.subtasks.find(s => s.id === st.id);
+                  return existing ? existing : { id: st.id, title: st.title, done: false, order: t.subtasks.length + i, createdAt: new Date().toISOString() };
+                }),
               }
             : t
         )
@@ -488,6 +497,8 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
         priority: data.priority, points: data.points, progress: data.progress,
         dueDate: data.dueDate || null, assigneeIds: data.assigneeIds,
         blockerReason: data.blockerReason ?? null,
+        subtasksToCreate: toCreate,
+        subtasksToDelete: toDelete,
       });
     } else {
       const tempId = `tmp-${Date.now()}`;
@@ -495,14 +506,19 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
         id: tempId, title: data.title, description: data.description ?? null,
         status: defaultStatus, priority: data.priority, points: data.points, progress: data.progress,
         blockerReason: data.blockerReason ?? null, 
-        subtasks: data.subtasks.map((st, i) => ({ id: `tmp-st-${i}`, title: st, done: false, order: i, createdAt: new Date().toISOString() })),
+        subtasks: data.subtasks.map((st, i) => ({ id: `tmp-st-${i}`, title: st.title, done: false, order: i, createdAt: new Date().toISOString() })),
         dueDate: data.dueDate ?? null, order: tasksByStatus(defaultStatus).length,
         createdById: currentUserId, createdBy: { id: currentUserId, name: "Tú" },
         assignees: data.assigneeIds.map((uid) => ({ user: users.find((u) => u.id === uid)! })),
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       };
       setTasks((prev) => [...prev, newTask]);
-      const created = await createTaskAction({ ...data, createdById: currentUserId, status: defaultStatus });
+      const created = await createTaskAction({ 
+        ...data, 
+        createdById: currentUserId, 
+        status: defaultStatus,
+        subtasks: data.subtasks.map(s => s.title)
+      });
       
       if (created) {
         setTasks((prev) => prev.map((t) => (t.id === tempId ? (created as any as Task) : t)));
@@ -649,7 +665,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
           const colTasks = tasksByStatus(col.id);
           const colPoints = colTasks.reduce((s, t) => s + t.points, 0);
           return (
-            <div key={col.id} className="flex-1 min-w-[260px]">
+            <div key={col.id} className="flex-1 min-w-[320px] max-w-[400px]">
               <Column
                 col={col} tasks={colTasks} totalPoints={colPoints}
                 currentUserId={currentUserId} currentUserRole={currentUserRole}

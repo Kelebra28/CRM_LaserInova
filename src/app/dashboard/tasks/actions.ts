@@ -77,6 +77,8 @@ export async function updateTaskAction(
     blockerReason?: string | null;
     progress?: number;
     assigneeIds?: string[];
+    subtasksToCreate?: string[];
+    subtasksToDelete?: string[];
   }
 ) {
   await prisma.$transaction(async (tx) => {
@@ -100,6 +102,29 @@ export async function updateTaskAction(
           data: data.assigneeIds.map((userId) => ({ taskId, userId })),
         });
       }
+    }
+
+    if (data.subtasksToDelete && data.subtasksToDelete.length > 0) {
+      await tx.subTask.deleteMany({
+        where: { id: { in: data.subtasksToDelete } },
+      });
+    }
+
+    if (data.subtasksToCreate && data.subtasksToCreate.length > 0) {
+      const maxOrder = await tx.subTask.aggregate({
+        _max: { order: true },
+        where: { taskId },
+      });
+      let nextOrder = (maxOrder._max.order ?? -1) + 1;
+      
+      await tx.subTask.createMany({
+        data: data.subtasksToCreate.map((title) => ({
+          taskId,
+          title,
+          done: false,
+          order: nextOrder++,
+        })),
+      });
     }
   });
 
