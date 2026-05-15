@@ -26,6 +26,12 @@ interface TaskUser {
   role: string;
 }
 
+interface TaskTag {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface SubTask {
   id: string;
   title: string;
@@ -49,6 +55,7 @@ interface Task {
   createdBy: { id: string; name: string } | null;
   assignees: { user: TaskUser }[];
   subtasks: SubTask[];
+  tags: TaskTag[];
   createdAt: string;
   updatedAt: string;
 }
@@ -237,6 +244,15 @@ export function TaskDetailModal({
               )}
             </div>
             <h2 className="text-xl font-black text-gray-900 leading-tight">{task.title}</h2>
+            {task.tags && task.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {task.tags.map(tag => (
+                  <span key={tag.id} className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-black uppercase tracking-widest">
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {canModify && (

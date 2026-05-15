@@ -17,7 +17,7 @@ export default async function TasksPage() {
 
   const currentUser = session.user as { id: string; role: string; name: string };
 
-  const [tasks, users] = await Promise.all([
+  const [tasks, users, tags] = await Promise.all([
     prisma.task.findMany({
       orderBy: [{ status: "asc" }, { order: "asc" }],
       include: {
@@ -28,6 +28,7 @@ export default async function TasksPage() {
         },
         createdBy: { select: { id: true, name: true } },
         subtasks: { orderBy: { order: "asc" } },
+        tags: true,
       },
     }),
     prisma.user.findMany({
@@ -35,7 +36,14 @@ export default async function TasksPage() {
       select: { id: true, name: true, email: true, role: true },
       orderBy: { name: "asc" },
     }),
+    prisma.taskTag.findMany({ orderBy: { name: 'asc' } })
   ]);
+
+  let finalTags = tags;
+  if (finalTags.length === 0) {
+    const { ensureDefaultTags } = await import('./actions');
+    finalTags = await ensureDefaultTags();
+  }
 
   const serializedTasks = tasks
     .map((t) => ({
@@ -53,6 +61,7 @@ export default async function TasksPage() {
         ...s,
         createdAt: s.createdAt.toISOString(),
       })),
+      tags: t.tags || [],
     }))
     // Sort by priority (HIGH first) then by order within each column
     .sort((a, b) => {
@@ -65,6 +74,7 @@ export default async function TasksPage() {
     <TaskBoard
       initialTasks={serializedTasks}
       users={users}
+      tags={finalTags}
       currentUserId={currentUser.id}
       currentUserRole={currentUser.role}
     />

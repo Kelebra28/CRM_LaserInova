@@ -19,6 +19,7 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface TaskUser { id: string; name: string; email: string; role: string; }
+interface TaskTag { id: string; name: string; color: string; }
 
 interface SubTask {
   id: string;
@@ -43,6 +44,7 @@ interface Task {
   createdBy: { id: string; name: string } | null;
   assignees: { user: TaskUser }[];
   subtasks: SubTask[];
+  tags: TaskTag[];
   createdAt: string;
   updatedAt: string;
 }
@@ -50,6 +52,7 @@ interface Task {
 interface Props {
   initialTasks: Task[];
   users: TaskUser[];
+  tags: TaskTag[];
   currentUserId: string;
   currentUserRole: string;
 }
@@ -119,27 +122,38 @@ function TaskCard({
       className={`group bg-white rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-4 cursor-pointer select-none
         ${isBlocked ? "border-rose-200 bg-rose-50/30" : "border-gray-100"}`}
     >
-      {/* Priority + points row */}
-      <div className="flex items-center justify-between mb-3">
-        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg ${
-          isBlocked ? "bg-rose-100" : "bg-gray-100"
-        }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${p.dot}`} />
-          <span className={`text-[10px] font-black uppercase tracking-widest ${p.color}`}>{p.label}</span>
+      {/* Priority + points + tags row */}
+      <div className="flex flex-col gap-2 mb-3">
+        <div className="flex items-center justify-between">
+          <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg ${
+            isBlocked ? "bg-rose-100" : "bg-gray-100"
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${p.dot}`} />
+            <span className={`text-[10px] font-black uppercase tracking-widest ${p.color}`}>{p.label}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {totalSubtasks > 0 && (
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg border
+                ${doneSubtasks === totalSubtasks ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
+                <CheckSquare className="w-2.5 h-2.5" /> {doneSubtasks}/{totalSubtasks}
+              </span>
+            )}
+            {task.points > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-black text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-lg">
+                <Zap className="w-2.5 h-2.5" />{task.points}h
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {totalSubtasks > 0 && (
-            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg border
-              ${doneSubtasks === totalSubtasks ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
-              <CheckSquare className="w-2.5 h-2.5" /> {doneSubtasks}/{totalSubtasks}
-            </span>
-          )}
-          {task.points > 0 && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-black text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-lg">
-              <Zap className="w-2.5 h-2.5" />{task.points}h
-            </span>
-          )}
-        </div>
+        {task.tags && task.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {task.tags.map(tag => (
+              <span key={tag.id} className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Blocker badge */}
@@ -294,7 +308,7 @@ function Column({
 
 // ─── Main Board ───────────────────────────────────────────────────────────────
 
-export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole }: Props) {
+export function TaskBoard({ initialTasks, users, tags, currentUserId, currentUserRole }: Props) {
   const [tasks, setTasks]             = useState<Task[]>(initialTasks);
   const [modalOpen, setModalOpen]     = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -305,6 +319,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
   // Filters
   const [filterUserIds, setFilterUserIds] = useState<string[]>([]);
   const [filterPriority, setFilterPriority] = useState<TaskPriority | null>(null);
+  const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
   
   const draggedTask = useRef<Task | null>(null);
   
@@ -329,6 +344,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
   const filteredTasks = tasks.filter((t) => {
     if (filterPriority && t.priority !== filterPriority) return false;
     if (filterUserIds.length > 0 && !t.assignees.some((a) => filterUserIds.includes(a.user.id))) return false;
+    if (filterTagIds.length > 0 && !t.tags.some((tag) => filterTagIds.includes(tag.id))) return false;
     return true;
   });
 
@@ -347,8 +363,12 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   const total    = filteredTasks.length;
-  const done     = filteredTasks.filter((t) => t.status === "DONE").length;
-  const progressPercent = total > 0 ? Math.round((done / total) * 100) : 0;
+  const backlogCount = filteredTasks.filter((t) => t.status === "BACKLOG").length;
+  const pendingCount = filteredTasks.filter((t) => t.status === "PENDING").length;
+  const inProgressCount = filteredTasks.filter((t) => t.status === "IN_PROGRESS").length;
+  const blockedCount = filteredTasks.filter((t) => t.status === "BLOCKED").length;
+  const doneCount = filteredTasks.filter((t) => t.status === "DONE").length;
+  const progressPercent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
 
   // Total points per user (for the filter bar)
   const pointsByUser = users.reduce<Record<string, number>>((acc, u) => {
@@ -461,7 +481,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
 
   const handleSave = async (data: {
     title: string; description?: string; priority: TaskPriority;
-    points: number; progress: number; blockerReason?: string; dueDate?: string; assigneeIds: string[]; subtasks: { id: string; title: string }[];
+    points: number; progress: number; blockerReason?: string; dueDate?: string; assigneeIds: string[]; subtasks: { id: string; title: string }[]; tagIds: string[];
   }) => {
     setModalOpen(false);
 
@@ -484,6 +504,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
                 dueDate: data.dueDate ?? null,
                 blockerReason: data.blockerReason ?? null,
                 assignees: data.assigneeIds.map((uid) => ({ user: users.find((u) => u.id === uid)! })),
+                tags: data.tagIds.map(tid => tags.find(t => t.id === tid)!),
                 subtasks: data.subtasks.map((st, i) => {
                   const existing = t.subtasks.find(s => s.id === st.id);
                   return existing ? existing : { id: st.id, title: st.title, done: false, order: t.subtasks.length + i, createdAt: new Date().toISOString() };
@@ -497,6 +518,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
         priority: data.priority, points: data.points, progress: data.progress,
         dueDate: data.dueDate || null, assigneeIds: data.assigneeIds,
         blockerReason: data.blockerReason ?? null,
+        tagIds: data.tagIds,
         subtasksToCreate: toCreate,
         subtasksToDelete: toDelete,
       });
@@ -510,6 +532,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
         dueDate: data.dueDate ?? null, order: tasksByStatus(defaultStatus).length,
         createdById: currentUserId, createdBy: { id: currentUserId, name: "Tú" },
         assignees: data.assigneeIds.map((uid) => ({ user: users.find((u) => u.id === uid)! })),
+        tags: data.tagIds.map(tid => tags.find(t => t.id === tid)!),
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       };
       setTasks((prev) => [...prev, newTask]);
@@ -555,7 +578,9 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
           </div>
           <div>
             <h1 className="text-2xl font-black text-gray-900 tracking-tight">Tareas del Equipo</h1>
-            <p className="text-xs text-gray-400 mt-0.5">{total} tarea{total !== 1 ? "s" : ""} · {done} completada{done !== 1 ? "s" : ""}</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {total} tarea{total !== 1 ? "s" : ""} · {backlogCount} por hacer · {pendingCount} pendiente{pendingCount !== 1 ? "s" : ""} · {inProgressCount} en proceso · {blockedCount} bloqueada{blockedCount !== 1 ? "s" : ""} · {doneCount} completada{doneCount !== 1 ? "s" : ""}
+            </p>
           </div>
         </div>
         <button
@@ -611,6 +636,39 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
               >
                 <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
                 {meta.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tags Filter */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">
+            <Filter className="w-3.5 h-3.5" /> Categoría:
+          </div>
+          <button
+            onClick={() => setFilterTagIds([])}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all
+              ${filterTagIds.length === 0
+                ? "bg-gray-900 border-gray-900 text-white shadow-sm"
+                : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+              }`}
+          >
+            Todas
+          </button>
+          {tags.map((tag) => {
+            const active = filterTagIds.includes(tag.id);
+            return (
+              <button
+                key={tag.id}
+                onClick={() => setFilterTagIds(prev => prev.includes(tag.id) ? prev.filter(id => id !== tag.id) : [...prev, tag.id])}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all
+                  ${active
+                    ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm"
+                    : "bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+                  }`}
+              >
+                {tag.name}
               </button>
             );
           })}
@@ -684,6 +742,7 @@ export function TaskBoard({ initialTasks, users, currentUserId, currentUserRole 
           task={editingTask}
           initialStatus={defaultStatus}
           users={users}
+          tags={tags}
           currentUserRole={currentUserRole}
           onClose={() => setModalOpen(false)}
           onSave={handleSave}

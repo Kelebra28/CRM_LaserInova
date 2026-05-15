@@ -11,6 +11,7 @@ const TASK_INCLUDE = {
   assignees: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
   createdBy: { select: { id: true, name: true } },
   subtasks: { orderBy: { order: "asc" as const } },
+  tags: true,
 } as const;
 
 // ─── Create ─────────────────────────────────────────────────────────────────
@@ -23,6 +24,7 @@ export async function createTaskAction(data: {
   dueDate?: string;
   assigneeIds?: string[];
   subtasks?: string[];
+  tagIds?: string[];
   createdById: string;
   status?: TaskStatus;
 }) {
@@ -47,6 +49,9 @@ export async function createTaskAction(data: {
         : undefined,
       subtasks: data.subtasks?.length
         ? { create: data.subtasks.map((title, i) => ({ title, order: i, done: false })) }
+        : undefined,
+      tags: data.tagIds?.length
+        ? { connect: data.tagIds.map(id => ({ id })) }
         : undefined,
     },
     include: TASK_INCLUDE,
@@ -79,6 +84,7 @@ export async function updateTaskAction(
     assigneeIds?: string[];
     subtasksToCreate?: string[];
     subtasksToDelete?: string[];
+    tagIds?: string[];
   }
 ) {
   await prisma.$transaction(async (tx) => {
@@ -92,6 +98,7 @@ export async function updateTaskAction(
         dueDate: data.dueDate ? new Date(data.dueDate) : data.dueDate === null ? null : undefined,
         blockerReason: data.blockerReason,
         progress: data.progress,
+        tags: data.tagIds ? { set: data.tagIds.map(id => ({ id })) } : undefined,
       },
     });
 
@@ -126,6 +133,8 @@ export async function updateTaskAction(
         })),
       });
     }
+  }, {
+    timeout: 20000,
   });
 
   revalidatePath("/dashboard/tasks");
@@ -193,7 +202,10 @@ export async function reorderTasksAction(
         where: { id: item.id },
         data: { order: item.order },
       })
-    )
+    ),
+    {
+      timeout: 20000,
+    }
   );
   revalidatePath("/dashboard/tasks");
 }
@@ -241,4 +253,36 @@ export async function toggleSubTaskAction(subTaskId: string, done: boolean) {
 export async function deleteSubTaskAction(subTaskId: string) {
   await prisma.subTask.delete({ where: { id: subTaskId } });
   revalidatePath("/dashboard/tasks");
+}
+
+// ─── Tags Management ─────────────────────────────────────────────────────────
+
+export async function ensureDefaultTags() {
+  const defaultTags = [
+    { name: "Cotización", color: "blue" },
+    { name: "Corte", color: "red" },
+    { name: "Grabado", color: "orange" },
+    { name: "Envío", color: "emerald" },
+    { name: "Diseño", color: "violet" },
+    { name: "Producción", color: "amber" },
+    { name: "Administrativo", color: "gray" },
+  ];
+
+  for (const tag of defaultTags) {
+    await prisma.taskTag.upsert({
+      where: { name: tag.name },
+      update: {},
+      create: tag,
+    });
+  }
+
+  return await prisma.taskTag.findMany({ orderBy: { name: 'asc' } });
+}
+
+export async function createTaskTag(name: string, color: string = "gray") {
+  const newTag = await prisma.taskTag.create({
+    data: { name, color },
+  });
+  revalidatePath("/dashboard/tasks");
+  return newTag;
 }
