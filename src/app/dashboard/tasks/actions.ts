@@ -216,6 +216,17 @@ export async function deleteTaskAction(taskId: string) {
   revalidatePath("/dashboard/tasks");
 }
 
+// ─── Update due date (calendar drag) ──────────────────────────────────────────
+
+export async function updateTaskDueDateAction(taskId: string, newDate: string | null) {
+  await prisma.task.update({
+    where: { id: taskId },
+    data: { dueDate: newDate ? new Date(newDate) : null },
+  });
+  revalidatePath("/dashboard/tasks");
+  revalidatePath("/dashboard/tasks/calendar");
+}
+
 // ─── SubTask: Create ─────────────────────────────────────────────────────────
 
 export async function createSubTaskAction(taskId: string, title: string) {

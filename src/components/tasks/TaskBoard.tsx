@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import {
   Plus, CheckCircle2, Clock, Loader2, CalendarDays, Trash2,
   Pencil, ListChecks, AlignLeft, AlertTriangle, Zap, Filter, Users,
-  CheckSquare, Flag,
+  CheckSquare, Flag, Calendar,
 } from "lucide-react";
 import {
   createTaskAction, deleteTaskAction, moveTaskAction,
@@ -583,12 +584,20 @@ export function TaskBoard({ initialTasks, users, tags, currentUserId, currentUse
             </p>
           </div>
         </div>
-        <button
-          onClick={() => handleAddClick("PENDING")}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-sm font-black rounded-2xl shadow-lg shadow-red-600/25 transition-all duration-200 hover:scale-105 active:scale-95"
-        >
-          <Plus className="w-4 h-4" /> Nueva Tarea
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/tasks/calendar"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 text-gray-600 hover:text-indigo-700 text-sm font-black rounded-2xl transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            <Calendar className="w-4 h-4" /> Calendario
+          </Link>
+          <button
+            onClick={() => handleAddClick("PENDING")}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-sm font-black rounded-2xl shadow-lg shadow-red-600/25 transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-4 h-4" /> Nueva Tarea
+          </button>
+        </div>
       </div>
 
       {/* ── Progress bar ─────────────────────────────────────────────────── */}
