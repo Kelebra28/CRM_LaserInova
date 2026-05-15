@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import EditQuoteForm from "@/components/quotes/EditQuoteForm";
+import QuoteVersionTabs from "@/components/quotes/QuoteVersionTabs";
 
 export default async function EditQuotePage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -17,6 +18,16 @@ export default async function EditQuotePage(props: { params: Promise<{ id: strin
 
   if (!quote) {
     notFound();
+  }
+
+  // Fetch sibling versions if this is part of a group
+  let versions = [quote];
+  if (quote.versionGroupId) {
+    versions = await prisma.quote.findMany({
+      where: { versionGroupId: quote.versionGroupId },
+      select: { id: true, versionName: true, status: true, total: true, folio: true },
+      orderBy: { createdAt: 'asc' }
+    }) as any;
   }
 
   const clients = await prisma.client.findMany({
@@ -57,6 +68,12 @@ export default async function EditQuotePage(props: { params: Promise<{ id: strin
         <h1 className="text-2xl font-bold text-gray-900">Editar Cotización <span className="text-red-600">{quote.folio}</span></h1>
       </div>
       
+      <QuoteVersionTabs 
+        versions={versions} 
+        currentQuoteId={quote.id} 
+        versionGroupId={quote.versionGroupId} 
+      />
+
       <EditQuoteForm 
         quote={quote} 
         clients={clients} 

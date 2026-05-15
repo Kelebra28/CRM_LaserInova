@@ -16,13 +16,16 @@ export async function GET(
   }
 
   const quoteId = params.id;
+  const url = new URL(request.url);
+  const allVersions = url.searchParams.get("allVersions") === "true";
 
   const quote = await prisma.quote.findUnique({
     where: { id: quoteId },
     include: {
       client: true,
       concepts: {
-        orderBy: { order: 'asc' }
+        orderBy: { order: 'asc' },
+        include: { material: true }
       }
     }
   });
@@ -31,14 +34,37 @@ export async function GET(
     return new NextResponse("Quote not found", { status: 404 });
   }
 
+  let quotesToRender = [quote];
+
+  if (allVersions && quote.versionGroupId) {
+    const siblings = await prisma.quote.findMany({
+      where: { versionGroupId: quote.versionGroupId },
+      include: {
+        client: true,
+        concepts: {
+          orderBy: { order: 'asc' },
+          include: { material: true }
+        }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+    if (siblings.length > 0) {
+      quotesToRender = siblings;
+    }
+  }
+
   try {
-    const pdfBuffer = await generateQuotePDF(quote);
+    const pdfBuffer = await generateQuotePDF(quotesToRender);
     
+    const filename = allVersions && quote.versionGroupId 
+      ? `Opciones_Cotizacion_${quote.folio.split('-OP')[0]}.pdf`
+      : `Cotizacion_${quote.folio}.pdf`;
+
     return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="Cotizacion_${quote.folio}.pdf"`,
+        "Content-Disposition": `inline; filename="${filename}"`,
       },
     });
   } catch (error) {

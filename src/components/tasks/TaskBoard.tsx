@@ -233,15 +233,15 @@ function Column({
 
   return (
     <div
-      className={`flex flex-col rounded-3xl border-2 transition-all duration-200 w-full ${
+      className={`flex flex-col rounded-3xl border-2 transition-all duration-200 w-full overflow-hidden ${
         isDragOver ? `${col.dropBg} shadow-xl` : "border-transparent bg-gray-50"
       }`}
       onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false); }}
       onDrop={(e) => { setIsDragOver(false); onDrop(e, col.id); }}
     >
-      {/* Header */}
-      <div className={`flex items-center justify-between px-4 py-3.5 rounded-t-3xl border-b ${col.headerBg}`}>
+      {/* Header - Sticky */}
+      <div className={`flex items-center justify-between px-4 py-3.5 border-b ${col.headerBg} sticky top-0 z-10 backdrop-blur-md`}>
         <div className="flex items-center gap-2.5 overflow-hidden">
           <div className={`p-1.5 rounded-lg shrink-0 ${col.countBg}`}>
             <col.icon className={`w-3.5 h-3.5 ${col.accentColor}`} />
@@ -267,8 +267,8 @@ function Column({
         </button>
       </div>
 
-      {/* Cards */}
-      <div className="flex flex-col gap-2.5 p-3 flex-1 min-h-[180px]">
+      {/* Cards - Scrollable area */}
+      <div className="flex flex-col gap-2.5 p-3 flex-1 overflow-y-auto custom-scrollbar min-h-[180px] max-h-[calc(100vh-320px)] md:max-h-[calc(100vh-280px)]">
         {tasks.map((task) => (
           <div
             key={task.id}

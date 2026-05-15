@@ -9,6 +9,7 @@ import DeleteQuoteButton from "@/components/quotes/DeleteQuoteButton";
 import PaymentStatusForm from "@/components/quotes/PaymentStatusForm";
 import CalculationAudit from "@/components/quotes/CalculationAudit";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import QuoteVersionTabs from "@/components/quotes/QuoteVersionTabs";
 
 const statusLabels: Record<string, string> = {
   DRAFT: "Borrador",
@@ -66,6 +67,16 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
     notFound();
   }
 
+  // Fetch sibling versions if this is part of a group
+  let versions = [quote];
+  if (quote.versionGroupId) {
+    versions = await prisma.quote.findMany({
+      where: { versionGroupId: quote.versionGroupId },
+      select: { id: true, versionName: true, status: true, total: true, folio: true },
+      orderBy: { createdAt: 'asc' }
+    }) as any;
+  }
+
   const defaultConsiderations = "- Tiempo de entrega: de 1 a 3 días hábiles.\n- 50% anticipo, 50% al programar envío o entrega.\n- El costo puede variar si hay cambios en medidas o diseño.\n- Vigencia de cotización 20 días.";
 
   const isCancelled = quote.status === "CANCELLED" || quote.status === "REJECTED";
@@ -120,10 +131,27 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
             className="inline-flex items-center px-6 py-2.5 bg-gray-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all shadow-lg active:scale-95"
           >
             <Download className="mr-2 h-4 w-4" />
-            PDF / Vista Previa
+            PDF Individual
           </a>
+          {versions.length > 1 && (
+            <a
+              href={`/api/quotes/${quote.id}/pdf?allVersions=true`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-6 py-2.5 bg-red-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow-lg active:scale-95"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              PDF Comparativo
+            </a>
+          )}
         </div>
       </div>
+
+      <QuoteVersionTabs 
+        versions={versions} 
+        currentQuoteId={quote.id} 
+        versionGroupId={quote.versionGroupId} 
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
