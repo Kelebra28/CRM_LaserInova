@@ -1,9 +1,9 @@
 "use client";
 
 import { AlertTriangle, CheckCircle2, Clock, Zap, Users, TrendingUp, Shield, Brain } from "lucide-react";
-import type { CalTask, TaskTag, TaskUser } from "./CalendarTypes";
+import type { CalTask, TaskTag, TaskUser, HealthResult } from "./CalendarTypes";
 import { STATUS_META, PRIORITY_META, avatarInitials } from "./CalendarTypes";
-import type { HealthResult, WeekMetrics } from "./CalendarEngine";
+import type { WeekMetrics } from "./CalendarEngine";
 import { urgencyScore, CAPACITY_STYLE } from "./CalendarEngine";
 
 // ─── Health Bar ───────────────────────────────────────────────────────────────
