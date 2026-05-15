@@ -92,10 +92,16 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
     dueDate?: string; assigneeIds: string[]; subtasks: {id:string;title:string}[]; tagIds: string[];
   }) => {
     const newTask = await createTaskAction({
-      ...data,
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      points: data.points,
+      dueDate: createForDate ?? data.dueDate,
+      assigneeIds: data.assigneeIds,
+      subtasks: data.subtasks.map(s => s.title),
+      tagIds: data.tagIds,
       status: "PENDING",
       createdById: currentUserId,
-      dueDate: createForDate ?? data.dueDate,
     });
     setTasks(prev => [...prev, newTask as unknown as CalTask]);
     setCreateForDate(null);
