@@ -196,17 +196,16 @@ export async function moveTaskAction(
 export async function reorderTasksAction(
   items: { id: string; order: number }[]
 ) {
-  await prisma.$transaction(
-    items.map((item) =>
-      prisma.task.update({
+  await prisma.$transaction(async (tx) => {
+    for (const item of items) {
+      await tx.task.update({
         where: { id: item.id },
         data: { order: item.order },
-      })
-    ),
-    {
-      timeout: 20000,
+      });
     }
-  );
+  }, {
+    timeout: 20000,
+  });
   revalidatePath("/dashboard/tasks");
 }
 
