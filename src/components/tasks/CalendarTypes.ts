@@ -32,6 +32,16 @@ export interface HealthResult {
   reasons: string[];
 }
 
+export interface Recommendation {
+  id: string;
+  text: string;
+  type: "overdue" | "blocked" | "no_owner" | "saturated" | "today" | "high_priority";
+  metadata?: {
+    date?: string;
+    count?: number;
+  };
+}
+
 export type CapacityLevel = "light" | "normal" | "loaded" | "saturated";
 
 export interface DayCapacity {

@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, CheckCircle2, Clock, Zap, Users, TrendingUp, Shield, Brain } from "lucide-react";
-import type { CalTask, TaskTag, TaskUser, HealthResult } from "./CalendarTypes";
+import type { CalTask, TaskTag, TaskUser, HealthResult, Recommendation } from "./CalendarTypes";
 import { STATUS_META, PRIORITY_META, avatarInitials } from "./CalendarTypes";
 import type { WeekMetrics } from "./CalendarEngine";
 import { urgencyScore, CAPACITY_STYLE } from "./CalendarEngine";
@@ -64,17 +64,37 @@ function MetricPill({ icon, value, label, color, bg, border="border-transparent"
 
 // ─── Recommendations Panel ────────────────────────────────────────────────────
 
-export function RecommendationsBar({ recs }: { recs: string[] }) {
+export function RecommendationsBar({ recs, onRecClick }: { recs: Recommendation[]; onRecClick: (rec: Recommendation) => void }) {
   return (
     <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-2.5">
-        <Brain className="w-4 h-4 text-indigo-500" />
+        <Brain className="w-4 h-4 text-indigo-500 animate-pulse" />
         <span className="text-[11px] font-black text-indigo-700 uppercase tracking-widest">Recomendaciones del sistema</span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {recs.map((r, i) => (
-          <span key={i} className="text-[11px] text-indigo-800 bg-white/70 border border-indigo-100 px-3 py-1.5 rounded-xl font-medium">{r}</span>
-        ))}
+        {recs.map((r) => {
+          const isAllClear = r.id === "all_clear";
+          if (isAllClear) {
+            return (
+              <span
+                key={r.id}
+                className="text-[11px] text-indigo-800 bg-white/70 border border-indigo-100 px-3 py-1.5 rounded-xl font-medium"
+              >
+                {r.text}
+              </span>
+            );
+          }
+
+          return (
+            <button
+              key={r.id}
+              onClick={() => onRecClick(r)}
+              className="text-[11px] text-indigo-800 bg-white/75 hover:bg-white border border-indigo-100 px-3 py-1.5 rounded-xl font-medium shadow-sm hover:shadow transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 animate-in fade-in duration-300"
+            >
+              {r.text}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

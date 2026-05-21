@@ -7,7 +7,7 @@ import {
   AlertTriangle, Filter, X, Activity,
 } from "lucide-react";
 import { updateTaskDueDateAction, createTaskAction, type TaskStatus, type TaskPriority } from "@/app/dashboard/tasks/actions";
-import type { CalTask, TaskUser, TaskTag } from "./CalendarTypes";
+import type { CalTask, TaskUser, TaskTag, Recommendation } from "./CalendarTypes";
 import { STATUS_META, PRIORITY_META, MONTHS, DAYS_OF_WEEK, toDateStr, MAX_DAILY_HOURS } from "./CalendarTypes";
 import { calcHealthScore, calcWeekMetrics, calcDayCapacity, generateRecommendations, CAPACITY_STYLE, urgencyScore } from "./CalendarEngine";
 import { HealthBar, RecommendationsBar, TodayView, TaskPanel } from "./CalendarPanels";
@@ -21,7 +21,7 @@ interface Props {
   currentUserRole: string;
 }
 
-type FilterKey = "all" | "mine" | "overdue" | "blocked" | "high" | "done" | "pending";
+type FilterKey = "all" | "mine" | "overdue" | "blocked" | "high" | "done" | "pending" | "unassigned";
 
 export function TaskCalendar({ initialTasks, users, tags, currentUserId, currentUserRole }: Props) {
   const today = new Date();
@@ -38,6 +38,9 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
   const [createForDate, setCreateForDate] = useState<string | null>(null);
   const [isPending, startTransition]  = useTransition();
 
+  const [activePopoverDay, setActivePopoverDay] = useState<string | null>(null);
+  const [highlightedDay, setHighlightedDay] = useState<string | null>(null);
+
   // ── Computed ────────────────────────────────────────────────────────────────
 
   const health  = useMemo(() => calcHealthScore(tasks), [tasks]);
@@ -53,6 +56,7 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
       if (activeFilter === "high")    return t.priority === "HIGH";
       if (activeFilter === "done")    return t.status === "DONE";
       if (activeFilter === "pending") return ["BACKLOG","PENDING"].includes(t.status);
+      if (activeFilter === "unassigned") return t.assignees.length === 0 && t.status !== "DONE";
       return true;
     });
   }, [tasks, activeFilter, currentUserId]);
@@ -107,6 +111,31 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
     setCreateForDate(null);
   };
 
+  const handleRecClick = useCallback((rec: Recommendation) => {
+    if (rec.type === "overdue") {
+      setActiveFilter("overdue");
+    } else if (rec.type === "blocked") {
+      setActiveFilter("blocked");
+    } else if (rec.type === "no_owner") {
+      setActiveFilter("unassigned");
+    } else if (rec.type === "high_priority") {
+      setActiveFilter("high");
+    } else if (rec.type === "today") {
+      setShowToday(true);
+    } else if (rec.type === "saturated" && rec.metadata?.date) {
+      const dateStr = rec.metadata.date;
+      const [yStr, mStr] = dateStr.split("-");
+      const targetYear = parseInt(yStr);
+      const targetMonth = parseInt(mStr) - 1;
+      setYear(targetYear);
+      setMonth(targetMonth);
+      setHighlightedDay(dateStr);
+      setTimeout(() => {
+        setHighlightedDay(null);
+      }, 4000);
+    }
+  }, []);
+
   // ── Grid cells ─────────────────────────────────────────────────────────────
 
   const FILTERS: { key: FilterKey; label: string }[] = [
@@ -115,6 +144,7 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
     { key: "high",    label: "Alta prioridad" },
     { key: "overdue", label: "Vencidas" },
     { key: "blocked", label: "Bloqueadas" },
+    { key: "unassigned", label: "Sin Responsable" },
     { key: "pending", label: "Pendientes" },
     { key: "done",    label: "Terminadas" },
   ];
@@ -162,7 +192,7 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
       <HealthBar health={health} metrics={metrics} />
 
       {/* ── Recommendations ────────────────────────────────────────────────── */}
-      <RecommendationsBar recs={recs} />
+      <RecommendationsBar recs={recs} onRecClick={handleRecClick} />
 
       {/* ── Filters ────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -190,7 +220,7 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
       <div className="flex gap-4 flex-1 items-start">
 
         {/* Grid */}
-        <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm relative overflow-visible">
           {/* Day headers */}
           <div className="grid grid-cols-7 border-b border-gray-100">
             {DAYS_OF_WEEK.map(d => (
@@ -217,13 +247,15 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
               const isWeekend  = new Date(dateStr).getDay() === 0 || new Date(dateStr).getDay() === 6;
               const hasOverdue = dayTasks.some(t => t.status !== "DONE" && new Date(t.dueDate!) < today);
               const hasBlocked = dayTasks.some(t => t.status === "BLOCKED");
+              const isHighlighted = dateStr === highlightedDay;
 
               return (
                 <div
                   key={dateStr}
-                  className={`min-h-[120px] border-b border-r border-gray-100 p-1.5 flex flex-col gap-1 transition-colors duration-150 cursor-pointer
+                  className={`min-h-[120px] border-b border-r border-gray-100 p-1.5 flex flex-col gap-1 transition-all duration-300 cursor-pointer relative
                     ${isWeekend && cap.level==="light" ? "bg-gray-50/50" : cs.bg}
                     ${isDragOver ? "!bg-indigo-50 ring-2 ring-inset ring-indigo-400/50" : ""}
+                    ${isHighlighted ? "ring-4 ring-indigo-500/70 shadow-lg shadow-indigo-500/20 bg-indigo-50/30 animate-pulse z-10 scale-[1.01]" : ""}
                   `}
                   onDragOver={e => { e.preventDefault(); setDragOverDay(dateStr); }}
                   onDragLeave={() => setDragOverDay(null)}
@@ -269,12 +301,63 @@ export function TaskCalendar({ initialTasks, users, tags, currentUserId, current
                   })}
                   {dayTasks.length > 3 && (
                     <button
-                      className="text-[10px] font-bold text-indigo-500 hover:text-indigo-700 text-left pl-1"
-                      onClick={e => { e.stopPropagation(); setSelectedTask(dayTasks[3]); }}
+                      className="text-[10px] font-bold text-indigo-500 hover:text-indigo-700 text-left pl-1 transition-colors hover:underline"
+                      onClick={e => { e.stopPropagation(); setActivePopoverDay(dateStr); }}
                     >
                       +{dayTasks.length - 3} más
                     </button>
                   )}
+
+                  {/* Popover Float Glassmorphism */}
+                  {activePopoverDay === dateStr && (
+                    <>
+                      {/* Full-screen backdrop to handle click-away closing */}
+                      <div 
+                        className="fixed inset-0 z-30 cursor-default" 
+                        onClick={e => { e.stopPropagation(); setActivePopoverDay(null); }} 
+                      />
+                      <div
+                        className={`absolute left-1/2 -translate-x-1/2 w-60 bg-white/95 backdrop-blur-md border border-indigo-100 rounded-2xl p-2.5 shadow-2xl z-40 flex flex-col gap-2 animate-in fade-in slide-in-from-top-1 duration-150 cursor-default
+                          ${idx >= 21 ? "bottom-[85%] mb-1.5" : "top-[85%] mt-1.5"}
+                        `}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-1 mb-0.5">
+                          <span className="text-[10px] font-black text-indigo-900 uppercase tracking-wide">Tareas ({dayTasks.length})</span>
+                          <button
+                            className="w-4 h-4 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 text-[11px] font-black transition-colors"
+                            onClick={() => setActivePopoverDay(null)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                          {dayTasks.map(task => {
+                            const sm = STATUS_META[task.status];
+                            const isOver = task.status !== "DONE" && new Date(task.dueDate!) < today;
+                            return (
+                              <div
+                                key={task.id}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setSelectedTask(task);
+                                  setActivePopoverDay(null);
+                                }}
+                                className={`flex items-center gap-1.5 p-1.5 rounded-lg text-[10px] font-semibold border cursor-pointer hover:shadow-sm transition-all hover:translate-x-0.5
+                                  ${isOver ? "bg-rose-50 border-rose-100 text-rose-700 hover:bg-rose-100/40" : `${sm.bg} border-transparent ${sm.color} hover:bg-white`}
+                                `}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_META[task.priority].dot}`} />
+                                <span className="truncate flex-1">{task.title}</span>
+                                {isOver && <AlertTriangle className="w-2.5 h-2.5 shrink-0 text-rose-500" />}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                   {dayTasks.length === 0 && (
                     <div className="flex-1 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                       <Plus className="w-4 h-4 text-gray-300" />

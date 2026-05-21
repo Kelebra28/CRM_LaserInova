@@ -1,4 +1,4 @@
-import type { CalTask, HealthResult, DayCapacity, CapacityLevel } from "./CalendarTypes";
+import type { CalTask, HealthResult, DayCapacity, CapacityLevel, Recommendation } from "./CalendarTypes";
 import { toDateStr, MAX_DAILY_HOURS } from "./CalendarTypes";
 
 // ─── Health Score ──────────────────────────────────────────────────────────────
@@ -101,22 +101,40 @@ export function urgencyScore(task: CalTask, now: Date): number {
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
 
-export function generateRecommendations(tasks: CalTask[]): string[] {
+export function generateRecommendations(tasks: CalTask[]): Recommendation[] {
   const now    = new Date();
   const todayStr = toDateStr(now);
-  const recs: string[] = [];
+  const recs: Recommendation[] = [];
 
   const overdue = tasks.filter(t => t.dueDate && t.status !== "DONE" && new Date(t.dueDate) < now);
-  if (overdue.length > 0)
-    recs.push(`⚡ Tienes ${overdue.length} tarea${overdue.length>1?"s":""} vencida${overdue.length>1?"s":""} — atácalas primero`);
+  if (overdue.length > 0) {
+    recs.push({
+      id: "overdue",
+      text: `⚡ Tienes ${overdue.length} tarea${overdue.length>1?"s":""} vencida${overdue.length>1?"s":""} — atácalas primero`,
+      type: "overdue",
+      metadata: { count: overdue.length }
+    });
+  }
 
   const blocked = tasks.filter(t => t.status === "BLOCKED");
-  if (blocked.length > 0)
-    recs.push(`🔴 ${blocked.length} tarea${blocked.length>1?"s están":"  está"} bloqueada${blocked.length>1?"s":""} — revisa qué las frena`);
+  if (blocked.length > 0) {
+    recs.push({
+      id: "blocked",
+      text: `🔴 ${blocked.length} tarea${blocked.length>1?"s están":"  está"} bloqueada${blocked.length>1?"s":""} — revisa qué las frena`,
+      type: "blocked",
+      metadata: { count: blocked.length }
+    });
+  }
 
   const noOwner = tasks.filter(t => t.assignees.length === 0 && t.status !== "DONE");
-  if (noOwner.length > 0)
-    recs.push(`👤 ${noOwner.length} tarea${noOwner.length>1?"s":""}  sin responsable — asígnalas para no perder control`);
+  if (noOwner.length > 0) {
+    recs.push({
+      id: "no_owner",
+      text: `👤 ${noOwner.length} tarea${noOwner.length>1?"s":""} sin responsable — asígnalas para no perder control`,
+      type: "no_owner",
+      metadata: { count: noOwner.length }
+    });
+  }
 
   const dayHours: Record<string, number> = {};
   tasks.forEach(t => {
@@ -128,19 +146,41 @@ export function generateRecommendations(tasks: CalTask[]): string[] {
   if (saturated.length > 0) {
     const [day] = saturated[0];
     const d = new Date(day+"T12:00:00");
-    recs.push(`📦 ${d.toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"short"})} está saturado — mueve tareas a días libres`);
+    recs.push({
+      id: `saturated-${day}`,
+      text: `📦 ${d.toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"short"})} está saturado — mueve tareas a días libres`,
+      type: "saturated",
+      metadata: { date: day }
+    });
   }
 
   const todayTasks = tasks.filter(t => t.dueDate?.slice(0,10) === todayStr && t.status !== "DONE");
-  if (todayTasks.length > 0)
-    recs.push(`🎯 Hoy tienes ${todayTasks.length} tarea${todayTasks.length>1?"s":""} por cerrar`);
+  if (todayTasks.length > 0) {
+    recs.push({
+      id: "today",
+      text: `🎯 Hoy tienes ${todayTasks.length} tarea${todayTasks.length>1?"s":""} por cerrar`,
+      type: "today",
+      metadata: { count: todayTasks.length }
+    });
+  }
 
   const highPending = tasks.filter(t => t.priority === "HIGH" && !["DONE","BLOCKED"].includes(t.status));
-  if (highPending.length > 0)
-    recs.push(`🔥 ${highPending.length} tarea${highPending.length>1?"s de":"  de"} alta prioridad sin terminar`);
+  if (highPending.length > 0) {
+    recs.push({
+      id: "high_priority",
+      text: `🔥 ${highPending.length} tarea${highPending.length>1?"s de":"  de"} alta prioridad sin terminar`,
+      type: "high_priority",
+      metadata: { count: highPending.length }
+    });
+  }
 
-  if (recs.length === 0)
-    recs.push("✅ Todo bien — sin alertas críticas esta semana");
+  if (recs.length === 0) {
+    recs.push({
+      id: "all_clear",
+      text: "✅ Todo bien — sin alertas críticas esta semana",
+      type: "today"
+    });
+  }
 
   return recs.slice(0, 4);
 }
