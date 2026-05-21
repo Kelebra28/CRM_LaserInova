@@ -31,6 +31,8 @@ export const INCOME_CATEGORIES = [
   "Anticipo de Proyecto",
   "Liquidación de Proyecto",
   "Pago Completo",
+  "Trabajo Rápido / Sin Cotización",
+  "Venta Directa / Mostrador",
   "Devolución",
   "Ajuste / Nota de Crédito",
   "Otro Ingreso",

@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { 
   Plus, X, TrendingDown, TrendingUp, Briefcase, 
   ChevronRight, ChevronLeft, Loader2, Receipt,
-  CreditCard, Building, FileText, CalendarDays
+  CreditCard, Building, FileText, CalendarDays,
+  DollarSign
 } from "lucide-react";
 import { createTransaction } from "@/app/dashboard/finance/actions";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS } from "@/app/dashboard/finance/constants";
@@ -39,6 +40,15 @@ const TYPES = [
     dot: "bg-emerald-500",
   },
   {
+    value: "INGRESO_RAPIDO",
+    label: "Venta Rápida / Mostrador",
+    desc: "Ingreso directo en efectivo por trabajos rápidos sin cotización previa",
+    icon: DollarSign,
+    color: "bg-teal-50 border-teal-200 text-teal-700",
+    activeColor: "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-600/30",
+    dot: "bg-teal-500",
+  },
+  {
     value: "AJUSTE",
     label: "Ajuste Manual",
     desc: "Correcciones, devoluciones u otros movimientos",
@@ -68,7 +78,7 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
   const formRef = useRef<HTMLFormElement>(null);
 
   const isExpense = selectedType === "GASTO_OPERATIVO" || selectedType === "GASTO_PROYECTO";
-  const isIncome  = selectedType === "INGRESO" || selectedType === "AJUSTE";
+  const isIncome  = selectedType === "INGRESO" || selectedType === "AJUSTE" || selectedType === "INGRESO_RAPIDO";
   const isProject = selectedType === "GASTO_PROYECTO";
   const categories = isExpense ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const ivaAmount = applyIVA ? (parseFloat(amount) || 0) * 0.16 : 0;
@@ -168,7 +178,13 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
                 <button
                   type="button"
                   disabled={!selectedType}
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    if (selectedType === "INGRESO_RAPIDO") {
+                      setCategory("Trabajo Rápido / Sin Cotización");
+                      setPaymentMethod("efectivo");
+                    }
+                    setStep(2);
+                  }}
                   className="w-full mt-2 py-4 rounded-2xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none shadow-xl"
                 >
                   Continuar
@@ -179,7 +195,7 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
             {/* Step 2 — Details */}
             {step === 2 && (
               <form ref={formRef} onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                <input type="hidden" name="type" value={selectedType} />
+                <input type="hidden" name="type" value={selectedType === "INGRESO_RAPIDO" ? "INGRESO" : selectedType} />
                 <input type="hidden" name="taxAmount" value={ivaAmount} />
 
                 {/* Descripción */}
@@ -191,7 +207,7 @@ export default function TransactionForm({ quotes = [], clients = [] }: Transacti
                     name="description"
                     type="text"
                     required
-                    placeholder={isExpense ? "Ej: Compra de acrílico para proyecto X" : "Ej: Anticipo proyecto letrero luminoso"}
+                    placeholder={isExpense ? "Ej: Compra de acrílico para proyecto X" : (selectedType === "INGRESO_RAPIDO" ? "Ej: Trabajo de corte o grabado express cliente mostrador" : "Ej: Anticipo proyecto letrero luminoso")}
                     className="w-full text-xs font-bold p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-gray-900 transition-all"
                   />
                 </div>

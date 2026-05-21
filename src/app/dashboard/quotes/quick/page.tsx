@@ -10,5 +10,10 @@ export default async function QuickQuotePage() {
   // Si no existe, usamos 50 como respaldo
   const defaultMargin = config ? config.value : 50;
 
-  return <QuickQuoteForm defaultMargin={defaultMargin} />;
+  const clients = await prisma.client.findMany({
+    where: { active: true },
+    orderBy: { name: "asc" }
+  });
+
+  return <QuickQuoteForm defaultMargin={defaultMargin} clients={clients} />;
 }

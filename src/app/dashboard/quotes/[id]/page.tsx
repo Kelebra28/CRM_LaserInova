@@ -10,6 +10,7 @@ import PaymentStatusForm from "@/components/quotes/PaymentStatusForm";
 import CalculationAudit from "@/components/quotes/CalculationAudit";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import QuoteVersionTabs from "@/components/quotes/QuoteVersionTabs";
+import CloneQuoteButton from "@/components/quotes/CloneQuoteButton";
 
 const statusLabels: Record<string, string> = {
   DRAFT: "Borrador",
@@ -67,6 +68,11 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
     notFound();
   }
 
+  const clients = await prisma.client.findMany({
+    where: { active: true },
+    orderBy: { name: "asc" }
+  });
+
   // Fetch sibling versions if this is part of a group
   let versions = [quote];
   if (quote.versionGroupId) {
@@ -121,6 +127,7 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </Link>
+            <CloneQuoteButton quoteId={quote.id} clients={clients} />
             <DeleteQuoteButton quoteId={quote.id} />
           </div>
           

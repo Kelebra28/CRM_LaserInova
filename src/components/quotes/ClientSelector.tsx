@@ -10,6 +10,8 @@ interface ClientSelectorProps {
   onProspectNameChange?: (name: string) => void;
   prospectName?: string;
   disabled?: boolean;
+  saveAsClient?: boolean;
+  onSaveAsClientChange?: (save: boolean) => void;
 }
 
 export default function ClientSelector({
@@ -19,6 +21,8 @@ export default function ClientSelector({
   onProspectNameChange,
   prospectName = "",
   disabled,
+  saveAsClient: externalSaveAsClient,
+  onSaveAsClientChange,
 }: ClientSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,7 +30,9 @@ export default function ClientSelector({
     prospectName && !value ? "prospect" : "select"
   );
   const [localProspect, setLocalProspect] = useState(prospectName);
-  const [saveAsClient, setSaveAsClient] = useState(false);
+  const [internalSaveAsClient, setInternalSaveAsClient] = useState(false);
+  const saveAsClient = externalSaveAsClient !== undefined ? externalSaveAsClient : internalSaveAsClient;
+  const setSaveAsClient = onSaveAsClientChange || setInternalSaveAsClient;
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

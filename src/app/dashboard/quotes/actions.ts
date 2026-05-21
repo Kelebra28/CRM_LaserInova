@@ -275,10 +275,10 @@ export async function updateQuotePaymentAction(quoteId: string, type: 'unpaid' |
 export async function saveQuickQuoteAction(mockQuote: any, saveAsClient: boolean = false) {
   const userId = await getSessionUserId();
   // 1. Manejar cliente
-  let finalClientId = null;
-  let finalProspectName = mockQuote.client.name || null;
+  let finalClientId = mockQuote.clientId || null;
+  let finalProspectName = finalClientId ? null : (mockQuote.client.name || null);
 
-  if (mockQuote.client.name) {
+  if (!finalClientId && mockQuote.client.name) {
     const existingClient = await prisma.client.findFirst({
       where: { name: mockQuote.client.name }
     });
@@ -365,6 +365,122 @@ export async function saveQuickQuoteAction(mockQuote: any, saveAsClient: boolean
   revalidatePath("/dashboard/finance");
   
   return { success: true, quoteId: quote!.id };
+}
+
+export async function cloneQuoteAction(
+  originalQuoteId: string,
+  clientId: string | null,
+  prospectName: string | null,
+  saveAsClient: boolean
+) {
+  const userId = await getSessionUserId();
+
+  const originalQuote = await prisma.quote.findUnique({
+    where: { id: originalQuoteId },
+    include: {
+      concepts: {
+        orderBy: { order: "asc" },
+      },
+      snapshot: true,
+    },
+  });
+
+  if (!originalQuote) {
+    throw new Error("Cotización original no encontrada");
+  }
+
+  let finalClientId = clientId || null;
+  let finalProspectName = clientId ? null : (prospectName || null);
+
+  if (saveAsClient && prospectName && !clientId) {
+    const newClient = await prisma.client.create({
+      data: { name: prospectName }
+    });
+    finalClientId = newClient.id;
+    finalProspectName = null;
+  }
+
+  let newQuote: any;
+  let attempts = 0;
+  while (true) {
+    attempts++;
+    if (attempts > 5) throw new Error("No se pudo generar un folio único. Intenta de nuevo.");
+    const folio = await generateNextFolio();
+    try {
+      newQuote = await prisma.quote.create({
+        data: {
+          folio,
+          clientId: finalClientId,
+          prospectName: finalProspectName,
+          userId,
+          project: originalQuote.project,
+          description: originalQuote.description,
+          status: originalQuote.status === "APPROVED" ? "APPROVED" : "CALCULATED",
+          paymentStatus: "PENDING",
+          taxable: originalQuote.taxable,
+          subtotal: originalQuote.subtotal,
+          tax: originalQuote.tax,
+          total: originalQuote.total,
+          realCostTotal: originalQuote.realCostTotal,
+          estimatedUtility: originalQuote.estimatedUtility,
+          realAmountCollected: 0,
+          realUtilityTotal: 0,
+          isDone: false,
+          sentDate: null,
+          closeDate: null,
+          deliveryTime: originalQuote.deliveryTime,
+          validityDays: originalQuote.validityDays,
+          paymentConditions: originalQuote.paymentConditions,
+          visibleConsiderations: originalQuote.visibleConsiderations,
+          concepts: {
+            create: originalQuote.concepts.map((c, index) => ({
+              conceptType: c.conceptType,
+              description: c.description,
+              quantity: c.quantity,
+              materialId: c.materialId,
+              clientProvidesMaterial: c.clientProvidesMaterial,
+              width: c.width,
+              height: c.height,
+              cutTime: c.cutTime,
+              engraveTime: c.engraveTime,
+              finalUnitPrice: c.finalUnitPrice,
+              totalAmount: c.totalAmount,
+              realCost: c.realCost,
+              suggestedPrice: c.suggestedPrice,
+              materialCost: c.materialCost,
+              productionCost: c.productionCost,
+              serviceDays: c.serviceDays,
+              serviceHours: c.serviceHours,
+              transportCost: c.transportCost,
+              details: c.details,
+              order: index,
+            })),
+          },
+          ...(originalQuote.snapshot
+            ? {
+                snapshot: {
+                  create: {
+                    globalValues: originalQuote.snapshot.globalValues,
+                    factors: originalQuote.snapshot.factors,
+                    intermediate: originalQuote.snapshot.intermediate,
+                  },
+                },
+              }
+            : {}),
+        },
+      });
+      break;
+    } catch (err: any) {
+      if (err?.code === "P2002" && err?.meta?.target === "Quote_folio_key") {
+        await new Promise((r) => setTimeout(r, 50 * attempts));
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  revalidatePath("/dashboard/quotes");
+  return { success: true, quoteId: newQuote.id };
 }
 
 
