@@ -101,7 +101,11 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
           );
 
           const suggestedUnit = result.suggestedPrice / (Number(updated.quantity) || 1);
-          const finalUnit = updated.finalUnitPrice && Number(updated.finalUnitPrice) > 0 ? updated.finalUnitPrice : suggestedUnit;
+          // Si cambian parámetros de la fórmula (que no sean cantidad), forzamos a actualizar el precio final
+          const isParameterChange = field !== "quantity";
+          const finalUnit = (isParameterChange || !updated.finalUnitPrice || Number(updated.finalUnitPrice) <= 0)
+            ? suggestedUnit
+            : updated.finalUnitPrice;
           const finalUnitNum = Number(finalUnit) || 0;
           const totalAmount = finalUnitNum * (Number(updated.quantity) || 1);
           return { ...updated, calculated: { ...result, utility: totalAmount - result.realCost }, finalUnitPrice: finalUnit, totalAmount: totalAmount };
@@ -150,7 +154,9 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
         { ...globalCosts, margen_default: Number(margin) || 35 }
       );
       const suggestedUnit = result.suggestedPrice / (Number(c.quantity) || 1);
-      const finalUnit = c.finalUnitPrice && Number(c.finalUnitPrice) > 0 ? c.finalUnitPrice : suggestedUnit;
+      // Si cambia el margen global o mayoreo, actualizamos el precio final unitario de los conceptos de fórmula
+      const isFormulaType = ["CORTE", "GRABADO", "SERVICIO_SITIO"].includes(c.type);
+      const finalUnit = (isFormulaType || !c.finalUnitPrice || Number(c.finalUnitPrice) <= 0) ? suggestedUnit : c.finalUnitPrice;
       const finalUnitNum = Number(finalUnit) || 0;
       const totalAmount = finalUnitNum * (Number(c.quantity) || 1);
       return { ...c, calculated: { ...result, utility: totalAmount - result.realCost }, finalUnitPrice: finalUnit, totalAmount: totalAmount };
@@ -193,6 +199,11 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
     const real = concepts.reduce((sum, c) => sum + (Number(c.calculated?.realCost) || 0), 0);
     
     const ivaPercentage = Number(globalCosts?.porcentaje_iva) || 16;
+
+    if (!taxable) {
+      return { subtotal: totalFinal, iva: 0, total: totalFinal, costoReal: real, utilidad: totalFinal - real };
+    }
+
     const subtotalNeto = totalFinal / (1 + (ivaPercentage / 100));
     const tax = totalFinal - subtotalNeto;
     
@@ -201,7 +212,7 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
 
     return { subtotal: subtotalNeto, iva: tax, total: totalFinal, costoReal: real, utilidad: util };
 
-  }, [concepts, globalCosts, isWholesale, margin]); // Agregar margin a dependencias
+  }, [concepts, globalCosts, isWholesale, margin, taxable]);
 
 
 

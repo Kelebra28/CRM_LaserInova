@@ -191,6 +191,7 @@ export async function updateQuoteAction(formData: FormData) {
       total,
       realCostTotal,
       estimatedUtility,
+      taxable,
       concepts: {
         deleteMany: {},
         create: conceptsData.map((c: any, index: number) => ({
