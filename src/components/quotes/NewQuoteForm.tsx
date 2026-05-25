@@ -139,11 +139,11 @@ export default function NewQuoteForm({ clients, materials, globalCosts, userId }
       return { subtotal: conceptsSum, iva: 0, total: conceptsSum, costoReal: real, utilidad: conceptsSum - real };
     }
 
-    const totalFinal = conceptsSum;
-    const subtotalNeto = totalFinal / (1 + (ivaPercentage / 100));
-    const tax = totalFinal - subtotalNeto;
-    const util = (totalFinal - real) / (1 + (ivaPercentage / 100));
-    return { subtotal: subtotalNeto, iva: tax, total: totalFinal, costoReal: real, utilidad: util };
+    const subtotalVal = conceptsSum;
+    const taxVal = subtotalVal * (ivaPercentage / 100);
+    const totalVal = subtotalVal + taxVal;
+    const util = subtotalVal - real;
+    return { subtotal: subtotalVal, iva: taxVal, total: totalVal, costoReal: real, utilidad: util };
 
   }, [concepts, globalCosts, isWholesale, margin, taxable]);
 

@@ -124,8 +124,11 @@ export async function generateQuotePDF(quoteOrQuotes: any | any[]): Promise<Buff
       let unitPrice = concept.finalUnitPrice ?? 0;
       let total = unitPrice * concept.quantity;
 
-      // Si la cotización es taxable, mostramos los importes SIN IVA en la tabla para que la suma cuadre con el subtotal
-      if (quote.taxable && quote.subtotal > 0) {
+      const conceptsSum = quote.concepts.reduce((sum: number, c: any) => sum + ((c.finalUnitPrice ?? 0) * c.quantity), 0);
+      const isOldFormat = quote.taxable && Math.abs(conceptsSum - quote.total) < 0.05;
+
+      // Si la cotización es de formato anterior (con IVA incluido en conceptos), mostramos los importes divididos por el taxFactor
+      if (isOldFormat && quote.subtotal > 0) {
         const taxFactor = quote.total / quote.subtotal;
         unitPrice = unitPrice / taxFactor;
         total = total / taxFactor;

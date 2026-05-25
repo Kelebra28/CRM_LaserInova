@@ -204,13 +204,12 @@ export default function EditQuoteForm({ quote, clients, materials, globalCosts }
       return { subtotal: totalFinal, iva: 0, total: totalFinal, costoReal: real, utilidad: totalFinal - real };
     }
 
-    const subtotalNeto = totalFinal / (1 + (ivaPercentage / 100));
-    const tax = totalFinal - subtotalNeto;
-    
-    // La utilidad se calcula sobre la diferencia bruta desglosando el IVA al final
-    const util = (totalFinal - real) / (1 + (ivaPercentage / 100));
+    const subtotalVal = totalFinal;
+    const taxVal = subtotalVal * (ivaPercentage / 100);
+    const totalVal = subtotalVal + taxVal;
+    const util = subtotalVal - real;
 
-    return { subtotal: subtotalNeto, iva: tax, total: totalFinal, costoReal: real, utilidad: util };
+    return { subtotal: subtotalVal, iva: taxVal, total: totalVal, costoReal: real, utilidad: util };
 
   }, [concepts, globalCosts, isWholesale, margin, taxable]);
 

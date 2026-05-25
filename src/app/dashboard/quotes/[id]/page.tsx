@@ -208,7 +208,11 @@ export default async function QuoteDetailPage(props: { params: Promise<{ id: str
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {quote.concepts.map((concept) => {
-                    const taxFactor = quote.taxable && quote.subtotal > 0 ? (quote.total / quote.subtotal) : 1;
+                    const conceptsSum = quote.concepts.reduce((sum, c) => sum + (c.totalAmount || 0), 0);
+                    // Si la suma de conceptos es igual al total (y taxable es true), significa que se guardó en el formato anterior (con IVA incluido)
+                    const isOldFormat = quote.taxable && Math.abs(conceptsSum - quote.total) < 0.05;
+                    const taxFactor = isOldFormat && quote.subtotal > 0 ? (quote.total / quote.subtotal) : 1;
+                    
                     const netUnitPrice = concept.finalUnitPrice / taxFactor;
                     const netTotal = concept.totalAmount / taxFactor;
                     
