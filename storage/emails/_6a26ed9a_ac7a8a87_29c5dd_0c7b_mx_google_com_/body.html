@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DHL – Customs Notification</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #F0EDE6;
+      font-family: 'IBM Plex Sans', sans-serif;
+      min-height: 100vh;
+      padding: 3rem 1rem;
+    }
+
+    .page {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 620px;
+      margin: 0 auto;
+      border-radius: 2px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 12px 48px rgba(0,0,0,0.10);
+    }
+
+    .header {
+      background: #FFCC00;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header img { height: 38px; display: block; }
+
+    .header-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #333;
+      text-align: right;
+      line-height: 1.6;
+    }
+
+    .alert-strip {
+      background: #1A1A1A;
+      padding: 0.65rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-dot {
+      width: 8px;
+      height: 8px;
+      background: #FFCC00;
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .alert-strip span {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #FFCC00;
+      text-transform: uppercase;
+    }
+
+    .body { padding: 2.5rem 2rem; }
+
+    .meta-row {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #F0EDE6;
+    }
+
+    .meta-item label {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 4px;
+    }
+
+    .meta-item span {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1A1A1A;
+    }
+
+    .salutation {
+      font-size: 15px;
+      color: #1A1A1A;
+      margin-bottom: 1rem;
+    }
+
+    .body-text {
+      font-size: 14px;
+      line-height: 1.8;
+      color: #555;
+      margin-bottom: 2rem;
+    }
+
+    .cta-block {
+      background: #F8F6F1;
+      border: 1px solid #E8E4DB;
+      border-radius: 2px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .cta-text {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .cta-text strong {
+      display: block;
+      color: #1A1A1A;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFCC00;
+      color: #1A1A1A;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0.7rem 1.4rem;
+      border-radius: 2px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .btn:hover { background: #F0C000; }
+
+    .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .support-note {
+      font-size: 13px;
+      line-height: 1.7;
+      color: #777;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #F0EDE6;
+      margin-bottom: 2rem;
+    }
+
+    .footer {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+
+    .footer img {
+      height: 18px;
+      opacity: 0.25;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .footer-details {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #AAAAAA;
+      line-height: 1.9;
+      letter-spacing: 0.02em;
+    }
+
+    .bottom-bar {
+      background: #1A1A1A;
+      height: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/DHL_Logo.svg" alt="DHL" />
+      <div class="header-label">
+        Parcel Ltd — Bonn<br />
+        Customs &amp; Clearance Division
+      </div>
+    </div>
+
+    <div class="alert-strip">
+      <div class="alert-dot"></div>
+      <span>Shipment on hold — action required</span>
+    </div>
+
+    <div class="body">
+
+      <div class="meta-row">
+        <div class="meta-item">
+          <label>Notice type</label>
+          <span>Customs Hold</span>
+        </div>
+        <div class="meta-item">
+          <label>Status</label>
+          <span>Payment pending</span>
+        </div>
+        <div class="meta-item">
+          <label>Issued by</label>
+          <span>DHL Customs</span>
+        </div>
+      </div>
+
+      <p class="salutation">Dear Customer,</p>
+
+      <p class="body-text">
+        Your package is currently held at customs. A payment is required to complete the clearance process and release your shipment for final delivery. Please act as soon as possible to prevent additional delays.
+      </p>
+
+      <div class="cta-block">
+        <div class="cta-text">
+          <strong>Complete customs payment</strong>
+          Follow the secure link to submit your payment and release your shipment.
+        </div>
+        <a class="btn" href="https://zpr.io/ndqPrzw7rKn7">
+          Release shipment
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 8h10M9 4l4 4-4 4"/>
+          </svg>
+        </a>
+      </div>
+
+      <p class="support-note">
+        If you have any questions or concerns regarding your shipment or this notice, our customer support team is available and ready to assist you.
+      </p>
+
+      <div class="footer">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/DHL_Logo.svg" alt="DHL" />
+        <div class="footer-details">
+          DHL Parcel Ltd · Strassenweg 10 · 53113 Bonn<br />
+          Registry court Bonn · HRB 19565 · VAT ID: DE 813312787
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottom-bar"></div>
+  </div>
+</body>
+</html>
