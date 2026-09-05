@@ -1,0 +1,41 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[7/11/26, 7:42:21 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[7/11/26, 7:42:21 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[7/11/26, 7:42:21 PM] +52 1 55 1689 2217: Hola, quiero información de Ventas Corporativas
+[7/11/26, 7:42:24 PM] Tú: Gracias por comunicarte con Laser Inova. ¿Cómo podemos ayudarte?
+[7/11/26, 7:42:44 PM] +52 1 55 1689 2217: <imagen omitida> Requiero realizar una muestra similar al de la imagen.
+
+Ustedes cuenta con MDF o lo tengo que proporcionar yo?
+Realizar impresión directamemte en MDF
+[7/13/26, 9:55:56 AM] +52 1 55 1689 2217: Hola buen día
+[7/13/26, 10:01:53 AM] Tú: Hola buen día q tal!!
+[7/13/26, 10:03:36 AM] Tú: con gusto te podemos ayudar en tu proyecto, hacer corte en laser en MDF y contamos con el material en 3 y 6mm, tmb realizamos la impresión directa encaman plana UV
+[7/13/26, 10:06:48 AM] +52 1 55 1689 2217: Me podrían ayudar con la cotización del armado de 1 muestra
+[7/13/26, 10:06:57 AM] +52 1 55 1689 2217: Si me la aprueban serían 20 piezas más
+[7/13/26, 10:12:49 AM] Tú: sería al natural o con acabado en pintura vinílica o en impresión UV??
+[7/13/26, 10:16:16 AM] +52 1 55 1689 2217: Impresión UV
+[7/13/26, 10:16:20 AM] +52 1 55 1689 2217: Por favor
+[7/13/26, 10:27:19 AM] Tú: cuentas con el diseño en algún formato de vector AI, DXF, PDF,  para la impresión el formato en PS, AI o  PNG alta definición?
+[7/13/26, 10:27:47 AM] +52 1 55 1689 2217: Tengo lo siguiente
+[7/13/26, 10:28:00 AM] +52 1 55 1689 2217: <documento omitido> Caballito muestra 2.eps
+[7/13/26, 10:28:00 AM] +52 1 55 1689 2217: <imagen omitida>
+[7/13/26, 10:55:41 AM] Tú: <imagen omitida> lamentablemente el archivo no esta optimizado para corte laser, ni impresión de alta calidad
+[7/13/26, 10:56:35 AM] Tú: tendríamos q hacer el diseño en vector, esto tiene un costo de $500, aparte el costo de la muestra
+[7/13/26, 10:57:26 AM] +52 1 55 1689 2217: Una vez realizado el archivo, también me lo pueden compartir?
+
+Tendrás un costo aproximado de la muestra ya con la imagen realizada?
+[7/13/26, 10:57:53 AM] +52 1 55 1689 2217: Cuánto tiempo de fabricación después de aprobado el diseño?
+[7/13/26, 10:59:57 AM] Tú: una vez q tengamos el diseño en vector podemos obtener el costo de la muestra, dame oportunidad para ver como te obtengo un aproximado sin hacer el vector
+[7/13/26, 11:02:40 AM] +52 1 55 1689 2217: Por favor, te lo agradeceré mucho
+[7/13/26, 11:03:58 AM] +52 1 55 1689 2217: Te comparto lo que tengo de documentos esperando que algo de eso pueda servir
+[7/13/26, 11:04:11 AM] +52 1 55 1689 2217: <documento omitido> Lista_Materiales_BOM.csv
+[7/13/26, 11:04:12 AM] +52 1 55 1689 2217: <documento omitido> Paquete_Planos_Profesionales_14_Hojas.pdf
+[7/13/26, 11:04:12 AM] +52 1 55 1689 2217: <documento omitido> Plano_Tecnico_Fabricacion.pdf
+[7/13/26, 12:39:31 PM] +52 1 55 1689 2217: Algo de esto nos serviría?
+[7/13/26, 2:13:28 PM] +52 1 55 1689 2217: Me pueden compartir los datos bancarios, me interesa poder avanzar con una cotización para la muestra
+[7/14/26, 7:56:55 AM] +52 1 55 1689 2217: Hola buen día. 
+
+Dándole seguimiento al tema de la muestra, fue posible tener un costo aproximado sin el diseño en vector?
+[7/14/26, 8:21:28 AM] Tú: Hola buen día
+[7/14/26, 8:22:55 AM] Tú: disculpa te la compartimos el día de mañana sin falta, hoy estamos fuera todavía terminando un evento..
+[7/14/26, 8:26:42 AM] +52 1 55 1689 2217: De acuerdo, mañana le doy seguimiento. Muchas gracias por los comentarios

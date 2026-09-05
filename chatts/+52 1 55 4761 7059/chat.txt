@@ -1,0 +1,256 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[6/22/26, 9:26:17 AM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[6/22/26, 9:26:17 AM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[6/22/26, 9:26:17 AM] +52 1 55 4761 7059: Hola, quiero información de Ventas Corporativas
+[6/22/26, 9:26:21 AM] Tú: Gracias por comunicarte con Laser Inova. ¿Cómo podemos ayudarte?
+[6/22/26, 9:27:17 AM] +52 1 55 4761 7059: Me gustaría saber ¿cuales son sus precios de impresión y corte en acrílico?
+[6/22/26, 5:08:45 PM] +52 1 55 4761 7059: Cuál es el precio de impresión en acrílico?
+[6/23/26, 6:58:04 AM] Tú: hola buen día!!
+[6/23/26, 6:58:20 AM] +52 1 55 4761 7059: Buen día
+[6/23/26, 6:58:45 AM] Tú: el precio depende  del tamaño y diseño
+[6/23/26, 6:59:02 AM] Tú: q es lo q  requieres grabar?
+[6/23/26, 7:01:24 AM] +52 1 55 4761 7059: <imagen omitida> En un tamaño aproximado de 5x5cm , con diseños similares a este
+[6/23/26, 7:02:04 AM] +52 1 55 4761 7059: Un aprox de 100 piezas con 10 diseños diferentes
+[6/23/26, 7:05:52 AM] Tú: requieres el corte tmb de los llaveros?
+[6/23/26, 7:06:00 AM] +52 1 55 4761 7059: Sip
+[6/23/26, 7:06:36 AM] Tú: muy bien, si nos compartes el diseño podemos hacer una cotización mas precisa
+[6/23/26, 7:07:07 AM] +52 1 55 4761 7059: Es que todavía no he acabado el diseño, Pero quería ir cotizando
+[6/23/26, 7:07:18 AM] +52 1 55 4761 7059: Igual en cuanto tiempo entregan?
+[6/23/26, 7:08:25 AM] Tú: la entrega sería de 3 a 4 días, dependiendo la carga de trabajo puede ser en 2 días
+[6/23/26, 7:16:56 AM] Tú: solo la impresión estaría alrededor de $13 a $15 por pza. dependiendo como lo quieras con base blanca, barniz, solo color
+[6/23/26, 7:32:28 AM] +52 1 55 4761 7059: Y el corte?
+[6/23/26, 7:38:04 AM] Tú: El corte esta a 10 pesos el minuto, para ese si ed necesario el diseño
+[6/23/26, 7:42:21 AM] +52 1 55 4761 7059: Impresión de color con barniz, así como estaría aprox?
+[6/23/26, 7:44:22 AM] Tú: Ese esta en 14
+[6/24/26, 1:04:13 PM] +52 1 55 4761 7059: Me podría mostrar alguna foto de resultados similares a lo que estoy cotizando?
+[6/24/26, 1:19:40 PM] Tú: <Mensaje de album>
+[6/24/26, 1:19:40 PM] Tú: <imagen omitida>
+[6/24/26, 1:19:40 PM] Tú: <imagen omitida>
+[6/24/26, 1:19:40 PM] Tú: <imagen omitida>
+[6/24/26, 1:19:40 PM] Tú: <imagen omitida>
+[6/24/26, 1:19:40 PM] Tú: <imagen omitida>
+[6/24/26, 1:21:53 PM] +52 1 55 4761 7059: Las últimas son como de impresión con tinta blanca?
+[6/24/26, 1:39:19 PM] Tú: Exacto, es color, blanco, color, barniz
+[6/24/26, 1:40:42 PM] +52 1 55 4761 7059: El que yo cotice está puro color y barniz?
+[6/24/26, 1:40:49 PM] +52 1 55 4761 7059: Cuál sería el precio de este?
+[6/24/26, 1:41:20 PM] Tú: Puro color y barniz son estos
+[6/24/26, 1:41:26 PM] Tú: <imagen omitida>
+[6/24/26, 1:41:37 PM] Tú: <imagen omitida>
+[6/24/26, 1:41:52 PM] +52 1 55 4761 7059: Y cuál sería el precio así?
+[6/24/26, 1:48:04 PM] Tú: Esa esta en 14.50
+[6/24/26, 2:02:22 PM] +52 1 55 4761 7059: Por pieza verdad?
+[6/24/26, 2:18:24 PM] Tú: Si por pieza
+[6/26/26, 10:18:37 PM] +52 1 55 4761 7059: Cómo debo mandar mis archivos para impresión y corte?
+Es recomendable mandar los archivos en cmyk?
+[6/26/26, 10:21:41 PM] Tú: Hola como estas?
+[6/26/26, 10:21:51 PM] Tú: para la impresion en psd es lo mejor por lo colores
+[6/26/26, 10:21:56 PM] Tú: y para el corte en dxf
+[6/26/26, 10:25:03 PM] +52 1 55 4761 7059: Ok, gracias
+[7/1/26, 9:34:36 AM] +52 1 55 4761 7059: Los archivos debo mandarlos ya al tamaño? Osea de 5cm? Tanto de corte como de impresión?
+[7/1/26, 10:04:15 AM] Tú: Buenos dias,  de prederencia el de psd
+[7/11/26, 2:36:49 PM] +52 1 55 4761 7059: Buenos días, una disculpa, me quedé con un poco de dudas con los archivos, sería la imagen para imprimir en psd y en archivo PDF el contorno para corte?
+[7/13/26, 1:06:31 AM] +52 1 55 4761 7059: tendria que mandarlos asi?
+[7/13/26, 1:06:44 AM] +52 1 55 4761 7059: <documento omitido> prub 1.psd
+[7/13/26, 1:06:44 AM] +52 1 55 4761 7059: <documento omitido> prub 11.pdf
+[7/13/26, 1:06:49 AM] +52 1 55 4761 7059: o asi?
+[7/13/26, 1:07:04 AM] +52 1 55 4761 7059: <documento omitido> contorno.pdf
+[7/13/26, 9:42:10 AM] Tú: Creo que estan bien, deja lo checho si?
+[7/13/26, 10:08:13 AM] +52 1 55 4761 7059: Sip
+[7/13/26, 10:08:58 AM] +52 1 55 4761 7059: Me avisa para pasar bien todos los archivos, para que me pueda hacer una cotización final porfavor?
+[7/13/26, 10:18:15 AM] +52 1 55 4761 7059: No necesito mandarlo en ningún perfil de color en específico?
+[7/13/26, 6:34:55 PM] +52 1 55 4761 7059: Tengo un aprox de 15 imágenes diferentes, conviene enviarlas en un mismo archivo como aquí?
+[7/13/26, 6:35:02 PM] +52 1 55 4761 7059: O todas por separado?
+[7/14/26, 10:47:42 AM] Tú: <mensaje de voz omitido>
+[7/14/26, 12:23:50 PM] +52 1 55 4761 7059: Ok gracias
+[7/16/26, 8:14:48 AM] +52 1 55 4761 7059: Buen día
+[7/16/26, 11:06:31 AM] Tú: Hola que tal, esamos revisado tus archivos :)
+[7/16/26, 1:46:17 PM] Tú: asi esta bien!!
+[7/16/26, 1:50:24 PM] Tú: los contornos igual están bien cualquiera de las dos formas
+[7/16/26, 1:50:55 PM] Tú: los contornos si los puedes mandar en un solo archivo
+[7/16/26, 1:51:16 PM] Tú: las imágenes en PS esas si x separado  x favor
+[7/16/26, 1:59:22 PM] Tú: Material: acrílico cristal 3mm
+medida: 4.6 x 6.2cm
+impresión directas UV (C,W,C,B)
+te queda en $23.00
+[7/16/26, 11:45:28 PM] +52 1 55 4761 7059: Se eliminó este mensaje.
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 caine y luna.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 caine.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 kinger.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 kinger ch.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 pom.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 queenie y king.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 rag.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 rib.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> 1 showtime.psd
+[7/16/26, 11:56:12 PM] +52 1 55 4761 7059: <documento omitido> serian estos, 10 de cada modelo
+[7/16/26, 11:57:52 PM] +52 1 55 4761 7059: <documento omitido> así están bien los contornos? o los mando sin la imagen? los mando con la imagen de referencia para que se vea como tiene acomodado el contorno
+[7/16/26, 11:58:12 PM] +52 1 55 4761 7059: Cuál sería la cotización final?
+[7/16/26, 11:58:35 PM] +52 1 55 4761 7059: De impresión y corte porfavor
+[7/17/26, 8:35:11 AM] Tú: Hola buen día!!
+[7/17/26, 8:35:39 AM] Tú: revisamos archivos y te preparamos la cotización
+[7/17/26, 8:35:48 AM] +52 1 55 4761 7059: Ok, gracias :3
+[7/17/26, 8:36:13 AM] +52 1 55 4761 7059: Pagando hoy como cuando estiman que me podrían entregar :3?
+[7/17/26, 8:38:11 AM] Tú: cuantas pzas son de c/u?
+[7/17/26, 8:38:24 AM] +52 1 55 4761 7059: 10 piezas de cada uno
+[7/17/26, 8:38:45 AM] Tú: de inicio por el martes o miercoles
+[7/17/26, 8:39:03 AM] +52 1 55 4761 7059: Ok, muchas gracias :3
+[7/17/26, 8:39:15 AM] +52 1 55 4761 7059: Estoy atenta a la cotización :)
+[7/17/26, 8:41:27 AM] Tú: si claro en el transcurso del día te la compartimos
+[7/17/26, 1:48:26 PM] Tú: <documento omitido>
+[7/17/26, 2:32:31 PM] +52 1 55 4761 7059: Necesito corregir algo :?
+[7/17/26, 2:34:21 PM] Tú: no
+[7/17/26, 2:34:27 PM] Tú: solo era para verificar
+[7/17/26, 2:34:36 PM] Tú: si son esos y el corte
+[7/17/26, 2:34:48 PM] +52 1 55 4761 7059: Ok
+[7/17/26, 2:34:57 PM] +52 1 55 4761 7059: Sip
+[7/17/26, 2:35:02 PM] +52 1 55 4761 7059: Son todos esos
+[7/17/26, 2:35:20 PM] +52 1 55 4761 7059: Y el corte está bien
+[7/17/26, 2:35:23 PM] +52 1 55 4761 7059: :3
+[7/17/26, 3:04:26 PM] Tú: perfecto!! el lunes te damos avances.
+[7/17/26, 3:04:34 PM] Tú: Excelente tarde!
+[7/17/26, 3:04:46 PM] +52 1 55 4761 7059: Va va
+[7/17/26, 3:17:31 PM] +52 1 55 4761 7059: Pero cuál sería el precio total :?
+[7/17/26, 3:18:46 PM] Tú: Ah cierto jejeje t lo paso en un momento
+[7/17/26, 3:20:31 PM] +52 1 55 4761 7059: Gracias jsjsjs
+[7/17/26, 5:51:12 PM] Tú: en total de las 100  pzs.
+corte en acrílico 3mm (incluye material)
+impresión directa UV
+$2,100
+[7/17/26, 5:51:52 PM] +52 1 55 4761 7059: Sip, me parece perfecto owo, tengo que dar un adelanto o hacer el pago completo?
+[7/17/26, 5:59:56 PM] Tú: anticipo esta bien 50%
+[7/17/26, 6:00:01 PM] Tú: Num. De cuenta
+11810440017
+CLABE
+036180118104400175
+Banco Inbursa
+A nombre de
+Raul Basurto Lopez Lena
+[7/17/26, 6:00:20 PM] +52 1 55 4761 7059: Ok, gracias owo
+[7/17/26, 9:02:02 PM] +52 1 55 4761 7059: <imagen omitida> Buenas noches :3
+Ya transferí
+[7/20/26, 9:35:58 AM] Tú: Hola buen ,
+Muchas gracias!!
+[7/20/26, 6:29:59 PM] +52 1 55 4761 7059: Hola, solo pregunto para ir organizando
+[7/20/26, 6:30:20 PM] +52 1 55 4761 7059: Si se haría la entrega el miércoles?
+[7/20/26, 6:30:45 PM] +52 1 55 4761 7059: En qué horario?
+[7/21/26, 11:54:12 AM] Tú: Hola seria apartir de las 5 mañana
+[7/21/26, 11:57:00 AM] +52 1 55 4761 7059: Ok, gracias :3
+[7/21/26, 12:46:51 PM] Tú: Una pregunta
+[7/21/26, 12:47:21 PM] Tú: <imagen omitida> Estos orificios se van a romper facilmente no importa?
+[7/21/26, 12:47:54 PM] Tú: <imagen omitida> De estos 3 no hay problema
+[7/21/26, 12:51:33 PM] +52 1 55 4761 7059: Podrían hacer el ajuste para que queden un poco más gruesos :'3?
+[7/21/26, 12:55:44 PM] +52 1 55 4761 7059: O hago los ajustes para que queden más gruesos?
+[7/21/26, 12:56:27 PM] +52 1 55 4761 7059: Aún se puede hacer la corrección :'3?
+[7/21/26, 12:56:58 PM] Tú: Notoros podriamos bajar el circulo pero se cortarina  una parte de l impresion, ahorita te la mando
+[7/21/26, 12:57:17 PM] Tú: Si gustas tu puedes hascer la correccion sin proble, a
+[7/21/26, 12:58:01 PM] +52 1 55 4761 7059: Ok, gracias :3, en un momento mando la corrección
+[7/21/26, 2:28:24 PM] +52 1 55 4761 7059: archivo corregido
+[7/21/26, 2:28:26 PM] +52 1 55 4761 7059: <documento omitido> contornos todos.pdf
+[7/21/26, 2:30:59 PM] +52 1 55 4761 7059: muchas gracias
+[7/21/26, 2:54:34 PM] +52 1 55 4761 7059: Si pasará por mis acrílicos el jueves podría pasar a cualquier hora antes de las 7:30?
+[7/21/26, 2:55:07 PM] Tú: 7 pm?
+[7/21/26, 2:55:11 PM] Tú: si claro sin problema :)
+[7/21/26, 2:55:24 PM] +52 1 55 4761 7059: Si
+[7/22/26, 10:50:23 AM] +52 1 55 4761 7059: <imagen omitida> Hola, buenas tardes, en cuanto me saldria la impresión y corte de acrílicos de un tamaño aprox de 4 cm como estos
+[7/22/26, 11:20:32 AM] Tú: 4 cm cada uno? o los 2 en total
+[7/22/26, 11:20:39 AM] Tú: y cuantas piezas serian?
+[7/22/26, 11:28:32 AM] +52 1 55 4761 7059: Los 2 en totala
+[7/22/26, 11:28:41 AM] +52 1 55 4761 7059: Un aprox de 16 piezas
+[7/22/26, 12:29:36 PM] Tú: En un momento te paso el costo
+[7/22/26, 12:30:05 PM] Tú: Oye me puedes pasae tu psd de esta pieza
+[7/22/26, 12:30:08 PM] Tú: Porfa
+[7/22/26, 12:30:15 PM] Tú: <imagen omitida>
+[7/22/26, 2:29:43 PM] Tú: Hola
+[7/22/26, 2:53:26 PM] +52 1 55 4761 7059: Hola
+[7/22/26, 2:53:28 PM] +52 1 55 4761 7059: Una disculpa
+[7/22/26, 2:53:35 PM] Tú: Ntp
+[7/22/26, 2:53:41 PM] Tú: Ya lo tengi jeje
+[7/22/26, 2:53:44 PM] Tú: Ya cask estan
+[7/22/26, 2:53:45 PM] +52 1 55 4761 7059: Es este
+[7/22/26, 2:53:55 PM] +52 1 55 4761 7059: Ok, gracias :33
+[7/22/26, 3:32:03 PM] Tú: ya quedaron
+[7/22/26, 3:32:12 PM] Tú: cuando quieras pasar :)
+[7/22/26, 3:32:25 PM] +52 1 55 4761 7059: Muchas gracias owo
+[7/22/26, 3:32:33 PM] Tú: A ti!
+[7/22/26, 3:32:39 PM] +52 1 55 4761 7059: Paso por ellos el día de mañana :333
+[7/22/26, 8:26:22 PM] +52 1 55 4761 7059: Cómo cuanto sería :3?
+[7/23/26, 11:06:37 AM] Tú: Perdoname, ahorita saco el costo
+[7/23/26, 11:30:37 AM] +52 1 55 4761 7059: Sip, no hay problema
+[7/23/26, 1:07:11 PM] Tú: Hola, como estas?
+[7/23/26, 1:07:24 PM] Tú: te salen en 35, porque son poquitos para poder darte precio de mayoreo
+[7/23/26, 1:07:33 PM] Tú: [Reenviado] <imagen omitida>
+[7/23/26, 1:07:41 PM] Tú: tambien te mando fotos de tus llaveros :)
+[7/23/26, 1:56:39 PM] +52 1 55 4761 7059: Están hermosos :'3, muchas gracias
+[7/23/26, 2:19:43 PM] +52 1 55 4761 7059: Dan factura?
+[7/23/26, 2:21:56 PM] Tú: que bueno que te gustaron
+[7/23/26, 2:21:58 PM] Tú: si claro
+[7/23/26, 4:11:55 PM] +52 1 55 4761 7059: Hola, me surgió un inconveniente, podría ir por ellos el sábado?
+[7/23/26, 4:12:36 PM] Tú: hola, si no te prepcupes
+[7/23/26, 4:12:42 PM] Tú: estamos como apartir de las 11
+[7/23/26, 4:13:46 PM] +52 1 55 4761 7059: Ok, y a qué hora cierran?
+[7/23/26, 5:20:35 PM] Tú: Depende pero este sabado estamos complicados
+[7/23/26, 5:21:03 PM] +52 1 55 4761 7059: :c si llego a las 11 podría recoger sin problema?
+[7/23/26, 6:05:59 PM] Tú: Si aqui estarw hasta las 1 aprox
+[7/23/26, 6:06:17 PM] +52 1 55 4761 7059: Ok, muchas gracias
+[7/25/26, 10:07:51 AM] Tú: Hola, llego como 11:30   voy un poco tarde
+[7/25/26, 10:51:49 AM] Tú: Pero hay gente ahi
+[7/25/26, 10:51:50 AM] Tú: Ntp
+[7/25/26, 10:51:57 AM] Tú: Estare al pendiente
+[7/25/26, 10:54:09 AM] +52 1 55 4761 7059: Ok, gracias :3
+[7/25/26, 11:04:58 AM] +52 1 55 4761 7059: Ya llegué
+[7/25/26, 11:05:06 AM] +52 1 55 4761 7059: Es en el 225?
+[7/25/26, 11:08:48 AM] +52 1 55 4761 7059: <sticker omitido>
+[7/25/26, 11:09:31 AM] Tú: 213
+[7/25/26, 11:09:45 AM] Tú: 223
+[7/25/26, 11:10:14 AM] +52 1 55 4761 7059: Va va, ya estoy afuera
+[7/25/26, 11:10:42 AM] Tú: Vale yq te los entregan
+[7/25/26, 11:10:55 AM] Tú: Ya avise
+[7/25/26, 11:11:00 AM] +52 1 55 4761 7059: Ok, gracias
+[7/29/26, 5:59:45 PM] +52 1 55 4761 7059: buenas tardes
+[7/29/26, 6:00:19 PM] +52 1 55 4761 7059: me gustaria que me hicieran 15 piezas de este
+[7/29/26, 6:00:29 PM] +52 1 55 4761 7059: <documento omitido> pin.psd
+[7/29/26, 6:00:29 PM] +52 1 55 4761 7059: <documento omitido> corte.pdf
+[7/29/26, 6:03:50 PM] Tú: Hola, como estas?
+[7/29/26, 6:04:00 PM] Tú: Claro que si! sim problema
+[7/29/26, 6:08:00 PM] +52 1 55 4761 7059: Holaaa bien :3
+[7/29/26, 6:08:12 PM] +52 1 55 4761 7059: Cuál sería el precio final :3?
+[7/29/26, 6:08:21 PM] +52 1 55 4761 7059: Para cuándo los tendrían listos :3?
+[7/30/26, 11:24:48 AM] Tú: Los podria tener para el lunes, te queda bien?
+[7/30/26, 12:51:32 PM] +52 1 55 4761 7059: sip
+[7/30/26, 12:51:38 PM] +52 1 55 4761 7059: cuanto seria?
+[7/30/26, 12:51:47 PM] +52 1 55 4761 7059: requiero factura porfavor
+[7/30/26, 12:53:01 PM] Tú: Si sin problema, serian 525 en total :)
+[7/30/26, 12:56:20 PM] +52 1 55 4761 7059: Sip
+[7/30/26, 1:12:12 PM] +52 1 55 4761 7059: En un momento transfiero
+[7/30/26, 1:12:20 PM] +52 1 55 4761 7059: Puedo hacer el pago completo?
+[7/30/26, 2:06:54 PM] Tú: Claro sin problema :)
+[7/30/26, 7:11:49 PM] +52 1 55 4761 7059: <imagen omitida>
+[7/31/26, 7:49:58 PM] +52 1 55 4761 7059: Voy a requerir factura porfavor
+[8/1/26, 5:56:13 PM] +52 1 55 4761 7059: A partir de que hora puedo pasar por los acrílicos?
+[8/1/26, 6:11:18 PM] Tú: Si , la hacemos no  te preocupes
+[8/1/26, 6:11:35 PM] Tú: Apartir de las 5 porfavor
+[8/2/26, 5:58:22 PM] Tú: Hola buena tarde
+[8/2/26, 5:58:57 PM] Tú: disculpa una duda, este lleva orificio para llavero o así tal cual esta el archivo?
+[8/2/26, 6:01:24 PM] Tú: las medidas del archivo son 4.25 x 3.25cm correcto?
+[8/2/26, 6:01:55 PM] +52 1 55 4761 7059: Nop, este no lleva orificio
+[8/2/26, 6:02:22 PM] +52 1 55 4761 7059: Sip :3
+[8/2/26, 6:03:31 PM] Tú: muy bien!! muchas gracias!!
+[8/3/26, 1:25:47 PM] Tú: Buenas tardes ya quedaron :)
+[8/3/26, 1:31:52 PM] +52 1 55 4761 7059: Buenas tardes, entonces puedo pasar desde ahorita :3?
+[8/3/26, 1:35:37 PM] +52 1 55 4761 7059: Pasó la constancia de situación fiscal para que me realicen mi factura :3?
+[8/3/26, 1:35:45 PM] +52 1 55 4761 7059: Muchas gracias :33
+[8/3/26, 2:02:32 PM] Tú: Si aqui andamos :)
+[8/3/26, 2:02:36 PM] Tú: Si porfa
+[8/3/26, 2:02:43 PM] Tú: hacemos ti faactura
+[8/3/26, 2:03:45 PM] +52 1 55 4761 7059: [Reenviado] <documento omitido> Csf_VAVR680709ED9 jun2026.pdf
+[8/3/26, 4:22:52 PM] +52 1 55 4761 7059: Buenas tardes
+[8/3/26, 4:22:52 PM] +52 1 55 4761 7059: Ya llegué
+[8/3/26, 4:25:53 PM] +52 1 55 4761 7059: <sticker omitido>
+[8/8/26, 9:55:38 PM] +52 1 55 4761 7059: Holaaa, buenas noches, vengo a preguntar si ya tiene mi factura :3?
+[8/8/26, 10:22:06 PM] Tú: Hola buenas noches
+[8/8/26, 10:22:18 PM] Tú: te comparto la factura.
+[8/8/26, 10:22:48 PM] Tú: <documento omitido>
+[8/8/26, 10:22:48 PM] Tú: <documento omitido>
+[8/8/26, 10:22:59 PM] Tú: disculpa la demora. saludos!!
+[8/8/26, 10:25:39 PM] +52 1 55 4761 7059: Buenas noches
+[8/8/26, 10:25:42 PM] +52 1 55 4761 7059: Gracias :3

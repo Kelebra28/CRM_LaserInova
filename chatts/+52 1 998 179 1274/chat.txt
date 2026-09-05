@@ -1,0 +1,23 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[8/1/26, 10:38:26 AM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[8/1/26, 10:38:26 AM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[8/1/26, 10:38:26 AM] +52 1 998 179 1274: Hola, quiero información de Ventas Corporativas
+[8/1/26, 10:38:29 AM] Tú: Gracias por comunicarte con Laser Inova. ¿Cómo podemos ayudarte?
+[8/1/26, 10:39:12 AM] +52 1 998 179 1274: Necesito unos impresos en madera, ustedes hacen?
+[8/1/26, 12:53:27 PM] Tú: Buenas tardes, si podemos imprimir en madera en cama plana uv
+[8/1/26, 12:58:07 PM] +52 1 998 179 1274: como es el proceso. tenemos varias señales que necesitamos el mas rapido posible
+[8/1/26, 1:00:15 PM] Tú: Seria en grabdo. laser o coma plana_
+[8/1/26, 1:00:33 PM] Tú: Si es cama plana serian las imagenen en png o ek archivo psd
+[8/1/26, 1:00:52 PM] Tú: Si e en grabado laser necesiatariamos el png o pdf, o dxf
+[8/1/26, 1:00:56 PM] Tú: Cutnas son_
+[8/1/26, 1:03:55 PM] +52 1 998 179 1274: estoy revisando
+[8/1/26, 1:11:36 PM] +52 1 998 179 1274: Hay 10
+[8/1/26, 1:15:50 PM] Tú: De que medidas son_
+[8/1/26, 1:17:28 PM] +52 1 998 179 1274: Voy a pedir que el gerente te escribo con todo el info…se llama Daniel Delgado
+[8/1/26, 1:17:43 PM] +52 1 998 179 1274: Contacto: BEGIN:VCARD
+VERSION:3.0
+N:;Daniel Felipe Teva;;;
+FN:Daniel Felipe Teva
+TEL;type=CELL;type=VOICE;waid=5214271676139:+52 427 167 6139
+END:VCARD
+[8/1/26, 1:26:46 PM] Tú: perdecto, quedamos atentos a su mensaje

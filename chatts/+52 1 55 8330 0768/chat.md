@@ -1,0 +1,23 @@
+# Exportación de chat de WhatsApp: +52 1 55 8330 0768
+Fecha de exportación: 31 de agosto de 2026 a las 12:29 a.m.
+
+---
+
+## 3 de agosto de 2026
+
+[11:38 a.m.] __Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.__
+
+[11:38 a.m.] __Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.__
+
+[11:38 a.m.] **+52 1 55 8330 0768:** Hola, quiero información de Ventas Corporativas
+
+[11:39 a.m.] **+52 1 55 8330 0768:** ¡Hola! Buen día. Mi nombre es Lehí Mata. 
+
+Quisiera pedirles una cotización para un paquete de producción gráfica en Eco-Solvente (1200 DPIs) y rígidos. Me pueden cotizar por favor el total ya con acabados (IVA incluido)
+
+1. Muros para Toldo: 17 lonas de 2.00 x 2.00 m (68 m² total), a 1 vista, con dobladillo perimetral, ojillos en esquinas y velcro para sujeción.
+2. Faldones Divisores: 38 lonas de 2.00 x 1.00 m (152 m² total de impresión), DOBLE VISTA, con dobladillos y velcro en bordes.
+3. Cubrepostes: 34 lonas de 0.50 x 2.00 m (34 m² total), a 1 vista, con dobladillo y velcro en costados.
+4. Rígidos (Árboles): 4 juegos (12 piezas en total) impresos en Trovicel con corte sobre figura/CNC.
+5. Roll Ups: 4 estructuras completas (0.85 x 2.00 m) con impresión en TELA.
+6. Banderines: 60 metros lineales.
