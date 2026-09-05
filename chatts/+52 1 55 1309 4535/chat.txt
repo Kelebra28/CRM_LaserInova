@@ -1,0 +1,15 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[8/18/26, 12:53:39 PM] +52 1 55 1309 4535: Hola, quiero información de Ventas Corporativas
+[8/18/26, 12:53:40 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[8/18/26, 12:53:40 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[8/18/26, 12:53:43 PM] +52 1 55 1309 4535: Hola buenas tardes. Soy la arq. Fernanda Marquez de TAME Taller Mexicano de Arquitectura, les escribo porque estoy interesada en corte laser gran formato y queria ver si ustedes me pueden ayudar
+[8/18/26, 1:49:50 PM] Tú: Buenas tardes, mucho gusto Fernanda, Ricardo Basurto te atiende
+[8/18/26, 1:49:57 PM] Tú: Como te podemos ayuar?
+[8/18/26, 2:37:02 PM] +52 1 55 1309 4535: Mucho gusto Ricardo, te platico, necesito cortar unas piezas en MDF de 1.20x2.44, ya tengo el archivo en vectores, y si quieres te lo mando para poder cotizar
+[8/18/26, 2:43:55 PM] Tú: ah vale te comento que nuestra area de trabajo es de 120cm x 90cm
+[8/18/26, 2:44:13 PM] Tú: si gustan aun asi pasamerme tu archivo para checarlo
+[8/18/26, 2:44:50 PM] +52 1 55 1309 4535: Aa okay, no te preocupes, mil gracias de todas maneras
+[8/18/26, 2:44:56 PM] +52 1 55 1309 4535: Si lo necesito de esta medida
+[8/18/26, 2:44:58 PM] +52 1 55 1309 4535: Pero gracias
+[8/18/26, 6:04:16 PM] Tú: Vale no te prepcupes , cualquier cosa estamos aqui
+[8/18/26, 6:09:16 PM] +52 1 55 1309 4535: Mil gracias!

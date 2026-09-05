@@ -1,0 +1,3 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[7/20/26, 9:54:03 AM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[7/20/26, 9:54:03 AM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.

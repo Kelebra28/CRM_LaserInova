@@ -1,0 +1,5 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[6/11/26, 11:01:09 PM] +52 1 222 841 6921: Hola, quiero cotizar un proyecto de láser
+[6/11/26, 11:01:10 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[6/11/26, 11:01:10 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[6/11/26, 11:01:12 PM] Tú: Gracias por comunicarte con Laser Inova. ¿Cómo podemos ayudarte?

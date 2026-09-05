@@ -1,0 +1,8 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[6/23/26, 2:10:42 PM] +52 1 442 356 9993: Hola, quiero información de Ventas Corporativas
+[6/23/26, 2:10:43 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[6/23/26, 2:10:43 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[6/23/26, 2:10:45 PM] Tú: Gracias por comunicarte con Laser Inova. ¿Cómo podemos ayudarte?
+[6/23/26, 2:11:49 PM] +52 1 442 356 9993: ¿Me podrían apoyar con una cotización para la impresión e instalación de un vinil para pared de oficina de 2 m de alto x 7.8 m de ancho?
+
+También quisiera saber qué tipos de vinil manejan (mate, brillante, texturizado, etc.) y cuál me recomendarían para uso en interiores.

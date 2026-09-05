@@ -1,0 +1,18 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[6/25/26, 3:30:30 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[6/25/26, 3:30:30 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[6/25/26, 3:30:30 PM] +52 1 55 2884 6183: Hola, quiero información de Ventas Corporativas
+[6/25/26, 3:31:04 PM] +52 1 55 2884 6183: Hola, busco cotizar un proyecto de corte y grabado laser
+[6/25/26, 3:31:13 PM] +52 1 55 2884 6183: Buenas tardes
+[6/25/26, 3:31:29 PM] +52 1 55 2884 6183: Para cotizar un corte láser
+[6/25/26, 5:25:16 PM] Tú: Buenas tardes, con gusto, si gustas mandame tu archivo
+[6/25/26, 5:56:03 PM] +52 1 55 2884 6183: <documento omitido> LUIS_ALBERTO_GARCIA_LUNA.dwg
+[6/25/26, 5:56:57 PM] +52 1 55 2884 6183: Seria en material macocel, de 3mm, medida 60X40, ya cuento con el material
+[6/26/26, 9:02:28 AM] Tú: Hola buen día q tal!!
+[6/26/26, 9:03:04 AM] Tú: <imagen omitida> son 5 tramos de 60x40cm correcto
+[6/26/26, 9:04:25 AM] Tú: todo lo azul es corte y lo rojo grabado??
+[6/26/26, 9:10:57 AM] +52 1 55 2884 6183: Si es correcto, son 5 tramos de 40x50 y lo azul es correcto y rojo grabado
+[6/26/26, 9:11:19 AM] Tú: muy bien!! te saldría en $1,500 todos los cortes sin material
+[6/26/26, 9:30:23 AM] +52 1 55 2884 6183: Y eso es teniendo en cuenta que el corte será en marcocel? O el precio no cambia dependiendo el material?
+[6/26/26, 12:05:03 PM] Tú: si cambia dependiendo el material y el grosor..
+[6/26/26, 12:06:49 PM] Tú: el marcocel es similar al MDF,  aun siendo similares las composiciones de los materiales son diferentes y puede tardar mas en cortar o requerir mas potencia....

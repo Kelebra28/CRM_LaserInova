@@ -1,0 +1,10 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[8/22/26, 5:23:35 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[8/22/26, 5:23:35 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[8/22/26, 5:23:35 PM] +52 1 55 3732 1331: Hola, quiero información de Ventas Corporativas
+[8/22/26, 5:23:40 PM] +52 1 55 3732 1331: Buena Tarde
+[8/22/26, 5:23:52 PM] +52 1 55 3732 1331: Que precio tienen sus logos en madera?
+[8/26/26, 9:04:46 AM] Tú: Hola buen día, gracias por comunicarte con nosotros.
+[8/26/26, 9:07:46 AM] Tú: El precio depende principalmente del diseño, medida y cantidad de piezas.
+
+Si nos compartes el logo o una imagen de referencia, la medida aproximada que necesitas y cuántas piezas serían, podemos prepararte una cotización más precisa. También podemos recomendarte el material y acabado que mejor se adapte a tu proyecto.”

@@ -1,0 +1,27 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[6/18/26, 3:00:23 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[6/18/26, 3:00:23 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[6/18/26, 3:00:24 PM] +52 1 55 4048 9393: Hola, buenas tardes
+[6/18/26, 3:00:26 PM] Tú: Gracias por comunicarte con Laser Inova. ¿Cómo podemos ayudarte?
+[6/18/26, 3:00:33 PM] +52 1 55 4048 9393: Quisiera solicitar la factura por este pago
+[6/18/26, 3:00:46 PM] +52 1 55 4048 9393: <documento omitido> BRANDING BOUTIQUES $3,758.40.pdf
+[6/18/26, 3:00:56 PM] +52 1 55 4048 9393: <documento omitido> CSF_Delarosa_04052026.pdf
+[6/18/26, 3:04:53 PM] +52 1 55 4048 9393: <documento omitido> LETRAS BOUTIQUE $930.00.pdf
+[6/18/26, 3:05:00 PM] +52 1 55 4048 9393: Son estos 2 pagos
+[6/19/26, 12:28:44 PM] Tú: Buenas tardes, lo checamos con gusto
+[6/19/26, 12:31:42 PM] +52 1 55 4048 9393: Gracias
+[6/29/26, 1:04:54 PM] +52 1 55 4048 9393: Buenos días
+[6/29/26, 1:05:03 PM] +52 1 55 4048 9393: Me podria apoyar con las facturas por favor
+[6/29/26, 1:05:20 PM] +52 1 55 4048 9393: Estamos a fin de mes y me urgen para el cierre de mes
+[6/29/26, 1:45:24 PM] Tú: Buenas  tardes, claro hablo con el contador
+[6/29/26, 1:45:48 PM] +52 1 55 4048 9393: Gracias
+[6/29/26, 2:11:54 PM] +52 1 55 4048 9393: <documento omitido> LETRAS Y STENCILES $1,258.60.pdf
+[6/29/26, 2:16:30 PM] Tú: disculpe requiere una solo factura o por separado?
+[6/29/26, 2:17:39 PM] +52 1 55 4048 9393: 1 sola
+[6/29/26, 2:18:13 PM] Tú: muy bien!!
+[6/29/26, 2:53:42 PM] Tú: <documento omitido> Anexo factura correspondiente.
+[6/29/26, 2:53:42 PM] Tú: <documento omitido>
+[6/29/26, 2:57:37 PM] +52 1 55 4048 9393: Gracias
+[6/29/26, 2:57:46 PM] +52 1 55 4048 9393: Me la podria enviar a mi correo por favor
+[6/29/26, 2:57:49 PM] +52 1 55 4048 9393: Adm@delarosatulum.com
+[6/29/26, 3:43:56 PM] Tú: con gusto!

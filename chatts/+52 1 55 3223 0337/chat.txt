@@ -1,0 +1,17 @@
+Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos.
+[8/11/26, 3:24:52 PM] - Los mensajes y las llamadas están cifrados de extremo a extremo. Nadie fuera de este chat, ni siquiera WhatsApp, puede leerlos ni escucharlos. Toca para obtener más información.
+[8/11/26, 3:24:52 PM] - Recibiste un mensaje en el teléfono, pero no es compatible con la versión que tienes de WhatsApp Web.
+[8/11/26, 3:24:52 PM] +52 1 55 3223 0337: Hola, quiero una cotización corporativa o de mayoreo
+[8/11/26, 3:24:55 PM] Tú: Gracias por comunicarte con Laser Inova. ¿Cómo podemos ayudarte?
+[8/11/26, 3:25:18 PM] +52 1 55 3223 0337: Imprimen en cama plana?
+[8/11/26, 3:25:42 PM] +52 1 55 3223 0337: Necesito imprimir unos círculos de 110 cm de diámetro
+[8/11/26, 3:25:52 PM] +52 1 55 3223 0337: 100 piezas
+[8/11/26, 5:23:53 PM] +52 1 55 3223 0337: <imagen omitida>
+[8/11/26, 5:24:15 PM] +52 1 55 3223 0337: sería algo de este tipo
+[8/11/26, 6:20:58 PM] Tú: Hola buena tarde
+[8/11/26, 6:23:19 PM] Tú: Con gusto podemos apoyarles con la impresión DTF UV en cama plana. En este momento contamos con un área máxima de impresión de 90 × 60 cm, por lo que la pieza que requieren, de 100 cm de diámetro, excede nuestra área de trabajo.
+[8/11/26, 6:23:35 PM] Tú: sobre q material requieres la impresión?
+[8/12/26, 9:20:32 AM] +52 1 55 3223 0337: Hola
+El material es una placa de plástico.
+Se puede meter el círculo de 110 cm e imprimir en el centro la imagen de 60 cm de diámetro?
+[8/12/26, 9:23:27 AM] +52 1 55 3223 0337: Cuánto cuesta la impresión de 60 x 90?
